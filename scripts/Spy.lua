@@ -224,68 +224,74 @@ end
 local Highlight = (isfile and loadfile and isfile("Highlight.lua") and loadfile("Highlight.lua")()) or loadstring(game:HttpGet("https://raw.githubusercontent.com/infyiff/backup/refs/heads/main/SimpleSpyV3/highlight.lua"))()
 local LazyFix = loadstring(game:HttpGet("https://raw.githubusercontent.com/infyiff/backup/refs/heads/main/SimpleSpyV3/DataToCode.lua"))() -- Very lazy fix as I'm legit just pasting it from the rewrite
 
+-- Bảng màu tối ưu độ tương phản (VSCode / Discord Theme)
 local Colors = {
-    Background = Color3.fromRGB(20, 20, 23),
-    Panel = Color3.fromRGB(27, 27, 31),
-    Border = Color3.fromRGB(45, 45, 50),
+    Background = Color3.fromRGB(25, 25, 30), -- Nền chính
+    Panel = Color3.fromRGB(18, 18, 22),      -- Nền codebox/list
+    Border = Color3.fromRGB(45, 45, 50),     -- Viền
     Text = Color3.fromRGB(240, 240, 245),
-    SubText = Color3.fromRGB(160, 160, 170),
-    Accent = Color3.fromRGB(88, 101, 242), -- Blurple của Discord
-    Red = Color3.fromRGB(237, 66, 69)
+    SubText = Color3.fromRGB(150, 150, 160),
+    Accent = Color3.fromRGB(88, 101, 242),   -- Xanh dương
+    Red = Color3.fromRGB(250, 82, 82),
+    Yellow = Color3.fromRGB(250, 176, 5),
+    Green = Color3.fromRGB(18, 184, 134)
 }
 
 local SimpleSpy3 = Create("ScreenGui",{Name = "SimpleSpy", ResetOnSpawn = false, IgnoreGuiInset = true})
 local Storage = Create("Folder",{})
 
-local Background = Create("Frame",{Parent = SimpleSpy3, BackgroundColor3 = Colors.Background, Position = UDim2.new(0.5, -300, 0.5, -200), Size = UDim2.new(0, 600, 0, 350), Active = true})
-Create("UICorner",{CornerRadius = UDim.new(0, 10), Parent = Background})
-Create("UIStroke",{Color = Colors.Border, Thickness = 1.5, Parent = Background})
+local Background = Create("Frame",{Parent = SimpleSpy3, BackgroundColor3 = Colors.Background, Position = UDim2.new(0.5, -275, 0.5, -175), Size = UDim2.new(0, 550, 0, 350), Active = true})
+Create("UICorner",{CornerRadius = UDim.new(0, 8), Parent = Background})
+Create("UIStroke",{Color = Colors.Border, Thickness = 1, Parent = Background})
 
-local Shadow = Create("ImageLabel",{Parent = Background, AnchorPoint = Vector2.new(0.5, 0.5), BackgroundTransparency = 1, Position = UDim2.new(0.5, 0, 0.5, 0), Size = UDim2.new(1, 40, 1, 40), Image = "rbxassetid://6015536815", ImageColor3 = Color3.fromRGB(0,0,0), ImageTransparency = 0.4, SliceCenter = Rect.new(49, 49, 450, 450), ZIndex = -1})
+local Shadow = Create("ImageLabel",{Parent = Background, AnchorPoint = Vector2.new(0.5, 0.5), BackgroundTransparency = 1, Position = UDim2.new(0.5, 0, 0.5, 0), Size = UDim2.new(1, 30, 1, 30), Image = "rbxassetid://6014261993", ImageColor3 = Color3.new(0,0,0), ImageTransparency = 0.5, SliceCenter = Rect.new(49, 49, 450, 450), ZIndex = -1})
 
-local LeftPanel = Create("Frame",{Parent = Background, BackgroundColor3 = Colors.Panel, BorderSizePixel = 0, Position = UDim2.new(0, 8, 0, 35), Size = UDim2.new(0, 180, 1, -43)})
-Create("UICorner",{CornerRadius = UDim.new(0, 8), Parent = LeftPanel})
-Create("UIStroke",{Color = Colors.Border, Thickness = 1, Parent = LeftPanel})
+local TopBar = Create("Frame",{Parent = Background, BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 30)})
+local Simple = Create("TextButton",{Parent = TopBar, BackgroundTransparency = 1, Position = UDim2.new(0, 15, 0, 0), Size = UDim2.new(0, 200, 1, 0), Font = Enum.Font.GothamBold, Text = "simplespy remake", TextColor3 = Colors.Text, TextSize = 13, TextXAlignment = Enum.TextXAlignment.Left})
+
+local ControlFrame = Create("Frame",{Parent = TopBar, BackgroundTransparency = 1, AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -10, 0.5, 0), Size = UDim2.new(0, 60, 0, 14)})
+Create("UIListLayout",{Parent = ControlFrame, FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Right, SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 6)})
+
+local MinimizeButton = Create("TextButton",{LayoutOrder = 1, Parent = ControlFrame, BackgroundColor3 = Colors.Green, Size = UDim2.new(0, 14, 0, 14), Text = ""})
+Create("UICorner",{CornerRadius = UDim.new(1, 0), Parent = MinimizeButton})
+local MaximizeButton = Create("TextButton",{LayoutOrder = 2, Parent = ControlFrame, BackgroundColor3 = Colors.Yellow, Size = UDim2.new(0, 14, 0, 14), Text = ""})
+Create("UICorner",{CornerRadius = UDim.new(1, 0), Parent = MaximizeButton})
+local CloseButton = Create("TextButton",{LayoutOrder = 3, Parent = ControlFrame, BackgroundColor3 = Colors.Red, Size = UDim2.new(0, 14, 0, 14), Text = ""})
+Create("UICorner",{CornerRadius = UDim.new(1, 0), Parent = CloseButton})
+
+local LeftPanel = Create("Frame",{Parent = Background, BackgroundColor3 = Colors.Background, BorderSizePixel = 0, Position = UDim2.new(0, 10, 0, 35), Size = UDim2.new(0.35, -15, 1, -45)})
 
 local SearchBox = Create("TextBox", {
-    Parent = LeftPanel, BackgroundColor3 = Colors.Background, Position = UDim2.new(0, 8, 0, 8), Size = UDim2.new(1, -16, 0, 28),
-    Font = Enum.Font.Gotham, PlaceholderText = "Searching for remote...", Text = "", TextColor3 = Colors.Text, PlaceholderColor3 = Colors.SubText, TextSize = 13, ZIndex = 2
+    Parent = LeftPanel, BackgroundColor3 = Colors.Panel, Size = UDim2.new(1, 0, 0, 30),
+    Font = Enum.Font.Gotham, PlaceholderText = "Search...", Text = "", TextColor3 = Colors.Text, PlaceholderColor3 = Colors.SubText, TextSize = 12
 })
 Create("UICorner",{CornerRadius = UDim.new(0, 6), Parent = SearchBox})
 Create("UIStroke",{Color = Colors.Border, Thickness = 1, Parent = SearchBox})
+Create("UIPadding", {Parent = SearchBox, PaddingLeft = UDim.new(0, 10)})
 
-local LogList = Create("ScrollingFrame",{Parent = LeftPanel, Active = true, BackgroundTransparency = 1, BorderSizePixel = 0, Position = UDim2.new(0, 0, 0, 45), Size = UDim2.new(1, 0, 1, -50), CanvasSize = UDim2.new(0, 0, 0, 0), ScrollBarThickness = 3, ScrollBarImageColor3 = Colors.SubText})
-local UIListLayout = Create("UIListLayout",{Parent = LogList, HorizontalAlignment = Enum.HorizontalAlignment.Center, SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 4)})
-Create("UIPadding", {Parent = LogList, PaddingTop = UDim.new(0, 2), PaddingBottom = UDim.new(0, 2)})
+local LogList = Create("ScrollingFrame",{Parent = LeftPanel, Active = true, BackgroundColor3 = Colors.Panel, BorderSizePixel = 0, Position = UDim2.new(0, 0, 0, 35), Size = UDim2.new(1, 0, 1, -35), CanvasSize = UDim2.new(0, 0, 0, 0), ScrollBarThickness = 2, ScrollBarImageColor3 = Colors.SubText})
+Create("UICorner",{CornerRadius = UDim.new(0, 6), Parent = LogList})
+Create("UIStroke",{Color = Colors.Border, Thickness = 1, Parent = LogList})
+local UIListLayout = Create("UIListLayout",{Parent = LogList, HorizontalAlignment = Enum.HorizontalAlignment.Center, SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 2)})
+Create("UIPadding", {Parent = LogList, PaddingTop = UDim.new(0, 4), PaddingBottom = UDim.new(0, 4)})
 
-local RightPanel = Create("Frame",{Parent = Background, BackgroundTransparency = 1, Position = UDim2.new(0, 196, 0, 35), Size = UDim2.new(1, -204, 1, -43)})
+local RightPanel = Create("Frame",{Parent = Background, BackgroundTransparency = 1, Position = UDim2.new(0.35, 5, 0, 35), Size = UDim2.new(0.65, -15, 1, -45)})
 
-local CodeBox = Create("Frame",{Parent = RightPanel, BackgroundColor3 = Colors.Panel, Size = UDim2.new(1, 0, 1, -135)})
-Create("UICorner",{CornerRadius = UDim.new(0, 8), Parent = CodeBox})
+local RightLayout = Create("UIListLayout",{Parent = RightPanel, FillDirection = Enum.FillDirection.Vertical, SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 8)})
+
+local CodeBox = Create("Frame",{Parent = RightPanel, BackgroundColor3 = Colors.Panel, Size = UDim2.new(1, 0, 0.6, 0)})
+Create("UICorner",{CornerRadius = UDim.new(0, 6), Parent = CodeBox})
 Create("UIStroke",{Color = Colors.Border, Thickness = 1, Parent = CodeBox})
 
-local ScrollingFrame = Create("ScrollingFrame",{Parent = RightPanel, Active = true, BackgroundTransparency = 1, Position = UDim2.new(0, 0, 1, -125), Size = UDim2.new(1, 0, 0, 125), CanvasSize = UDim2.new(0, 0, 0, 0), ScrollBarThickness = 3, ScrollBarImageColor3 = Colors.SubText})
-local UIGridLayout = Create("UIGridLayout",{Parent = ScrollingFrame, HorizontalAlignment = Enum.HorizontalAlignment.Left, SortOrder = Enum.SortOrder.LayoutOrder, CellPadding = UDim2.new(0, 8, 0, 8), CellSize = UDim2.new(0, 125, 0, 32)})
+local ScrollingFrame = Create("ScrollingFrame",{Parent = RightPanel, Active = true, BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0.4, -8), CanvasSize = UDim2.new(0, 0, 0, 0), ScrollBarThickness = 2, ScrollBarImageColor3 = Colors.SubText})
 
-local TopBar = Create("Frame",{Parent = Background, BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 35)})
-local Simple = Create("TextButton",{Parent = TopBar, BackgroundTransparency = 1, Position = UDim2.new(0, 15, 0, 0), Size = UDim2.new(0, 200, 1, 0), Font = Enum.Font.GothamBold, Text = "simple spy remake", TextColor3 = Colors.Text, TextSize = 14, TextXAlignment = Enum.TextXAlignment.Left})
+local UIGridLayout = Create("UIGridLayout",{Parent = ScrollingFrame, HorizontalAlignment = Enum.HorizontalAlignment.Left, SortOrder = Enum.SortOrder.LayoutOrder, CellPadding = UDim2.new(0, 6, 0, 6), CellSize = UDim2.new(0, 105, 0, 28)})
+Create("UIPadding", {Parent = ScrollingFrame, PaddingRight = UDim.new(0, 4)})
 
-local CloseButton = Create("TextButton",{Parent = TopBar, BackgroundColor3 = Colors.Red, Position = UDim2.new(1, -30, 0.5, -8), Size = UDim2.new(0, 16, 0, 16), Font = Enum.Font.Gotham, Text = "", TextSize = 14})
-Create("UICorner",{CornerRadius = UDim.new(1, 0), Parent = CloseButton})
-
-local MaximizeButton = Create("TextButton",{Parent = TopBar, BackgroundColor3 = Color3.fromRGB(250, 204, 21), Position = UDim2.new(1, -54, 0.5, -8), Size = UDim2.new(0, 16, 0, 16), Font = Enum.Font.Gotham, Text = "", TextSize = 14})
-Create("UICorner",{CornerRadius = UDim.new(1, 0), Parent = MaximizeButton})
-
-local MinimizeButton = Create("TextButton",{Parent = TopBar, BackgroundColor3 = Color3.fromRGB(74, 222, 128), Position = UDim2.new(1, -78, 0.5, -8), Size = UDim2.new(0, 16, 0, 16), Font = Enum.Font.Gotham, Text = "", TextSize = 14})
-Create("UICorner",{CornerRadius = UDim.new(1, 0), Parent = MinimizeButton})
-
-local ToolTip = Create("Frame",{Parent = SimpleSpy3, BackgroundColor3 = Colors.Background, Size = UDim2.new(0, 200, 0, 50), ZIndex = 100, Visible = false})
+local ToolTip = Create("Frame",{Parent = SimpleSpy3, BackgroundColor3 = Colors.Panel, Size = UDim2.new(0, 200, 0, 50), ZIndex = 100, Visible = false})
 Create("UICorner",{CornerRadius = UDim.new(0, 6), Parent = ToolTip})
 Create("UIStroke",{Color = Colors.Border, Thickness = 1, Parent = ToolTip})
-local TextLabel = Create("TextLabel",{Parent = ToolTip, BackgroundTransparency = 1, Position = UDim2.new(0, 8, 0, 8), Size = UDim2.new(1, -16, 1, -16), ZIndex = 101, Font = Enum.Font.GothamMedium, Text = "", TextColor3 = Colors.Text, TextSize = 13, TextWrapped = true, TextXAlignment = Enum.TextXAlignment.Left, TextYAlignment = Enum.TextYAlignment.Top})
-
-local AspectRatio = Create("UISizeConstraint", {Parent = Background, MinSize = Vector2.new(450, 300), MaxSize = Vector2.new(1200, 800)})
-
+local TextLabel = Create("TextLabel",{Parent = ToolTip, BackgroundTransparency = 1, Position = UDim2.new(0, 8, 0, 8),
 -------------------------------------------------------------------------------
 
 local selectedColor = Color3.new(0.321569, 0.333333, 1)
@@ -984,25 +990,23 @@ end
 ---@param description function
 ---@param onClick function
 function newButton(name, description, onClick)
-    local FunctionTemplate = Create("Frame",{Name = "FunctionTemplate", Parent = ScrollingFrame, BackgroundTransparency = 1, Size = UDim2.new(0, 125, 0, 32)})
-    local Button = Create("TextButton",{Name = "Button", Parent = FunctionTemplate, BackgroundColor3 = Colors.Panel, Size = UDim2.new(1, 0, 1, 0), AutoButtonColor = false, Font = Enum.Font.GothamMedium, Text = name, TextColor3 = Colors.Text, TextSize = 13})
-    Create("UICorner",{CornerRadius = UDim.new(0, 6), Parent = Button})
+    local FunctionTemplate = Create("Frame",{Name = "FunctionTemplate", Parent = ScrollingFrame, BackgroundTransparency = 1, Size = UDim2.new(0, 105, 0, 28)})
+    local Button = Create("TextButton",{Name = "Button", Parent = FunctionTemplate, BackgroundColor3 = Colors.Background, Size = UDim2.new(1, 0, 1, 0), AutoButtonColor = false, Font = Enum.Font.GothamMedium, Text = name, TextColor3 = Colors.Text, TextSize = 11, TextWrapped = true})
+    Create("UICorner",{CornerRadius = UDim.new(0, 4), Parent = Button})
     Create("UIStroke",{Color = Colors.Border, Thickness = 1, Parent = Button})
 
-    
     Button.MouseEnter:Connect(function()
-        TweenService:Create(Button, TweenInfo.new(0.2), {BackgroundColor3 = Colors.Border, TextColor3 = Color3.fromRGB(255,255,255)}):Play()
+        TweenService:Create(Button, TweenInfo.new(0.15), {BackgroundColor3 = Colors.Border}):Play()
         makeToolTip(true, description())
     end)
     Button.MouseLeave:Connect(function()
-        TweenService:Create(Button, TweenInfo.new(0.2), {BackgroundColor3 = Colors.Panel, TextColor3 = Colors.Text}):Play()
+        TweenService:Create(Button, TweenInfo.new(0.15), {BackgroundColor3 = Colors.Background}):Play()
         makeToolTip(false)
     end)
     FunctionTemplate.AncestryChanged:Connect(function() makeToolTip(false) end)
     
     Button.MouseButton1Click:Connect(function(...)
-        
-        TweenService:Create(Button, TweenInfo.new(0.1), {Size = UDim2.new(0.95, 0, 0.95, 0)}):Play()
+        TweenService:Create(Button, TweenInfo.new(0.1), {Size = UDim2.new(0.9, 0, 0.9, 0)}):Play()
         task.wait(0.1)
         TweenService:Create(Button, TweenInfo.new(0.1), {Size = UDim2.new(1, 0, 1, 0)}):Play()
         logthread(running())
@@ -2601,44 +2605,37 @@ local function MakeDraggable(gui)
 end
 
 if UserInputService.TouchEnabled or table.find({Enum.Platform.IOS, Enum.Platform.Android}, UserInputService:GetPlatform()) then
- 
+    
     local QuickCapture = Create("TextButton", {
         Parent = SimpleSpy3, 
-        BackgroundColor3 = Color3.fromRGB(15, 15, 15),
-        BackgroundTransparency = 0.4, 
-        Position = UDim2.new(0.5, -30, 0, 10), 
-        Size = UDim2.new(0, 60, 0, 60), 
+        BackgroundColor3 = Colors.Panel,
+        BackgroundTransparency = 0.2, 
+        Position = UDim2.new(1, -60, 0.5, -25), 
+        Size = UDim2.new(0, 40, 0, 40), 
         Font = Enum.Font.GothamBold,
         Text = "SPY", 
-        TextColor3 = Color3.fromRGB(255, 255, 255), 
-        TextSize = 16, 
+        TextColor3 = Colors.Text, 
+        TextSize = 14, 
         ZIndex = 1000
     })
     Create("UICorner", {CornerRadius = UDim.new(1, 0), Parent = QuickCapture}) 
-    Create("UIStroke", {Parent = QuickCapture, Color = Colors.Accent, Thickness = 2, Transparency = 0.2})
-    
-    local Glow = Create("ImageLabel", {
-        Parent = QuickCapture, BackgroundTransparency = 1, Position = UDim2.new(-0.5, 0, -0.5, 0), Size = UDim2.new(2, 0, 2, 0), ZIndex = 999,
-        Image = "rbxassetid://5028857084", ImageColor3 = Colors.Accent, ImageTransparency = 0.6
-    })
+    Create("UIStroke", {Parent = QuickCapture, Color = Colors.Border, Thickness = 2})
     
     MakeDraggable(QuickCapture)
     
     QuickCapture.MouseButton1Click:Connect(function()
         Background.Visible = not Background.Visible
         
-        TweenService:Create(QuickCapture, TweenInfo.new(0.2), {Size = UDim2.new(0, 50, 0, 50)}):Play()
+        TweenService:Create(QuickCapture, TweenInfo.new(0.1), {Size = UDim2.new(0, 42, 0, 42)}):Play()
         task.wait(0.1)
-        TweenService:Create(QuickCapture, TweenInfo.new(0.2), {Size = UDim2.new(0, 60, 0, 60)}):Play()
+        TweenService:Create(QuickCapture, TweenInfo.new(0.1), {Size = UDim2.new(0, 50, 0, 50)}):Play()
 
         if Background.Visible then
             QuickCapture.Text = "hide"
-            TweenService:Create(QuickCapture.UIStroke, TweenInfo.new(0.3), {Color = Colors.Red}):Play()
-            TweenService:Create(Glow, TweenInfo.new(0.3), {ImageColor3 = Colors.Red}):Play()
+            QuickCapture.TextColor3 = Colors.Red
         else
             QuickCapture.Text = "spy"
-            TweenService:Create(QuickCapture.UIStroke, TweenInfo.new(0.3), {Color = Colors.Accent}):Play()
-            TweenService:Create(Glow, TweenInfo.new(0.3), {ImageColor3 = Colors.Accent}):Play()
+            QuickCapture.TextColor3 = Colors.Text
         end
     end)
 end
