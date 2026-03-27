@@ -7,9 +7,13 @@ local realconfigs = {
     autoblock = false,
     funcEnabled = true,
     advancedinfo = false,
-    --logreturnvalues = false,
-    supersecretdevtoggle = false
+    supersecretdevtoggle = false,
+    httpspy = true,
+    tamperEnabled = false
 }
+
+local tamperRules = {} 
+local originalRequest = request or (syn and syn.request) or (http and http.request)
 
 local configs = newproxy(true)
 local configsmetatable = getmetatable(configs)
@@ -224,6 +228,41 @@ local SimpleSpy3 = Create("ScreenGui",{ResetOnSpawn = false})
 local Storage = Create("Folder",{})
 local Background = Create("Frame",{Parent = SimpleSpy3,BackgroundColor3 = Color3.new(1, 1, 1),BackgroundTransparency = 1,Position = UDim2.new(0, 500, 0, 200),Size = UDim2.new(0, 450, 0, 268)})
 local LeftPanel = Create("Frame",{Parent = Background,BackgroundColor3 = Color3.fromRGB(53, 52, 55),BorderSizePixel = 0,Position = UDim2.new(0, 0, 0, 19),Size = UDim2.new(0, 131, 0, 249)})
+
+local SearchBox = Create("TextBox", {
+    Parent = LeftPanel,
+    BackgroundColor3 = Color3.fromRGB(37, 36, 38),
+    BorderSizePixel = 0,
+    Position = UDim2.new(0, 5, 0, 5),
+    Size = UDim2.new(1, -10, 0, 20),
+    Font = Enum.Font.SourceSansItalic,
+    PlaceholderText = "Search remotes...",
+    Text = "",
+    TextColor3 = Color3.fromRGB(255, 255, 255),
+    TextSize = 14,
+    ZIndex = 2
+})
+
+LogList.Position = UDim2.new(0, 0, 0, 30)
+LogList.Size = UDim2.new(0, 131, 0, 211)
+
+SearchBox:GetPropertyChangedSignal("Text"):Connect(function()
+    local searchText = string.lower(SearchBox.Text)
+    for _, child in pairs(LogList:GetChildren()) do
+        if child:IsA("Frame") and child.Name == "RemoteTemplate" then
+            local textLabel = child:FindFirstChild("Text")
+            if textLabel then
+                if searchText == "" or string.find(string.lower(textLabel.Text), searchText) then
+                    child.Visible = true
+                else
+                    child.Visible = false
+                end
+            end
+        end
+    end
+    updateRemoteCanvas()
+end)
+
 local LogList = Create("ScrollingFrame",{Parent = LeftPanel,Active = true,BackgroundColor3 = Color3.new(1, 1, 1),BackgroundTransparency = 1,BorderSizePixel = 0,Position = UDim2.new(0, 0, 0, 9),Size = UDim2.new(0, 131, 0, 232),CanvasSize = UDim2.new(0, 0, 0, 0),ScrollBarThickness = 4})
 local UIListLayout = Create("UIListLayout",{Parent = LogList,HorizontalAlignment = Enum.HorizontalAlignment.Center,SortOrder = Enum.SortOrder.LayoutOrder})
 local RightPanel = Create("Frame",{Parent = Background,BackgroundColor3 = Color3.fromRGB(37, 36, 38),BorderSizePixel = 0,Position = UDim2.new(0, 131, 0, 19),Size = UDim2.new(0, 319, 0, 249)})
@@ -1795,6 +1834,17 @@ local newnamecall = newcclosure(function(...)
                 local id = ThreadGetDebugId(remote)
                 local blockcheck = tablecheck(blocklist,remote,id)
                 local args = {select(2,...)}
+                             
+                if configs.tamperEnabled then
+                    local remoteName = remote.Name
+                    if tamperRules[remoteName] then
+                        for index, rule in pairs(tamperRules[remoteName]) do
+                            if args[index] ~= nil then
+                                args[index] = rule.newValue 
+                            end
+                        end
+                    end
+                end
 
                 if not tablecheck(blacklist,remote,id) and not IsCyclicTable(args) then
                 
@@ -1882,10 +1932,35 @@ local function disablehooks()
     end
 end
 
+local newRequest
+if originalRequest then
+    newRequest = newcclosure(function(reqData)
+        if configs.httpspy then
+            local data = {
+                method = reqData.Method or "GET",
+                remote = { Name = "[HTTP] " .. (reqData.Url:match("//([^/]+)") or reqData.Url:sub(1,20)), ClassName = "Http" },
+                args = {reqData},
+                id = "HTTP_REQ",
+                callingscript = getcallingscript and getcallingscript() or nil,
+                metamethod = "request"
+            }
+            
+            data.remote.IsA = function(self, class) return class == "RemoteEvent" end
+            schedule(remoteHandler, data)
+        end
+        return originalRequest(reqData)
+    end)
+end
+
 --- Toggles on and off the remote spy
 function toggleSpy()
     if not toggle then
         local oldnamecall
+        
+        if originalRequest and not synv3 then
+            hookfunction(originalRequest, clonefunction(newRequest))
+        end
+        
         if synv3 then
             oldnamecall = hook(getrawmetatable(game).__namecall,clonefunction(newnamecall))
             originalEvent = hook(Instance.new("RemoteEvent").FireServer, clonefunction(newFireServer))
@@ -2345,6 +2420,104 @@ function()
     TextLabel.Text = ("[%s] Display more remoteinfo"):format(configs.advancedinfo and "ENABLED" or "DISABLED")
 end)
 
+-- ==========================================
+-- [VIP UPDATES] HỆ THỐNG NÚT BẤM CHUYÊN NGHIỆP
+-- ==========================================
+
+--- Tự động lưu toàn bộ Script đang có ra Workspace
+newButton(
+    "Export File",
+    function() return "Lưu code hiện tại thành file .lua trong thư mục 'workspace' của Executor" end,
+    function()
+        if writefile then
+            local fileName = "SimpleSpy_Export_" .. math.floor(tick()) .. ".lua"
+            writefile(fileName, codebox:getString())
+            TextLabel.Text = "Đã lưu thành công file: " .. fileName
+        else
+            TextLabel.Text = "Executor của bạn không hỗ trợ writefile!"
+        end
+    end
+)
+
+--- Bật tắt giám sát HTTP
+newButton(
+    "HTTP Spy",
+    function() return string.format("[%s] Giám sát webhook và request gửi ra ngoài server", configs.httpspy and "BẬT" or "TẮT") end,
+    function()
+        configs.httpspy = not configs.httpspy
+        TextLabel.Text = string.format("[%s] HTTP Spy", configs.httpspy and "BẬT" or "TẮT")
+    end
+)
+
+newButton(
+    "Auto-Fuzzer",
+    function() return "⚠ NGUY HIỂM: Gửi spam Remote đang chọn với các dữ liệu rác (NaN, Infinity, nil) để xem Server có bị lỗi (Crash/Bypass) không." end,
+    function()
+        if not selected or not selected.Remote then 
+            TextLabel.Text = "Vui lòng chọn 1 Remote trước!" 
+            return 
+        end
+        local Remote = selected.Remote
+        TextLabel.Text = "Đang Fuzzing... (Có thể gây lag)"
+        
+        spawn(function()
+            local testCases = {
+                math.huge, -math.huge, 0/0, 
+                string.rep("A", 50000),     
+                nil, {}, CFrame.new(999999,999999,999999) 
+            }
+            
+            for i = 1, 15 do
+                local maliciousArgs = {}
+                for idx, arg in pairs(selected.args) do
+                    
+                    maliciousArgs[idx] = testCases[math.random(1, #testCases)]
+                end
+                
+                pcall(function()
+                    if Remote:IsA("RemoteEvent") or Remote:IsA("UnreliableRemoteEvent") then
+                        Remote:FireServer(unpack(maliciousArgs))
+                    elseif Remote:IsA("RemoteFunction") then
+                        Remote:InvokeServer(unpack(maliciousArgs))
+                    end
+                end)
+                task.wait(0.1) 
+            end
+            TextLabel.Text = "Fuzzing hoàn tất! Kiểm tra xem game có bị lỗi gì không."
+        end)
+    end
+)
+
+newButton(
+    "Tamper Args",
+    function() return "Ghi đè giá trị Arguments của Remote đang chọn (Giúp cheat game dễ dàng)." end,
+    function()
+        if not selected or not selected.Remote then 
+            TextLabel.Text = "Chọn 1 remote để cài đặt Tamper!" 
+            return 
+        end
+        
+        configs.tamperEnabled = true
+        local remoteName = selected.Remote.Name
+        tamperRules[remoteName] = tamperRules[remoteName] or {}
+        
+        tamperRules[remoteName][1] = { newValue = 999999 }
+        
+        codebox:setRaw("-- Đã thiết lập Tamper cho Remote: " .. remoteName .. "\n-- Khi game gọi remote này, tham số 1 sẽ luôn bị ép thành 999999.\n-- Tính năng này chạy ngầm.\n-- Tắt/Bật Tamper bằng nút 'Toggle Tamper'")
+        TextLabel.Text = "Tamper Rule Đã Lưu!"
+    end
+)
+
+newButton(
+    "Toggle Tamper",
+    function() return string.format("[%s] Bật/Tắt hệ thống tự động sửa Argument bay lên Server.", configs.tamperEnabled and "BẬT" or "TẮT") end,
+    function()
+        configs.tamperEnabled = not configs.tamperEnabled
+        if not configs.tamperEnabled then tamperRules = {} end 
+        TextLabel.Text = string.format("[%s] Tamper System", configs.tamperEnabled and "BẬT" or "TẮT")
+    end
+)
+
 newButton("Join Discord",function()
     return "Joins The Simple Spy Discord"
 end,
@@ -2409,7 +2582,7 @@ if UserInputService.TouchEnabled or table.find({Enum.Platform.IOS, Enum.Platform
     local QuickCapture = Create("TextButton", {
         Parent = SimpleSpy3, BackgroundColor3 = Color3.fromRGB(37, 36, 38),
         BackgroundTransparency = 0.14, Position = UDim2.new(0.5, 0, 0, 0),
-        Size = UDim2.new(0, 45, 0, 45), Font = Enum.Font.SourceSansBold,
+        Size = UDim2.new(0, 45, 0, 45), Font = Enum.Font.SourceSans,
         Text = "Spy", TextColor3 = Color3.fromRGB(252, 51, 51), TextSize = 18, ZIndex = 10
     })
     Create("UICorner", {CornerRadius = UDim.new(0.5, 0), Parent = QuickCapture})
@@ -2419,7 +2592,7 @@ if UserInputService.TouchEnabled or table.find({Enum.Platform.IOS, Enum.Platform
     
     QuickCapture.MouseButton1Click:Connect(function()
         Background.Visible = not Background.Visible
-        QuickCapture.TextColor3 = Background.Visible and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(252, 51, 51)
+        QuickCapture.TextColor3 = Background.Visible and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(252, 255, 255)
         QuickCapture.Text = Background.Visible and "Hide" or "Spy"
     end)
 end
