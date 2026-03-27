@@ -1734,10 +1734,13 @@ local newindex = function(method,originalfunction,...)
             local args = {select(2,...)}
 
             if not tablecheck(blacklist,remote,id) and not IsCyclicTable(args) then
+                
+                local safeArgs = (#args < 50) and deepclone(args) or args
+                
                 local data = {
                     method = method,
                     remote = remote,
-                    args = deepclone(args),
+                    args = safeArgs,
                     infofunc = infofunc,
                     callingscript = callingscript,
                     metamethod = "__index",
@@ -2269,7 +2272,7 @@ newButton("Decompile",
                         DecompiledScripts[Source] = ("--[[\nError while decompiling:\n%s\n]]"):format(tostring(err))
                     end)
                 end
-                codebox:setRaw(DecompiledScripts[Source] or "
+                codebox:setRaw(DecompiledScripts[Source] or "--No Source Found")
                 TextLabel.Text = "Done!"
             else
                 TextLabel.Text = "Source not found!"
