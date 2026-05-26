@@ -13,9 +13,14 @@ local LocalPlayer = game:GetService("Players").LocalPlayer
 local Mouse = cloneref(LocalPlayer:GetMouse())
 local MainWindowVideo
 local PARENT = (gethui and gethui()) or cloneref(game:GetService("CoreGui"))
-local request = http_request or request or (syn and syn.request) or (fluxus and fluxus.request)
-local getcustomasset = getcustomasset or getsynasset
-local makefolder = makefolder or function() end
+local request = http_request or request or (syn and syn.request) or (fluxus and fluxus.request) or function(...) return {} end
+local getcustomasset = getcustomasset or getsynasset or function(...) return "" end
+local makefolder = makefolder or function(...) end
+local isfolder = isfolder or function(...) return false end
+local isfile = isfile or function(...) return false end
+local readfile = readfile or function(...) return "" end
+local writefile = writefile or function(...) end
+local listfiles = listfiles or function(...) return {} end
 
 OrionLib = {
         Elements = {},
@@ -45,7 +50,7 @@ getgenv().Destroy = false
 local Icons = {}
 
 local Success, Response = pcall(function()
-        Icons = HttpService:JSONDecode(game:HttpGetAsync("https://raw.githubusercontent.com/Articles-Hub/ROBLOXScript/refs/heads/main/Library/Orion/icons.json")).icons
+        Icons = HttpService:JSONDecode(game:HttpGet("https://raw.githubusercontent.com/Articles-Hub/ROBLOXScript/refs/heads/main/Library/Orion/icons.json")).icons
 end)
 
 if not Success then
@@ -104,8 +109,7 @@ until (MainWindowVideo and MainWindowVideo:FindFirstChild("ItemContainer")) or t
 						end
 					end
 				end)
-			else
-				else
+			else				
 				task.spawn(function()
 					local timeout = 0
 					repeat 
