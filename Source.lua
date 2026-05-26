@@ -89,7 +89,11 @@ function OrionLib:SetVideoLink(link: string)
 				MainWindowVideo.BackgroundColor3 = Color3.new(255, 255, 255)
 				
 				task.spawn(function()
-					repeat task.wait() until MainWindowVideo and MainWindowVideo:FindFirstChild("ItemContainer")
+					local timeout = 0
+repeat 
+    task.wait(0.1) 
+    timeout = timeout + 0.1
+until (MainWindowVideo and MainWindowVideo:FindFirstChild("ItemContainer")) or timeout > 5
 					for i, v in pairs(MainWindowVideo:GetChildren()) do
 						if v.Name == "ItemContainer" then
 							for k, j in pairs(v:GetChildren()) do
@@ -101,8 +105,13 @@ function OrionLib:SetVideoLink(link: string)
 					end
 				end)
 			else
+				else
 				task.spawn(function()
-					repeat task.wait() until MainWindowVideo and MainWindowVideo:FindFirstChild("ItemContainer")
+					local timeout = 0
+					repeat 
+					    task.wait(0.1) 
+					    timeout = timeout + 0.1
+					until (MainWindowVideo and MainWindowVideo:FindFirstChild("ItemContainer")) or timeout > 5
 					for i, v in pairs(MainWindowVideo:GetChildren()) do
 						if v.Name == "ItemContainer" then
 							for k, j in pairs(v:GetChildren()) do
@@ -173,10 +182,10 @@ local function AddConnection(Signal, Function)
 end
 
 task.spawn(function()
-        while (OrionLib:IsRunning()) or getgenv().Destroy do
+        while (OrionLib:IsRunning()) and not getgenv().Destroy do
                 task.wait()
         end
-
+        
         for _, Connection in next, OrionLib.Connections do
                 Connection:Disconnect()
         end
@@ -1144,7 +1153,7 @@ function OrionLib:MakeWindow(WindowConfig)
 
                         for i,v in pairs(TabHolder:GetChildren()) do
                                 if v:IsA("TextButton") then
-                                        if string.find(string.lower(i), Text) then
+                                        if string.find(string.lower(i), Text, 1, true) then
                                                 v.Visible = true
                                         else
                                                 v.Visible = false
@@ -1241,7 +1250,7 @@ function OrionLib:MakeWindow(WindowConfig)
 									if j:IsA("Frame") then
 										local ContentFind = j:FindFirstChild("Content", true) or nil
 										if ContentFind then
-											if string.find(string.lower(ContentFind.Text), Text) then
+											if string.find(string.lower(ContentFind.Text), Text, 1, true) then
 												j.Visible = true
 											else
 												j.Visible = false
@@ -1303,7 +1312,7 @@ function OrionLib:MakeWindow(WindowConfig)
 					Size = UDim2.new(0, 0, 0, 0)
 				})
 				WindowLoading:Play()
-				WindowLoading.Completed:task.wait()
+				WindowLoading.Completed:Wait()
                 MainWindow.Visible = false
                 UIHidden = true
 
@@ -1435,7 +1444,7 @@ function OrionLib:MakeWindow(WindowConfig)
 			}):Play()
 			local BlurTween = TweenService:Create(Blur, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = 0})
 			BlurTween:Play()
-			BlurTween.Completed:task.wait()
+			BlurTween.Completed:Wait()
 			task.wait(0.15)
 			MainWindow.Visible = true
 			Blur:Destroy()
