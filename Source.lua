@@ -406,7 +406,7 @@ local parser = {
             return {Type = "Toggle", Value = data.Value}
         end,
         Load = function(flag, data)
-            if OrionLib.Flags[flag] then
+            if OrionLib.Flags[flag] and type(OrionLib.Flags[flag].Set) == "function" then
                 OrionLib.Flags[flag]:Set(data.Value)
             end
         end
@@ -416,7 +416,7 @@ local parser = {
             return {Type = "Slider", Value = data.Value}
         end,
         Load = function(flag, data)
-            if OrionLib.Flags[flag] then
+            if OrionLib.Flags[flag] and type(OrionLib.Flags[flag].Set) == "function" then
                 OrionLib.Flags[flag]:Set(data.Value)
             end
         end
@@ -427,7 +427,12 @@ local parser = {
         end,
         Load = function(flag, data)
             if OrionLib.Flags[flag] then
-                OrionLib.Flags[flag]:Set(data.Text)
+                -- Vá lỗi: Textbox dùng SetText thay vì Set
+                if type(OrionLib.Flags[flag].SetText) == "function" then
+                    OrionLib.Flags[flag]:SetText(data.Text)
+                elseif type(OrionLib.Flags[flag].Set) == "function" then
+                    OrionLib.Flags[flag]:Set(data.Text)
+                end
             end
         end
     },
@@ -436,8 +441,7 @@ local parser = {
             return {Type = "Dropdown", Value = data.Value}
         end,
         Load = function(flag, data)
-            if OrionLib.Flags[flag] then
-                
+            if OrionLib.Flags[flag] and type(OrionLib.Flags[flag].Set) == "function" then
                 OrionLib.Flags[flag]:Set(data.Value)
             end
         end
@@ -447,8 +451,7 @@ local parser = {
             return {Type = "Bind", Keybind = tostring(data.Value)}
         end,
         Load = function(flag, data)
-            if OrionLib.Flags[flag] then
-                
+            if OrionLib.Flags[flag] and type(OrionLib.Flags[flag].Set) == "function" then
                 local success, keyEnum = pcall(function()
                     return Enum.KeyCode[data.Keybind]
                 end)
@@ -460,12 +463,10 @@ local parser = {
     },
     Colorpicker = {
         Save = function(data)
-            
             return {Type = "Colorpicker", Color = data.Value:ToHex(), Alpha = data.Alpha}
         end,
         Load = function(flag, data)
-            if OrionLib.Flags[flag] then
-                
+            if OrionLib.Flags[flag] and type(OrionLib.Flags[flag].Set) == "function" then
                 OrionLib.Flags[flag]:Set(Color3.fromHex(data.Color), data.Alpha)
             end
         end
