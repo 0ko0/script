@@ -427,7 +427,7 @@ local parser = {
         end,
         Load = function(flag, data)
             if OrionLib.Flags[flag] then
-                -- Vá lỗi: Textbox dùng SetText thay vì Set
+                
                 if type(OrionLib.Flags[flag].SetText) == "function" then
                     OrionLib.Flags[flag]:SetText(data.Text)
                 elseif type(OrionLib.Flags[flag].Set) == "function" then
@@ -441,8 +441,28 @@ local parser = {
             return {Type = "Dropdown", Value = data.Value}
         end,
         Load = function(flag, data)
-            if OrionLib.Flags[flag] and type(OrionLib.Flags[flag].Set) == "function" then
-                OrionLib.Flags[flag]:Set(data.Value)
+            local element = OrionLib.Flags[flag]
+            if element and type(element.Set) == "function" then
+                if type(data.Value) == "table" then
+                    
+                    element:Set("___CLEAR___") 
+                    
+                    
+                    for key, value in pairs(data.Value) do
+                        if type(key) == "number" then
+                            
+                            element:Set(value)
+                        else
+                            
+                            if value == true then
+                                element:Set(key)
+                            end
+                        end
+                    end
+                else
+                    
+                    element:Set(data.Value)
+                end
             end
         end
     },
