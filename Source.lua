@@ -1337,19 +1337,34 @@ local function ToggleUI(state)
     if isToggling then return end
     isToggling = true
     
+    local isMobileOrTouch = UserInputService.TouchEnabled or table.find({Enum.Platform.IOS, Enum.Platform.Android}, UserInputService:GetPlatform())
+    
     if state == nil then
-        state = not Orion.Enabled
+        
+        if isMobileOrTouch then
+            state = not MainWindow.Visible
+        else
+            state = not Orion.Enabled
+        end
     end
+    
+    MainWindow.ClipsDescendants = true
     
     if state then
         
-        Orion.Enabled = true
         MainWindow.Size = UDim2.new(0, 0, 0, 0)
+        MainWindow.Visible = true
+        Orion.Enabled = true
+        
         local showTween = TweenService:Create(MainWindow, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
             Size = UDim2.new(0, 615, 0, 344)
         })
         showTween:Play()
         showTween.Completed:Wait()
+        
+        if not Minimized then
+            MainWindow.ClipsDescendants = false
+        end
     else
         
         local hideTween = TweenService:Create(MainWindow, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
@@ -1357,7 +1372,16 @@ local function ToggleUI(state)
         })
         hideTween:Play()
         hideTween.Completed:Wait()
-        Orion.Enabled = false
+        
+        MainWindow.Visible = false
+        
+        if not isMobileOrTouch then
+            
+            Orion.Enabled = false
+        else
+            
+            MobileReopenButton.Visible = true
+        end
     end
     
     isToggling = false
