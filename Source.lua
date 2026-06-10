@@ -11,6 +11,8 @@ local HttpService: HttpService = cloneref(game:GetService("HttpService"))
 local ContentProvider: ContentProvider = cloneref(game:GetService("ContentProvider"))
 local LocalPlayer = game:GetService("Players").LocalPlayer
 local Mouse = cloneref(LocalPlayer:GetMouse())
+local _currentKey = Enum.KeyCode.RightShift
+local isToggling = false 
 local MainWindowVideo
 local PARENT = (gethui and gethui()) or cloneref(game:GetService("CoreGui"))
 local request = http_request or request or (syn and syn.request) or (fluxus and fluxus.request) or function(...) return {} end
@@ -1331,14 +1333,49 @@ function OrionLib:MakeWindow(WindowConfig)
                 Minimized = false
         end)
 
+local function ToggleUI(state)
+    if isToggling then return end
+    isToggling = true
+    
+    if state == nil then
+        state = not Orion.Enabled
+    end
+    
+    if state then
+        
+        Orion.Enabled = true
+        MainWindow.Size = UDim2.new(0, 0, 0, 0)
+        local showTween = TweenService:Create(MainWindow, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(0, 615, 0, 344)
+        })
+        showTween:Play()
+        showTween.Completed:Wait()
+    else
+        
+        local hideTween = TweenService:Create(MainWindow, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+            Size = UDim2.new(0, 0, 0, 0)
+        })
+        hideTween:Play()
+        hideTween.Completed:Wait()
+        Orion.Enabled = false
+    end
+    
+    isToggling = false
+end
+
+AddConnection(UserInputService.InputBegan, function(Input, processed)
+    
+    if processed or UserInputService:GetFocusedTextBox() then 
+        return 
+    end
+    
+    if Input.KeyCode == _currentKey then
+        ToggleUI()
+    end
+end)
+
         AddConnection(CloseBtn.MouseButton1Up, function()
-		        MainWindow.ClipsDescendants = true
-				local WindowLoading = TweenService:Create(MainWindow, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-					Size = UDim2.new(0, 0, 0, 0)
-				})
-				WindowLoading:Play()
-				WindowLoading.Completed:Wait()
-                MainWindow.Visible = false
+                ToggleUI(false)
                 UIHidden = true
 
                 if UserInputService.TouchEnabled then
@@ -1346,13 +1383,6 @@ function OrionLib:MakeWindow(WindowConfig)
                 end
                 
                 OrionLib:SafeScript(WindowConfig.CloseCallback)
-        end)
-
-        AddConnection(UserInputService.InputBegan, function(Input, processed)
-                if processed or UserInputService:GetFocusedTextBox() then return end
-                if Input.KeyCode == _currentKey then
-                        Orion.Enabled = not Orion.Enabled
-                end
         end)
 
         AddConnection(MinimizeBtn.MouseButton1Up, function()
