@@ -1348,25 +1348,10 @@ function OrionLib:MakeWindow(WindowConfig)
                 OrionLib:SafeScript(WindowConfig.CloseCallback)
         end)
 
-        AddConnection(UserInputService.InputBegan, function(Input)
+        AddConnection(UserInputService.InputBegan, function(Input, processed)
+                if processed or UserInputService:GetFocusedTextBox() then return end
                 if Input.KeyCode == _currentKey then
-                        MobileReopenButton.Visible = false
-                        if MinimizedKey then
-	                        TweenService:Create(MainWindow, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Size = UDim2.new(0, 615, 0, 344)}):Play()
-	                        MinimizeBtn.Ico.Image = "rbxassetid://7072719338"
-	                        task.wait(.02)
-	                        MainWindow.ClipsDescendants = false
-	                        WindowStuff.Visible = true
-	                        WindowTopBarLine.Visible = true
-		                else
-	                        MainWindow.ClipsDescendants = true
-	                        WindowTopBarLine.Visible = false
-	                        MinimizeBtn.Ico.Image = "rbxassetid://7072720870"
-	                        TweenService:Create(MainWindow, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Size = UDim2.new(0, WindowName.TextBounds.X + 140, 0, 50)}):Play()
-	                        task.wait(0.1)
-	                        WindowStuff.Visible = false        
-		                end
-		                MinimizedKey = not MinimizedKey
+                        Orion.Enabled = not Orion.Enabled
                 end
         end)
 
