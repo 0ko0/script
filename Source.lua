@@ -1425,20 +1425,42 @@ end)
 
         AddConnection(MinimizeBtn.MouseButton1Up, function()
                 if Minimized then
-                        TweenService:Create(MainWindow, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Size = UDim2.new(0, 615, 0, 344)}):Play()
-                        MinimizeBtn.Ico.Image = "rbxassetid://7072719338"
-                        task.wait(.02)
-                        MainWindow.ClipsDescendants = false
+                        
+                        MainWindow.ClipsDescendants = true
+                        
+                        local expandTween = TweenService:Create(MainWindow, TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                                Size = UDim2.new(0, 615, 0, 344)
+                        })
+                        expandTween:Play()
+                        
+                        
+                        local icoImage = MinimizeBtn:FindFirstChild("Ico", true)
+                        if icoImage then
+                                icoImage.Image = "rbxassetid://7072719338"
+                        end
+                        
+                        task.wait(0.12) 
                         WindowStuff.Visible = true
                         WindowTopBarLine.Visible = true
+                        
+                        expandTween.Completed:Wait()
+                        MainWindow.ClipsDescendants = false
                 else
+                        
                         MainWindow.ClipsDescendants = true
                         WindowTopBarLine.Visible = false
-                        MinimizeBtn.Ico.Image = "rbxassetid://7072720870"
-
-                        TweenService:Create(MainWindow, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Size = UDim2.new(0, WindowName.TextBounds.X + 140, 0, 50)}):Play()
-                        task.wait(0.1)
-                        WindowStuff.Visible = false        
+                        WindowStuff.Visible = false 
+                        
+                        local icoImage = MinimizeBtn:FindFirstChild("Ico", true)
+                        if icoImage then
+                                icoImage.Image = "rbxassetid://7072720870" 
+                        end
+                      
+                        local collapsedWidth = math.max(WindowName.TextBounds.X + 115, 165)
+                        
+                        TweenService:Create(MainWindow, TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                                Size = UDim2.new(0, collapsedWidth, 0, 50)
+                        }):Play()
                 end
                 Minimized = not Minimized    
         end)
