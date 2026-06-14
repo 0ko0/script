@@ -1059,25 +1059,30 @@ function OrionLib:MakeWindow(WindowConfig)
         end)
 
         local CloseBtn = SetChildren(SetProps(MakeElement("Button"), {
-                Size = UDim2.new(0, 12, 0, 12),
-                Position = UDim2.new(0.5, 6, 0.5, -6),
-                BackgroundColor3 = Color3.fromRGB(250, 95, 85),
-                BackgroundTransparency = 0
+                Size = UDim2.new(0.5, -2, 1, 0),
+                Position = UDim2.new(0.5, 1, 0, 0),
+                BackgroundTransparency = 1
         }), {
-                MakeElement("Corner", 1)
+                AddThemeObject(SetProps(MakeElement("Image", "rbxassetid://7072725342"), {
+                        AnchorPoint = Vector2.new(0.5, 0.5),
+                        Position = UDim2.new(0.5, 0, 0.5, 0),
+                        Size = UDim2.new(0, 12, 0, 12), 
+                        ImageTransparency = 0.25 
+                }), "Text")
         })
 
         local MinimizeBtn = SetChildren(SetProps(MakeElement("Button"), {
-                Size = UDim2.new(0, 12, 0, 12),
-                Position = UDim2.new(0.5, -18, 0.5, -6),
-                BackgroundColor3 = Color3.fromRGB(245, 190, 80),
-                BackgroundTransparency = 0
+                Size = UDim2.new(0.5, -2, 1, 0),
+                Position = UDim2.new(0, 1, 0, 0),
+                BackgroundTransparency = 1
         }), {
-                MakeElement("Corner", 1),
-                Create("Frame", {
-                    Name = "Ico", 
-                    Visible = false
-                })
+                AddThemeObject(SetProps(MakeElement("Image", "rbxassetid://7072719338"), {
+                        AnchorPoint = Vector2.new(0.5, 0.5),
+                        Position = UDim2.new(0.5, 0, 0.5, 0),
+                        Size = UDim2.new(0, 12, 0, 12),
+                        ImageTransparency = 0.25,
+                        Name = "Ico"
+                }), "Text")
         })
 
         local DragPoint = SetProps(MakeElement("TFrame"), {
@@ -1230,15 +1235,21 @@ function OrionLib:MakeWindow(WindowConfig)
                 }), {
                         WindowName,
                         WindowTopBarLine,
-                        AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 15), { 
-                                Size = UDim2.new(0, 55, 0, 24),
+                        AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 6), { 
+                                Size = UDim2.new(0, 56, 0, 24),
                                 BackgroundTransparency = typeof(WindowConfig.LinkVideo) == "string" and 0.2 or 0,
                                 Position = UDim2.new(1, -75, 0, 15)
                         }), {
                                 AddThemeObject(MakeElement("Stroke"), "Stroke"),
+                                AddThemeObject(SetProps(MakeElement("Frame"), {
+                                        Size = UDim2.new(0, 1, 0, 12), 
+                                        Position = UDim2.new(0.5, 0, 0.5, 0),
+                                        AnchorPoint = Vector2.new(0.5, 0.5),
+                                        BackgroundTransparency = 0.65 
+                                }), "Stroke"), 
                                 CloseBtn,
                                 MinimizeBtn
-                        }), "Second"), 
+                        }), "Second"),
                 }),
                 DragPoint,
                 WindowStuff
