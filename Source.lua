@@ -738,14 +738,14 @@ end)
 
 local NotificationHolder = SetProps(SetChildren(MakeElement("TFrame"), {
         SetProps(MakeElement("List"), {
-                HorizontalAlignment = Enum.HorizontalAlignment.Center,
+                HorizontalAlignment = Enum.HorizontalAlignment.Right,
                 SortOrder = Enum.SortOrder.LayoutOrder,
                 VerticalAlignment = Enum.VerticalAlignment.Bottom,
-                Padding = UDim.new(0, 5)
+                Padding = UDim.new(0, 8)
         })
 }), {
-        Position = UDim2.new(1, -25, 1, -25),
-        Size = UDim2.new(0, 300, 1, -25),
+        Position = UDim2.new(1, -20, 1, -20),
+        Size = UDim2.new(0, 320, 1, -20),
         AnchorPoint = Vector2.new(1, 1),
         Parent = Orion
 })
@@ -777,13 +777,13 @@ function OrionLib:MakeNotification(NotificationConfig)
 			AutomaticSize = Enum.AutomaticSize.Y,
 			Parent = NotificationHolder,
 			BackgroundTransparency = 1,
-			ClipsDescendants = false
+			ClipsDescendants = true
 		})
 		
 		local Card = SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(25, 25, 25), 0, 8), {
 			Parent = NotificationParent,
-			Size = UDim2.new(1, -20, 0, 0),
-			Position = UDim2.new(1, 30, 0, 0), 
+			Size = UDim2.new(1, -10, 0, 0),
+			Position = UDim2.new(1.2, 0, 0, 0), 
 			AutomaticSize = Enum.AutomaticSize.Y
 		}), {
 			MakeElement("Stroke", Color3.fromRGB(60, 60, 60), 1),
@@ -799,7 +799,7 @@ function OrionLib:MakeNotification(NotificationConfig)
 			Parent = Card,
 			SortOrder = Enum.SortOrder.LayoutOrder,
 			Padding = UDim.new(0, 6),
-			HorizontalAlignment = Enum.HorizontalAlignment.Center
+			HorizontalAlignment = Enum.HorizontalAlignment.Left
 		})
 		
 		local Header = Create("Frame", {
@@ -824,15 +824,26 @@ function OrionLib:MakeNotification(NotificationConfig)
 			BackgroundTransparency = 1
 		})
 		
-		Create("TextLabel", {
+		local TitleText = Create("TextLabel", {
 			Parent = Header,
-			AutomaticSize = Enum.AutomaticSize.XY,
+			Size = UDim2.new(1, -34, 1, 0),
 			Text = ParseText(NotificationConfig.Name),
 			Font = Enum.Font.GothamBold,
 			TextSize = 13,
 			TextColor3 = Color3.fromRGB(255, 255, 255),
 			BackgroundTransparency = 1,
-			RichText = true
+			RichText = true,
+			TextXAlignment = Enum.TextXAlignment.Left,
+			TextTruncate = Enum.TextTruncate.AtEnd
+		})
+
+		local CloseBtn = Create("ImageButton", {
+			Parent = Header,
+			Size = UDim2.new(0, 14, 0, 14),
+			Image = "rbxassetid://9886659671",
+			ImageColor3 = Color3.fromRGB(150, 150, 150),
+			BackgroundTransparency = 1,
+			ZIndex = 5
 		})
 
 		if NotificationConfig.Banner then
@@ -872,7 +883,7 @@ function OrionLib:MakeNotification(NotificationConfig)
 
 		local BarWrapper = Create("Frame", {
 			Parent = Card,
-			Size = UDim2.new(1, 4, 0, 2),
+			Size = UDim2.new(1, 0, 0, 2),
 			BackgroundColor3 = Color3.fromRGB(45, 45, 45),
 			BorderSizePixel = 0,
 			LayoutOrder = 5
@@ -891,21 +902,44 @@ function OrionLib:MakeNotification(NotificationConfig)
 			local sId = tostring(NotificationConfig.SoundId):match("%d+")
 			if sId then
 				local s = Instance.new("Sound")
-s.SoundId = "rbxassetid://" .. sId
-s.Volume = NotificationConfig.Volume
-s.PlayOnRemove = true
-s.Parent = game:GetService("CoreGui") 
-s:Destroy()
+				s.SoundId = "rbxassetid://" .. sId
+				s.Volume = NotificationConfig.Volume
+				s.PlayOnRemove = true
+				s.Parent = game:GetService("CoreGui") 
+				s:Destroy()
 			end
 		end
 
-		TweenService:Create(Card, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = UDim2.new(1, -272, 0, 0)}):Play()
+		local isClosed = false
+		local function closeNotification()
+			if isClosed then return end
+			isClosed = true
+			local Out = TweenService:Create(Card, TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {Position = UDim2.new(1.2, 0, 0, 0)})
+			Out:Play()
+			Out.Completed:Wait()
+			NotificationParent:Destroy()
+		end
+
+		AddConnection(CloseBtn.MouseButton1Click, function()
+			closeNotification()
+		end)
+
+		AddConnection(CloseBtn.MouseEnter, function()
+			TweenService:Create(CloseBtn, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {ImageColor3 = Color3.fromRGB(240, 240, 240)}):Play()
+		end)
+
+		AddConnection(CloseBtn.MouseLeave, function()
+			TweenService:Create(CloseBtn, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {ImageColor3 = Color3.fromRGB(150, 150, 150)}):Play()
+		end)
+
+		TweenService:Create(Card, TweenInfo.new(0.45, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2.new(0, 0, 0, 0)}):Play()
 		TweenService:Create(Bar, TweenInfo.new(NotificationConfig.Time, Enum.EasingStyle.Linear), {Size = UDim2.new(1, 0, 1, 0)}):Play()
-		task.wait(NotificationConfig.Time)
-		local Out = TweenService:Create(Card, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.In), {Position = UDim2.new(1, 90, 0, 0)})
-		Out:Play()
-		Out.Completed:Wait()
-		NotificationParent:Destroy()
+		
+		task.delay(NotificationConfig.Time, function()
+			if not isClosed then
+				closeNotification()
+			end
+		end)
 	end)
 end
 
@@ -1484,7 +1518,7 @@ end)
                         local collapsedWidth = math.max(WindowName.TextBounds.X + 115, 175)
                                              
                         TweenService:Create(MainWindow, TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                                Size = UDim2.new(0, collapsedWidth, 0, 44)
+                                Size = UDim2.new(0, collapsedWidth, 0, 50)
                         }):Play()
                 end
                 Minimized = not Minimized    
