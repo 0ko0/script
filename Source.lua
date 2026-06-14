@@ -1424,22 +1424,35 @@ end)
         end)
 
         AddConnection(MinimizeBtn.MouseButton1Up, function()
+                local MainWindowStroke = MainWindow:FindFirstChildOfClass("UIStroke")
+                local StrokeGradient = MainWindowStroke and MainWindowStroke:FindFirstChildOfClass("UIGradient")
+
                 if Minimized then
                         
                         MainWindow.ClipsDescendants = true
-                        
-                        local expandTween = TweenService:Create(MainWindow, TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                                                
+                        if MainWindowStroke then
+                                TweenService:Create(MainWindowStroke, TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                                        Thickness = 1.2
+                                }):Play()
+                        end
+                        if StrokeGradient then
+                                TweenService:Create(StrokeGradient, TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                                        Rotation = 45
+                                }):Play()
+                        end
+
+                        local expandTween = TweenService:Create(MainWindow, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
                                 Size = UDim2.new(0, 615, 0, 344)
                         })
                         expandTween:Play()
-                        
                         
                         local icoImage = MinimizeBtn:FindFirstChild("Ico", true)
                         if icoImage then
                                 icoImage.Image = "rbxassetid://7072719338"
                         end
-                        
-                        task.wait(0.12) 
+                                              
+                        task.wait(0.18) 
                         WindowStuff.Visible = true
                         WindowTopBarLine.Visible = true
                         
@@ -1448,6 +1461,18 @@ end)
                 else
                         
                         MainWindow.ClipsDescendants = true
+                                             
+                        if MainWindowStroke then
+                                TweenService:Create(MainWindowStroke, TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                                        Thickness = 1.5
+                                }):Play()
+                        end
+                        if StrokeGradient then
+                                TweenService:Create(StrokeGradient, TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                                        Rotation = 90
+                                }):Play()
+                        end
+                      
                         WindowTopBarLine.Visible = false
                         WindowStuff.Visible = false 
                         
@@ -1456,10 +1481,10 @@ end)
                                 icoImage.Image = "rbxassetid://7072720870" 
                         end
                       
-                        local collapsedWidth = math.max(WindowName.TextBounds.X + 115, 165)
-                        
+                        local collapsedWidth = math.max(WindowName.TextBounds.X + 115, 175)
+                                             
                         TweenService:Create(MainWindow, TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                                Size = UDim2.new(0, collapsedWidth, 0, 50)
+                                Size = UDim2.new(0, collapsedWidth, 0, 44)
                         }):Play()
                 end
                 Minimized = not Minimized    
