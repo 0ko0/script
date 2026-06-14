@@ -1059,25 +1059,25 @@ function OrionLib:MakeWindow(WindowConfig)
         end)
 
         local CloseBtn = SetChildren(SetProps(MakeElement("Button"), {
-                Size = UDim2.new(0.5, 0, 1, 0),
-                Position = UDim2.new(0.5, 0, 0, 0),
-                BackgroundTransparency = 1
+                Size = UDim2.new(0, 12, 0, 12),
+                Position = UDim2.new(0.5, 6, 0.5, -6),
+                BackgroundColor3 = Color3.fromRGB(250, 95, 85),
+                BackgroundTransparency = 0
         }), {
-                AddThemeObject(SetProps(MakeElement("Image", "rbxassetid://7072725342"), {
-                        Position = UDim2.new(0, 9, 0, 6),
-                        Size = UDim2.new(0, 18, 0, 18),
-                }), "Text")
+                MakeElement("Corner", 1)
         })
 
         local MinimizeBtn = SetChildren(SetProps(MakeElement("Button"), {
-                Size = UDim2.new(0.5, 0, 1, 0),
-                BackgroundTransparency = 1
+                Size = UDim2.new(0, 12, 0, 12),
+                Position = UDim2.new(0.5, -18, 0.5, -6),
+                BackgroundColor3 = Color3.fromRGB(245, 190, 80),
+                BackgroundTransparency = 0
         }), {
-                AddThemeObject(SetProps(MakeElement("Image", "rbxassetid://7072719338"), {
-                        Position = UDim2.new(0, 9, 0, 6),
-                        Size = UDim2.new(0, 18, 0, 18),
-                        Name = "Ico"
-                }), "Text")
+                MakeElement("Corner", 1),
+                Create("Frame", {
+                    Name = "Ico", 
+                    Visible = false
+                })
         })
 
         local DragPoint = SetProps(MakeElement("TFrame"), {
@@ -1085,24 +1085,16 @@ function OrionLib:MakeWindow(WindowConfig)
         })
 		
 		local hasLinkVideo = typeof(WindowConfig.LinkVideo) == "string"
-        local WindowStuff = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 10), {
-                Size = UDim2.new(0, 150, 1, -50),
-                Position = UDim2.new(0, 0, 0, 50),
-                BackgroundTransparency = hasLinkVideo and 1 or 0
+        local WindowStuff = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 8), {
+                Size = UDim2.new(0, 155, 1, -70),
+                Position = UDim2.new(0, 10, 0, 60),
+                BackgroundTransparency = hasLinkVideo and 1 or 0.35
         }), {
-                AddThemeObject(SetProps(MakeElement("Frame"), {
-                        Size = UDim2.new(1, 0, 0, 10),
-                        Position = UDim2.new(0, 0, 0, 0),
-                        Visible = not hasLinkVideo
-                }), "Second"), 
-                AddThemeObject(SetProps(MakeElement("Frame"), {
-                        Size = UDim2.new(0, 10, 1, 0),
-                        Position = UDim2.new(1, -10, 0, 0),
-                        Visible = not hasLinkVideo
-                }), "Second"), 
+                -- Đã lược bỏ các Frame đè góc thô cứng cũ để lộ góc bo tự nhiên
                 AddThemeObject(SetProps(MakeElement("Frame"), {
                         Size = UDim2.new(0, 1, 1, 0),
                         Position = UDim2.new(1, -1, 0, 0),
+                        BackgroundTransparency = 1 -- Làm mờ đường kẻ phân cách để tăng không gian mở
                 }), "Stroke"), 
                 TabHolder,
                 SetChildren(SetProps(MakeElement("TFrame"), {
@@ -1110,7 +1102,8 @@ function OrionLib:MakeWindow(WindowConfig)
                         Position = UDim2.new(0, 0, 1, -50)
                 }), {
                         AddThemeObject(SetProps(MakeElement("Frame"), {
-                                Size = UDim2.new(1, 0, 0, 1)
+                                Size = UDim2.new(1, 0, 0, 1),
+                                BackgroundTransparency = 1
                         }), "Stroke"), 
                         AddThemeObject(SetChildren(SetProps(MakeElement("Frame"), {
                                 AnchorPoint = Vector2.new(0, 0.5),
@@ -1210,29 +1203,39 @@ function OrionLib:MakeWindow(WindowConfig)
 		else
 			RoundMainWindow = "RoundFrame"
 		end
-        local MainWindow = AddThemeObject(SetChildren(SetProps(MakeElement(RoundMainWindow or "RoundFrame", Color3.fromRGB(255, 255, 255), 0, 10), {
+        local MainWindow = AddThemeObject(SetChildren(SetProps(MakeElement(RoundMainWindow or "RoundFrame", Color3.fromRGB(255, 255, 255), 0, 14), { 
                 Parent = Orion,
                 Position = UDim2.new(0.5, -307, 0.5, -172),
                 Size = UDim2.new(0, 615, 0, 344),
                 ClipsDescendants = true
         }), {
+                
+                Create("UIStroke", {
+                    Color = Color3.fromRGB(255, 255, 255),
+                    Thickness = 1.2,
+                    ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+                }, {
+                    Create("UIGradient", {
+                        Color = ColorSequence.new({
+                            ColorSequenceKeypoint.new(0, OrionLib.Themes[OrionLib.SelectedTheme].Stroke),
+                            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(110, 110, 110)),
+                            ColorSequenceKeypoint.new(1, OrionLib.Themes[OrionLib.SelectedTheme].Stroke)
+                        }),
+                        Rotation = 45
+                    })
+                }),
                 SetChildren(SetProps(MakeElement("TFrame"), {
                         Size = UDim2.new(1, 0, 0, 50),
                         Name = "TopBar"
                 }), {
                         WindowName,
                         WindowTopBarLine,
-                        AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 7), {
-                                Size = UDim2.new(0, 70, 0, 30),
+                        AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 15), { 
+                                Size = UDim2.new(0, 55, 0, 24),
                                 BackgroundTransparency = typeof(WindowConfig.LinkVideo) == "string" and 0.2 or 0,
-                                Position = UDim2.new(1, -90, 0, 10)
+                                Position = UDim2.new(1, -75, 0, 15)
                         }), {
                                 AddThemeObject(MakeElement("Stroke"), "Stroke"),
-                                AddThemeObject(SetProps(MakeElement("Frame"), {
-                                        Size = UDim2.new(0, 1, 1, 0),
-                                        BackgroundTransparency = typeof(WindowConfig.LinkVideo) == "string" and 0.2 or 0,
-                                        Position = UDim2.new(0.5, 0, 0, 0)
-                                }), "Stroke"), 
                                 CloseBtn,
                                 MinimizeBtn
                         }), "Second"), 
@@ -1566,8 +1569,8 @@ end)
 			AddItemTable(Tabs, TabConfig.Name, TabFrame)
 			
 			local Container = AddThemeObject(SetChildren(SetProps(MakeElement("ScrollFrame", Color3.fromRGB(255, 255, 255), 5), {
-				Size = UDim2.new(1, -150, 1, (WindowConfig.SearchBar and WindowConfig.SearchBar.Mains == true) and -90 or -50),
-				Position = UDim2.new(0, 150, 0, (WindowConfig.SearchBar and WindowConfig.SearchBar.Mains == true) and 90 or 50),
+				Size = UDim2.new(1, -185, 1, (WindowConfig.SearchBar and WindowConfig.SearchBar.Mains == true) and -90 or -70), 
+				Position = UDim2.new(0, 175, 0, (WindowConfig.SearchBar and WindowConfig.SearchBar.Mains == true) and 90 or 60), 
 				Parent = MainWindow,
 				Visible = false,
 				Name = "ItemContainer"
