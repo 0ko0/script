@@ -73,11 +73,17 @@ Orion.Name = "Orion"
 Orion.Parent = PARENT
 
 local _currentKey = Enum.KeyCode.RightShift
-function OrionLib:SetKeyToggleUI(key: Enum.KeyCode)
-    local success, keyui = pcall(function()
-		return Enum.KeyCode[key]
-	end)
-	_currentKey = (success and keyui or Enum.KeyCode.RightShift)
+function OrionLib:SetKeyToggleUI(key)
+    if typeof(key) == "EnumItem" then
+        _currentKey = key
+    elseif typeof(key) == "string" then
+        local success, keyui = pcall(function()
+            return Enum.KeyCode[key]
+        end)
+        _currentKey = (success and keyui or Enum.KeyCode.RightShift)
+    else
+        _currentKey = Enum.KeyCode.RightShift
+    end
 end
 
 function OrionLib:SetVideoLink(link: string)
@@ -136,18 +142,25 @@ function OrionLib:SetVideoLink(link: string)
 	end
 end
 
-function OrionLib:SetFont(font: Enum.Font)
-	if Orion then
-		local success, fontui = pcall(function()
-			return Enum.Font[font]
-		end)
-		local fontlocal = (success and fontui or Enum.Font.GothamBold)
-		for i, v in pairs(Orion:GetDescendants()) do
-			if (v:IsA("TextButton") or v:IsA("TextLabel") or v:IsA("TextBox")) then
-				v.Font = fontlocal
-			end
-		end
-	end
+function OrionLib:SetFont(font)
+    if Orion then
+        local fontlocal = Enum.Font.GothamBold
+        if typeof(font) == "EnumItem" then
+            fontlocal = font
+        elseif typeof(font) == "string" then
+            local success, fontui = pcall(function()
+                return Enum.Font[font]
+            end)
+            if success and fontui then
+                fontlocal = fontui
+            end
+        end
+        for i, v in pairs(Orion:GetDescendants()) do
+            if (v:IsA("TextButton") or v:IsA("TextLabel") or v:IsA("TextBox")) then
+                v.Font = fontlocal
+            end
+        end
+    end
 end
 
 function OrionLib:AddConnect(Signal, Function)
