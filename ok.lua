@@ -1138,7 +1138,7 @@ function OrionLib:MakeWindow(WindowConfig)
                         Position = UDim2.new(0, 6, 0, 4),
                 }),
                 {
-                        MakeElement("List", 0, 3), -- Sắp xếp tab khít sát cực kỳ gọn gàng
+                        MakeElement("List", 0, 3), 
                         MakeElement("Padding", 2, 0, 0, 2)
                 }), "Divider")
                 
@@ -1183,10 +1183,9 @@ function OrionLib:MakeWindow(WindowConfig)
                 }), "Text")
         })
 
-        -- Hoạt ảnh Hover phát sáng kính mờ Apple-Style
         AddConnection(CloseBtn.MouseEnter, function()
                 CloseBtn.BackgroundTransparency = 0.15
-                CloseBtn.BackgroundColor3 = Color3.fromRGB(250, 95, 85) -- Ánh sáng đỏ dịu
+                CloseBtn.BackgroundColor3 = Color3.fromRGB(250, 95, 85)
                 TweenService:Create(CloseBtn.Ico, TweenInfo.new(0.15), {ImageTransparency = 0}):Play()
         end)
         AddConnection(CloseBtn.MouseLeave, function()
@@ -1196,7 +1195,7 @@ function OrionLib:MakeWindow(WindowConfig)
 
         AddConnection(MinimizeBtn.MouseEnter, function()
                 MinimizeBtn.BackgroundTransparency = 0.2
-                MinimizeBtn.BackgroundColor3 = Color3.fromRGB(250, 190, 80) -- Ánh sáng vàng ấm
+                MinimizeBtn.BackgroundColor3 = Color3.fromRGB(250, 190, 80)
                 TweenService:Create(MinimizeBtn.Ico, TweenInfo.new(0.15), {ImageTransparency = 0}):Play()
         end)
         AddConnection(MinimizeBtn.MouseLeave, function()
@@ -1205,7 +1204,7 @@ function OrionLib:MakeWindow(WindowConfig)
         end)
 
         local DragPoint = SetProps(MakeElement("TFrame"), {
-                Size = UDim2.new(1, -80, 0, 44)
+                Size = UDim2.new(1, -190, 0, 44) -- Chừa khoảng trống bên phải cho bộ hiển thị hiệu năng [2]
         })
 		
 		local hasLinkVideo = typeof(WindowConfig.LinkVideo) == "string"
@@ -1218,34 +1217,175 @@ function OrionLib:MakeWindow(WindowConfig)
         }), {
                 AddThemeObject(MakeElement("Stroke"), "Stroke"),
                 TabHolder,
-                -- Hộp thông tin Profile bo viền mảnh cực sạch
-                SetChildren(SetProps(MakeElement("TFrame"), {
-                        Size = UDim2.new(1, -12, 0, 36),
-                        Position = UDim2.new(0, 6, 1, -44)
-                }), {
-                        AddThemeObject(SetProps(MakeElement("Frame"), {
-                                Size = UDim2.new(1, 0, 0, 1),
-                                Position = UDim2.new(0, 0, 0, -4),
-                                BackgroundTransparency = 0.95
-                        }), "Stroke"), 
-                        AddThemeObject(SetChildren(SetProps(MakeElement("Frame"), {
-                                AnchorPoint = Vector2.new(0, 0.5),
-                                Size = UDim2.new(0, 22, 0, 22),
-                                Position = UDim2.new(0, 4, 0.5, 0)
-                        }), {
-                                SetChildren(SetProps(MakeElement("Image", "https://www.roblox.com/headshot-thumbnail/image?userId=".. LocalPlayer.UserId .."&width=420&height=420&format=png"), {
-                                        Size = UDim2.new(1, 0, 1, 0)
-                                }), {MakeElement("Corner", 1)}),
-                                MakeElement("Corner", 1)
-                        }), "Second"),
-                        AddThemeObject(SetProps(MakeElement("Label", LocalPlayer.DisplayName, 11), {
-                                Size = UDim2.new(1, -34, 0, 13),
-                                Position = UDim2.new(0, 30, 0.5, -6),
-                                Font = Enum.Font.GothamBold,
-                                ClipsDescendants = true
-                        }), "Text"),
-                }),
         }), "Second")
+
+        -- [CHỨC NĂNG CÓ ÍCH] POPUP BẢNG ĐIỀU KHIỂN CHI TIẾT CHO PROFILE (Control Center Popup) [2]
+        local ProfilePopover = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(25, 25, 25), 0, 8), {
+                Size = UDim2.new(0, 133, 0, 122),
+                Position = UDim2.new(0, 6, 1, -40), -- Vị trí ban đầu bị ẩn xuống
+                Visible = false,
+                BackgroundTransparency = 0.05,
+                ClipsDescendants = true,
+                Parent = WindowStuff,
+                ZIndex = 15
+        }), {
+                AddThemeObject(MakeElement("Stroke"), "Stroke"),
+                Create("UIListLayout", {
+                        SortOrder = Enum.SortOrder.LayoutOrder,
+                        Padding = UDim.new(0, 4)
+                }),
+                Create("UIPadding", {
+                        PaddingLeft = UDim.new(0, 6),
+                        PaddingRight = UDim.new(0, 6),
+                        PaddingTop = UDim.new(0, 6),
+                        PaddingBottom = UDim.new(0, 6)
+                })
+        }), "Second")
+
+        -- Thẻ thông tin tuổi tài khoản lồng vào Popup [2]
+        local AccAgeLabel = AddThemeObject(SetProps(MakeElement("Label", "Loading Age...", 9), {
+                Size = UDim2.new(1, 0, 0, 12),
+                Font = Enum.Font.GothamBold,
+                TextXAlignment = Enum.TextXAlignment.Center,
+                LayoutOrder = 1
+        }), "TextDark")
+        AccAgeLabel.Parent = ProfilePopover
+        task.spawn(function()
+                local age = LocalPlayer.AccountAge
+                AccAgeLabel.Text = string.format("Acc Age: %d Days", age)
+        end)
+
+        -- Hàm sinh nhanh các nút chức năng (Rejoin, Hop, Copy) cho popup [2]
+        local function CreatePopoverButton(text, layoutOrder, callback)
+                local btn = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(32, 32, 32), 0, 4), {
+                        Size = UDim2.new(1, 0, 0, 24),
+                        BackgroundTransparency = 0.3,
+                        LayoutOrder = layoutOrder,
+                        Parent = ProfilePopover
+                }), {
+                        AddThemeObject(MakeElement("Stroke"), "Stroke"),
+                        SetProps(MakeElement("Label", text, 9), {
+                                Size = UDim2.new(1, 0, 1, 0),
+                                Font = Enum.Font.GothamBold,
+                                TextXAlignment = Enum.TextXAlignment.Center
+                        }),
+                        Create("TextButton", {
+                                Size = UDim2.new(1, 0, 1, 0),
+                                BackgroundTransparency = 1,
+                                Text = ""
+                        })
+                }), "Second")
+
+                local clickBtn = btn:FindFirstChildOfClass("TextButton")
+                AddConnection(clickBtn.MouseEnter, function()
+                        btn.BackgroundTransparency = 0.1
+                end)
+                AddConnection(clickBtn.MouseLeave, function()
+                        btn.BackgroundTransparency = 0.3
+                end)
+                AddConnection(clickBtn.MouseButton1Click, callback)
+                return btn
+        end
+
+        -- Định nghĩa chức năng cụ thể cho các nút tiện ích [2]
+        CreatePopoverButton("Copy Join Link", 2, function()
+                local link = string.format("UserID: %s | Place: %s | Job: %s", tostring(LocalPlayer.UserId), tostring(game.PlaceId), tostring(game.JobId))
+                if setclipboard then
+                        setclipboard(link)
+                        OrionLib:MakeNotification({Name = "System Link", Content = "Copied Account & Server JobId to clipboard!", Time = 3})
+                else
+                        print(link)
+                        OrionLib:MakeNotification({Name = "System Link", Content = "Printed to console (setclipboard not supported)", Time = 3})
+                end
+        end)
+
+        CreatePopoverButton("Rejoin Server", 3, function()
+                OrionLib:MakeNotification({Name = "Teleport", Content = "Rejoining current server...", Time = 3})
+                game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId, LocalPlayer)
+        end)
+
+        CreatePopoverButton("Server Hop", 4, function()
+                OrionLib:MakeNotification({Name = "Teleport", Content = "Finding another server...", Time = 3})
+                task.spawn(function()
+                        local x = game:GetService("HttpService")
+                        local teleportService = game:GetService("TeleportService")
+                        local api = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"
+                        local success, result = pcall(function()
+                                return game:HttpGet(api)
+                        end)
+                        if success then
+                                local data = x:JSONDecode(result)
+                                if data and data.data then
+                                        for _, server in ipairs(data.data) do
+                                                if server.playing < server.maxPlayers and server.id ~= game.JobId then
+                                                        teleportService:TeleportToPlaceInstance(game.PlaceId, server.id, LocalPlayer)
+                                                        return
+                                                end
+                                        end
+                                end
+                        end
+                        OrionLib:MakeNotification({Name = "Teleport", Content = "No alternative server found.", Time = 3})
+                end)
+        end)
+
+        -- Tạo khung Profile Card có thể tương tác [2]
+        local ProfileContainer = SetChildren(SetProps(MakeElement("TFrame"), {
+                Size = UDim2.new(1, -12, 0, 36),
+                Position = UDim2.new(0, 6, 1, -44),
+                Parent = WindowStuff
+        }), {
+                AddThemeObject(SetProps(MakeElement("Frame"), {
+                        Size = UDim2.new(1, 0, 0, 1),
+                        Position = UDim2.new(0, 0, 0, -4),
+                        BackgroundTransparency = 0.95
+                }), "Stroke"), 
+                AddThemeObject(SetChildren(SetProps(MakeElement("Frame"), {
+                        AnchorPoint = Vector2.new(0, 0.5),
+                        Size = UDim2.new(0, 22, 0, 22),
+                        Position = UDim2.new(0, 4, 0.5, 0)
+                }), {
+                        SetChildren(SetProps(MakeElement("Image", "https://www.roblox.com/headshot-thumbnail/image?userId=".. LocalPlayer.UserId .."&width=420&height=420&format=png"), {
+                                Size = UDim2.new(1, 0, 1, 0)
+                        }), {MakeElement("Corner", 1)}),
+                        MakeElement("Corner", 1)
+                }), "Second"),
+                AddThemeObject(SetProps(MakeElement("Label", LocalPlayer.DisplayName, 11), {
+                        Size = UDim2.new(1, -34, 0, 13),
+                        Position = UDim2.new(0, 30, 0.5, -6),
+                        Font = Enum.Font.GothamBold,
+                        ClipsDescendants = true
+                }), "Text"),
+                Create("TextButton", {
+                        Size = UDim2.new(1, 0, 1, 0),
+                        BackgroundTransparency = 1,
+                        Text = "",
+                        ZIndex = 5,
+                        Name = "ClickBtn"
+                })
+        })
+
+        -- Xử lý đóng mở Bảng điều khiển Profile mượt mà [2]
+        local popoverToggled = false
+        AddConnection(ProfileContainer.ClickBtn.MouseButton1Click, function()
+                popoverToggled = not popoverToggled
+                if popoverToggled then
+                        ProfilePopover.Visible = true
+                        TweenService:Create(ProfilePopover, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                                Position = UDim2.new(0, 6, 1, -172)
+                        }):Play()
+                else
+                        local tween = TweenService:Create(ProfilePopover, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+                                Position = UDim2.new(0, 6, 1, -40)
+                        })
+                        tween:Play()
+                        task.spawn(function()
+                                tween.Completed:Wait()
+                                if not popoverToggled then
+                                        ProfilePopover.Visible = false
+                                end
+                        end)
+                end
+        end)
 
         -- Hộp tìm kiếm tối giản bo góc mảnh của Sidebar
         if WindowConfig.SearchBar and WindowConfig.SearchBar.Tabs == true then
@@ -1299,6 +1439,37 @@ function OrionLib:MakeWindow(WindowConfig)
                 Font = Enum.Font.GothamBold
         }), {}), "Text")
 
+        -- [CHỨC NĂNG CÓ ÍCH] BỘ ĐO HIỆU NĂNG THỜI GIAN THỰC (FPS / Ping Counter Widget) [2]
+        local PerfWidget = Create("TextLabel", {
+                Size = UDim2.new(0, 110, 0, 24),
+                Position = UDim2.new(1, -180, 0, 10),
+                BackgroundTransparency = 1,
+                TextColor3 = Color3.fromRGB(150, 150, 150),
+                TextSize = 10,
+                Font = Enum.Font.GothamBold,
+                TextXAlignment = Enum.TextXAlignment.Right,
+                Text = "FPS: -- | PING: --ms",
+                Name = "PerfWidget"
+        })
+
+        -- Tính toán FPS & Ping an toàn sử dụng RenderStepped [2]
+        local LastTime = os.clock()
+        local FrameCount = 0
+        local CurrentFPS = 60
+        local pingService = game:GetService("Stats").Network.ServerStatsItem["Data Ping"]
+
+        AddConnection(RunService.RenderStepped, function()
+                FrameCount = FrameCount + 1
+                local currentTime = os.clock()
+                if currentTime - LastTime >= 1 then
+                        CurrentFPS = FrameCount
+                        FrameCount = 0
+                        LastTime = currentTime
+                        local ping = math.floor(pingService:GetValue() + 0.5)
+                        PerfWidget.Text = string.format("FPS: %d | PING: %dms", CurrentFPS, ping)
+                end
+        end)
+
         -- Đường kẻ phân chia mờ tối đa
         local WindowTopBarLine = AddThemeObject(SetProps(MakeElement("Frame"), {
                 Size = UDim2.new(1, 0, 0, 1),
@@ -1339,6 +1510,7 @@ function OrionLib:MakeWindow(WindowConfig)
                         Name = "TopBar"
                 }), {
                         WindowName,
+                        PerfWidget, -- Tích hợp widget đo hiệu năng vào Topbar [2]
                         WindowTopBarLine,
                         CloseBtn,
                         MinimizeBtn
