@@ -1128,18 +1128,18 @@ function OrionLib:MakeWindow(WindowConfig)
         WindowConfig.SearchBar = WindowConfig.SearchBar or nil
         WindowConfig.LinkVideo = WindowConfig.LinkVideo or nil
 
-        -- Thiết lập TabHolder lơ lửng bên trong Sidebar
+        -- Cấu trúc TabHolder gọn gàng, tối giản hóa khoảng cách
         local TabHolder = AddThemeObject(SetChildren(SetProps(MakeElement("ScrollFrame", Color3.fromRGB(255, 255, 255), 4),
                 WindowConfig.SearchBar and WindowConfig.SearchBar.Tabs == true and {
-                        Size = UDim2.new(1, -12, 1, -100),
-                        Position = UDim2.new(0, 6, 0, 42),
+                        Size = UDim2.new(1, 0, 1, -85),
+                        Position = UDim2.new(0, 0, 0, 35),
                 } or {
-                        Size = UDim2.new(1, -12, 1, -64),
-                        Position = UDim2.new(0, 6, 0, 8),
+                        Size = UDim2.new(1, 0, 1, -54),
+                        Position = UDim2.new(0, 0, 0, 4),
                 }),
                 {
-                        MakeElement("List", 0, 4), -- Giảm khoảng cách giữa các tab xuống 4px cho gọn gàng
-                        MakeElement("Padding", 4, 0, 0, 4)
+                        MakeElement("List", 0, 3), -- Sắp xếp tab với khoảng cách 3px tối giản
+                        MakeElement("Padding", 2, 0, 0, 2)
                 }), "Divider")
                 
         if TabHolder then
@@ -1147,148 +1147,120 @@ function OrionLib:MakeWindow(WindowConfig)
 		end
 
         AddConnection(TabHolder.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"), function()
-                TabHolder.CanvasSize = UDim2.new(0, 0, 0, TabHolder.UIListLayout.AbsoluteContentSize.Y + 10)
+                TabHolder.CanvasSize = UDim2.new(0, 0, 0, TabHolder.UIListLayout.AbsoluteContentSize.Y + 6)
         end)
 
-        -- Tách biệt hoàn toàn nút Close và Minimize theo phong cách macOS tối giản
-        -- Nút Close với hiệu ứng chuyển màu nhẹ khi tương tác
+        -- NÚT ĐIỀU KHIỂN PHẲNG (Borderless Desktop Controls)
         local CloseBtn = SetChildren(SetProps(MakeElement("Button"), {
-                Size = UDim2.new(0.5, -1, 1, 0),
-                Position = UDim2.new(0.5, 0, 0, 0),
+                Size = UDim2.new(0, 32, 0, 24),
+                Position = UDim2.new(1, -32, 0, 0),
                 BackgroundTransparency = 1,
                 Name = "CloseBtn"
         }), {
+                Create("UICorner", {CornerRadius = UDim.new(0, 4)}),
                 AddThemeObject(SetProps(MakeElement("Image", "rbxassetid://7072725342"), {
                         AnchorPoint = Vector2.new(0.5, 0.5),
                         Position = UDim2.new(0.5, 0, 0.5, 0),
                         Size = UDim2.new(0, 10, 0, 10), 
-                        ImageTransparency = 0.4,
+                        ImageTransparency = 0.5,
                         Name = "Ico"
                 }), "Text")
         })
 
-        -- Nút Minimize tương tự
         local MinimizeBtn = SetChildren(SetProps(MakeElement("Button"), {
-                Size = UDim2.new(0.5, -1, 1, 0),
-                Position = UDim2.new(0, 0, 0, 0),
+                Size = UDim2.new(0, 32, 0, 24),
+                Position = UDim2.new(1, -64, 0, 0),
                 BackgroundTransparency = 1,
                 Name = "MinimizeBtn"
         }), {
+                Create("UICorner", {CornerRadius = UDim.new(0, 4)}),
                 AddThemeObject(SetProps(MakeElement("Image", "rbxassetid://7072719338"), {
                         AnchorPoint = Vector2.new(0.5, 0.5),
                         Position = UDim2.new(0.5, 0, 0.5, 0),
                         Size = UDim2.new(0, 10, 0, 10),
-                        ImageTransparency = 0.4,
+                        ImageTransparency = 0.5,
                         Name = "Ico"
                 }), "Text")
         })
 
-        -- Thanh điều khiển tích hợp (Capsule) dạng kính mờ đồng nhất với giao diện mới
-        local WindowControls = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 6), {
-                Size = UDim2.new(0, 58, 0, 24),
-                Position = UDim2.new(1, -70, 0, 13),
-                BackgroundTransparency = typeof(WindowConfig.LinkVideo) == "string" and 0.3 or 0.15
-        }), {
-                AddThemeObject(MakeElement("Stroke"), "Stroke"),
-                -- Vách ngăn mờ tinh tế ở giữa hai nút
-                AddThemeObject(SetProps(MakeElement("Frame"), {
-                        Size = UDim2.new(0, 1, 0, 12),
-                        Position = UDim2.new(0.5, 0, 0.5, 0),
-                        AnchorPoint = Vector2.new(0.5, 0.5),
-                        BackgroundTransparency = 0.8
-                }), "Stroke"),
-                MinimizeBtn,
-                CloseBtn
-        }), "Second")
-
-        -- Thêm hiệu ứng Hover phản hồi mượt mà cho các nút bên trong thanh điều khiển
+        -- Hiệu ứng Hover chuyển đổi chuyên nghiệp chuẩn Desktop App
         AddConnection(CloseBtn.MouseEnter, function()
-                TweenService:Create(CloseBtn.Ico, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {ImageTransparency = 0}):Play()
+                CloseBtn.BackgroundTransparency = 0.9
+                CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 75, 75)
+                TweenService:Create(CloseBtn.Ico, TweenInfo.new(0.15), {ImageTransparency = 0}):Play()
         end)
         AddConnection(CloseBtn.MouseLeave, function()
-                TweenService:Create(CloseBtn.Ico, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {ImageTransparency = 0.4}):Play()
+                CloseBtn.BackgroundTransparency = 1
+                TweenService:Create(CloseBtn.Ico, TweenInfo.new(0.15), {ImageTransparency = 0.5}):Play()
         end)
 
         AddConnection(MinimizeBtn.MouseEnter, function()
-                TweenService:Create(MinimizeBtn.Ico, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {ImageTransparency = 0}):Play()
+                MinimizeBtn.BackgroundTransparency = 0.92
+                MinimizeBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                TweenService:Create(MinimizeBtn.Ico, TweenInfo.new(0.15), {ImageTransparency = 0}):Play()
         end)
         AddConnection(MinimizeBtn.MouseLeave, function()
-                TweenService:Create(MinimizeBtn.Ico, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {ImageTransparency = 0.4}):Play()
+                MinimizeBtn.BackgroundTransparency = 1
+                TweenService:Create(MinimizeBtn.Ico, TweenInfo.new(0.15), {ImageTransparency = 0.5}):Play()
         end)
 
         local DragPoint = SetProps(MakeElement("TFrame"), {
-                Size = UDim2.new(1, -100, 0, 50) -- Chừa chỗ cho khu vực nút điều khiển bên phải
+                Size = UDim2.new(1, -80, 0, 40)
         })
 		
 		local hasLinkVideo = typeof(WindowConfig.LinkVideo) == "string"
         
-        -- Cải tiến SIDEBAR: Dạng thẻ nổi lơ lửng (Floating Card) có khoảng cách so với viền
-        local WindowStuff = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 8), {
-                Size = UDim2.new(0, 160, 1, -24), -- Tạo khoảng cách 12px trên dưới
-                Position = UDim2.new(0, 12, 0, 12), -- Đẩy sidebar lùi vào trong
-                BackgroundTransparency = hasLinkVideo and 1 or 0.1
+        -- CẢI TIẾN SIDEBAR: Thiết kế phẳng liền mạch, có thanh sọc chia tách cực mảnh bên phải
+        local WindowStuff = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 0), {
+                Size = UDim2.new(0, 145, 1, -40), 
+                Position = UDim2.new(0, 0, 0, 40), 
+                BackgroundTransparency = 1 -- Trong suốt hoàn toàn để hòa nhập nền chính
         }), {
                 TabHolder,
-                -- Profile Container lơ lửng được thiết kế lại đẹp mắt hơn
+                -- Thanh dọc ngăn cách mờ 1px siêu sạch
+                AddThemeObject(SetProps(MakeElement("Frame"), {
+                        Size = UDim2.new(0, 1, 1, 0),
+                        Position = UDim2.new(1, -1, 0, 0),
+                        BackgroundTransparency = 0.95
+                }), "Stroke"),
+                -- Khu vực Profile tối giản gọn nhẹ đặt ở đáy Sidebar
                 SetChildren(SetProps(MakeElement("TFrame"), {
-                        Size = UDim2.new(1, -12, 0, 48),
-                        Position = UDim2.new(0, 6, 1, -54)
+                        Size = UDim2.new(1, -16, 0, 40),
+                        Position = UDim2.new(0, 8, 1, -48)
                 }), {
-                        AddThemeObject(SetProps(MakeElement("Frame"), {
-                                Size = UDim2.new(1, 0, 0, 1),
-                                Position = UDim2.new(0, 0, 0, -4),
-                                BackgroundTransparency = 0.8
-                        }), "Stroke"), 
                         AddThemeObject(SetChildren(SetProps(MakeElement("Frame"), {
                                 AnchorPoint = Vector2.new(0, 0.5),
-                                Size = UDim2.new(0, 28, 0, 28),
-                                Position = UDim2.new(0, 6, 0.5, 0)
+                                Size = UDim2.new(0, 24, 0, 24),
+                                Position = UDim2.new(0, 4, 0.5, 0)
                         }), {
                                 SetChildren(SetProps(MakeElement("Image", "https://www.roblox.com/headshot-thumbnail/image?userId=".. LocalPlayer.UserId .."&width=420&height=420&format=png"), {
                                         Size = UDim2.new(1, 0, 1, 0)
                                 }), {MakeElement("Corner", 1)}),
-                                AddThemeObject(SetChildren(SetProps(MakeElement("Image", "rbxassetid://4031889928"), {
-                                        Size = UDim2.new(1, 0, 1, 0),
-                                }), {MakeElement("Corner", 1)}), "Second"),
                                 MakeElement("Corner", 1)
-                        }), "Divider"),
-                        SetChildren(SetProps(MakeElement("TFrame"), {
-                                AnchorPoint = Vector2.new(0, 0.5),
-                                Size = UDim2.new(0, 28, 0, 28),
-                                Position = UDim2.new(0, 6, 0.5, 0)
-                        }), {
-                                AddThemeObject(MakeElement("Stroke"), "Stroke"),
-                                MakeElement("Corner", 1)
-                        }),
-                        AddThemeObject(SetProps(MakeElement("Label", LocalPlayer.DisplayName, WindowConfig.HidePremium and 13 or 12), {
-                                Size = UDim2.new(1, -44, 0, 13),
-                                Position = WindowConfig.HidePremium and UDim2.new(0, 40, 0, 18) or UDim2.new(0, 40, 0, 11),
-                                Font = Enum.Font.GothamBold,
+                        }), "Second"),
+                        AddThemeObject(SetProps(MakeElement("Label", LocalPlayer.DisplayName, 12), {
+                                Size = UDim2.new(1, -38, 0, 13),
+                                Position = UDim2.new(0, 34, 0.5, -6),
+                                Font = Enum.Font.GothamSemibold,
                                 ClipsDescendants = true
                         }), "Text"),
-                        AddThemeObject(SetProps(MakeElement("Label", "Premium User", 10), {
-                                Size = UDim2.new(1, -44, 0, 12),
-                                Position = UDim2.new(0, 40, 1, -22),
-                                Visible = not WindowConfig.HidePremium,
-                                Font = Enum.Font.GothamSemibold
-                        }), "TextDark")
                 }),
         }), "Second")
 
-        -- Thêm hiệu ứng bo góc mượt mà cho thanh tìm kiếm của Tabs
+        -- Hộp tìm kiếm tối giản phẳng (Fluent Search)
         if WindowConfig.SearchBar and WindowConfig.SearchBar.Tabs == true then
                 local SearchBox = Create("TextBox", {
                         Size = UDim2.new(1, -12, 1, 0),
                         Position = UDim2.fromOffset(6, 0),
                         BackgroundTransparency = 1,
                         TextColor3 = Color3.fromRGB(255, 255, 255),
-                        PlaceholderColor3 = Color3.fromRGB(150, 150, 150),
+                        PlaceholderColor3 = Color3.fromRGB(130, 130, 130),
                         PlaceholderText = WindowConfig.SearchBar.Default or "Search...",
                         Font = Enum.Font.GothamBold,
                         TextWrapped = true,
                         Text = "",
                         TextXAlignment = Enum.TextXAlignment.Left,
-                        TextSize = 12,
+                        TextSize = 11,
                         ClearTextOnFocus = WindowConfig.SearchBar.ClearTextOnFocus or true
                 })
 
@@ -1296,9 +1268,9 @@ function OrionLib:MakeWindow(WindowConfig)
 
                 local SearchBar = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 1, 4), {
                         Parent = WindowStuff,
-                        Size = UDim2.new(1, -16, 0, 26),
-                        Position = UDim2.new(0, 8, 0, 8),
-                        BackgroundTransparency = typeof(WindowConfig.LinkVideo) == "string" and 0.5 or 0.1
+                        Size = UDim2.new(1, -16, 0, 24),
+                        Position = UDim2.new(0, 8, 0, 4),
+                        BackgroundTransparency = typeof(WindowConfig.LinkVideo) == "string" and 0.5 or 0.15
                 }), {
                         AddThemeObject(MakeElement("Stroke"), "Stroke"),
                         TextboxActual
@@ -1320,19 +1292,18 @@ function OrionLib:MakeWindow(WindowConfig)
                 AddConnection(TextboxActual:GetPropertyChangedSignal("Text"), SearchHandle);
         end
 
-        -- Căn chỉnh tiêu đề chính của Window gọn gàng và hiện đại
-        local WindowName = AddThemeObject(SetChildren(SetProps(MakeElement("Label", WindowConfig.Name, 14), {
-                Size = UDim2.new(0, 200, 0, 30),
-                Position = UDim2.new(0, 185, 0, 12), -- Canh đều với vùng nội dung bên dưới
-                Font = Enum.Font.GothamBold,
-                TextSize = 16
+        -- Căn chỉnh tiêu đề chính thanh thoát chuẩn chỉnh ứng dụng PC
+        local WindowName = AddThemeObject(SetChildren(SetProps(MakeElement("Label", WindowConfig.Name, 13), {
+                Size = UDim2.new(0, 300, 0, 40),
+                Position = UDim2.new(0, 16, 0, 0),
+                Font = Enum.Font.GothamBold
         }), {}), "Text")
 
-        -- Loại bỏ viền cắt ngang cũ để giữ không gian liền mạch, thoáng đãng
+        -- Đường kẻ ranh giới Topbar ngang siêu mờ tinh tế
         local WindowTopBarLine = AddThemeObject(SetProps(MakeElement("Frame"), {
-                Size = UDim2.new(1, -200, 0, 1),
-                Position = UDim2.new(0, 185, 0, 45),
-                BackgroundTransparency = 0.95
+                Size = UDim2.new(1, 0, 0, 1),
+                Position = UDim2.new(0, 0, 0, 40),
+                BackgroundTransparency = 0.96
         }), "Stroke")
 		
 		local RoundMainWindow
@@ -1342,9 +1313,8 @@ function OrionLib:MakeWindow(WindowConfig)
 			RoundMainWindow = "RoundFrame"
 		end
 
-        -- KHUNG CHÍNH (MainWindow): Cải tiến bo tròn sâu hơn, tạo cảm giác mềm mại
-        -- KHUNG CHÍNH (MainWindow): Cải tiến bo tròn sâu hơn, tích hợp thanh điều khiển mới
-        local MainWindow = AddThemeObject(SetChildren(SetProps(MakeElement(RoundMainWindow or "RoundFrame", Color3.fromRGB(255, 255, 255), 0, 12), { 
+        -- KHUNG CHÍNH (MainWindow): Bo góc sắc sảo 8px, viền 1px tinh tế mô phỏng Fluent UI của Windows
+        local MainWindow = AddThemeObject(SetChildren(SetProps(MakeElement(RoundMainWindow or "RoundFrame", Color3.fromRGB(255, 255, 255), 0, 8), { 
                 Parent = Orion,
                 Position = UDim2.new(0.5, -307, 0.5, -172),
                 Size = UDim2.new(0, 615, 0, 344),
@@ -1352,25 +1322,26 @@ function OrionLib:MakeWindow(WindowConfig)
         }), {
                 Create("UIStroke", {
                     Color = Color3.fromRGB(255, 255, 255),
-                    Thickness = 1.2,
+                    Thickness = 1,
                     ApplyStrokeMode = Enum.ApplyStrokeMode.Border
                 }, {
                     Create("UIGradient", {
                         Color = ColorSequence.new({
-                            ColorSequenceKeypoint.new(0, OrionLib.Themes[OrionLib.SelectedTheme].Stroke),
-                            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(80, 80, 80)),
-                            ColorSequenceKeypoint.new(1, OrionLib.Themes[OrionLib.SelectedTheme].Stroke)
+                            ColorSequenceKeypoint.new(0, Color3.fromRGB(80, 80, 80)),
+                            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(45, 45, 45)),
+                            ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 80, 80))
                         }),
                         Rotation = 45
                     })
                 }),
                 SetChildren(SetProps(MakeElement("TFrame"), {
-                        Size = UDim2.new(1, 0, 0, 50),
+                        Size = UDim2.new(1, 0, 0, 40),
                         Name = "TopBar"
                 }), {
                         WindowName,
                         WindowTopBarLine,
-                        WindowControls -- Đưa cụm điều khiển mới vào thanh TopBar thay thế các nút cũ
+                        CloseBtn,
+                        MinimizeBtn
                 }),
                 DragPoint,
                 WindowStuff
@@ -1808,44 +1779,45 @@ end)
 				Type = "Tabs"
 			}
 		
-			-- GIAO DIỆN TAB MỚI: Thiết kế dạng nút phẳng hiện đại có thanh chỉ thị (indicator) ở viền trái
+			-- GIAO DIỆN TAB RUY-BĂNG PHẲNG (Fluent Ribbon Tab)
 			local TabFrame = SetChildren(SetProps(MakeElement("Button"), {
-				Size = UDim2.new(1, 0, 0, 32),
+				Size = UDim2.new(1, -16, 0, 28),
+                Position = UDim2.new(0, 8, 0, 0), -- Giữ căn lề đẹp mắt trong Sidebar
 				Parent = TabHolder,
 				Visible = TabConfig.Visible,
 				AutoButtonColor = not TabConfig.Disabled
 			}), {
-				-- Bo góc nền cho tab khi được chọn (hover/active)
-				Create("UICorner", {CornerRadius = UDim.new(0, 6)}),
-				-- Thanh chỉ thị nhỏ màu sáng nổi bật ở cạnh trái tab hoạt động
+				-- Bo góc cực nhỏ chuẩn chỉ
+				Create("UICorner", {CornerRadius = UDim.new(0, 4)}),
+				-- Thanh chỉ thị đứng (Accent Indicator) nằm sát cạnh trái của tab
 				AddThemeObject(SetProps(MakeElement("Frame"), {
-					Size = UDim2.new(0, 3, 0, 16),
-					Position = UDim2.new(0, 2, 0.5, -8),
-					BackgroundTransparency = 1, -- Sẽ bật lên 0 khi active
+					Size = UDim2.new(0, 2, 0, 12),
+					Position = UDim2.new(0, 0, 0.5, -6),
+					BackgroundTransparency = 1, -- Sẽ bật mờ dần khi tab được active
 					Name = "Indicator"
 				}), "Text"),
 				AddThemeObject(SetProps(MakeElement("Image", TabConfig.Icon), {
 					AnchorPoint = Vector2.new(0, 0.5),
-					Size = UDim2.new(0, 16, 0, 16),
-					Position = UDim2.new(0, 12, 0.5, 0),
-					ImageTransparency = TabConfig.Disabled and 0.8 or 0.5,
+					Size = UDim2.new(0, 14, 0, 14),
+					Position = UDim2.new(0, 10, 0.5, 0),
+					ImageTransparency = TabConfig.Disabled and 0.8 or 0.6,
 					Name = "Ico"
 				}), "Text"),
-				AddThemeObject(SetChildren(SetProps(MakeElement("Label", TabConfig.Name, 13), {
-					Size = UDim2.new(1, -38, 1, 0),
-					Position = UDim2.new(0, 34, 0, 0),
-					Font = Enum.Font.GothamSemibold,
-					TextTransparency = TabConfig.Disabled and 0.8 or 0.5,
+				AddThemeObject(SetChildren(SetProps(MakeElement("Label", TabConfig.Name, 12), {
+					Size = UDim2.new(1, -32, 1, 0),
+					Position = UDim2.new(0, 28, 0, 0),
+					Font = Enum.Font.GothamMedium,
+					TextTransparency = TabConfig.Disabled and 0.8 or 0.6,
 					Name = "Title"
 				}), {}), "Text")
 			})
 		
 			AddItemTable(Tabs, TabConfig.Name, TabFrame)
 			
-			-- Tinh chỉnh container chứa phần tử nội dung lơ lửng cân đối với Sidebar mới
+			-- Khung chứa nội dung lơ lửng được điều chỉnh dịch chuyển phù hợp với tỷ lệ Sidebar phẳng
 			local Container = AddThemeObject(SetChildren(SetProps(MakeElement("ScrollFrame", Color3.fromRGB(255, 255, 255), 5), {
-				Size = UDim2.new(1, -197, 1, (WindowConfig.SearchBar and WindowConfig.SearchBar.Mains == true) and -100 or -74), 
-				Position = UDim2.new(0, 185, 0, (WindowConfig.SearchBar and WindowConfig.SearchBar.Mains == true) and 88 or 62), 
+				Size = UDim2.new(1, -165, 1, (WindowConfig.SearchBar and WindowConfig.SearchBar.Mains == true) and -90 or -60), 
+				Position = UDim2.new(0, 155, 0, (WindowConfig.SearchBar and WindowConfig.SearchBar.Mains == true) and 80 or 50), 
 				Parent = MainWindow,
 				Visible = false,
 				Name = "ItemContainer"
@@ -1858,30 +1830,30 @@ end)
 				Container.CanvasSize = UDim2.new(0, 0, 0, Container.UIListLayout.AbsoluteContentSize.Y + ((WindowConfig.SearchBar and WindowConfig.SearchBar.Mains == true) and 20 or 25))
 			end)
 		
-			-- Xử lý chuyển đổi Tab mượt mà bằng TweenService
+			-- Trình chuyển đổi tab hoạt động bằng hoạt ảnh chuyển tiếp Fluent mượt mà
 			AddConnection(TabFrame.MouseButton1Click, function()
 				if Tabs.Disabled then return end
 				for _, Tab in next, TabHolder:GetChildren() do
 					if Tab:IsA("TextButton") then
-						TweenService:Create(Tab.Ico, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {ImageTransparency = 0.5}):Play()
-						TweenService:Create(Tab.Title, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {TextTransparency = 0.5}):Play()
+						TweenService:Create(Tab.Ico, TweenInfo.new(0.15, Enum.EasingStyle.Quad), {ImageTransparency = 0.6}):Play()
+						TweenService:Create(Tab.Title, TweenInfo.new(0.15, Enum.EasingStyle.Quad), {TextTransparency = 0.6}):Play()
 						if Tab:FindFirstChild("Indicator") then
-							TweenService:Create(Tab.Indicator, TweenInfo.new(0.15, Enum.EasingStyle.Quad), {BackgroundTransparency = 1}):Play()
+							TweenService:Create(Tab.Indicator, TweenInfo.new(0.12, Enum.EasingStyle.Quad), {BackgroundTransparency = 1}):Play()
 						end
-						TweenService:Create(Tab, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {BackgroundTransparency = 1}):Play()
+						TweenService:Create(Tab, TweenInfo.new(0.15, Enum.EasingStyle.Quad), {BackgroundTransparency = 1}):Play()
 					end
 				end
 				for _, c in next, MainWindow:GetChildren() do
 					if c.Name == "ItemContainer" then c.Visible = false end
 				end
 				
-				-- Kích hoạt trạng thái sáng cho tab hiện tại
-				TweenService:Create(TabFrame.Ico, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {ImageTransparency = 0}):Play()
-				TweenService:Create(TabFrame.Title, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {TextTransparency = 0}):Play()
+				-- Bật độ sáng và kích hoạt chỉ thị của tab đang nhấp chọn
+				TweenService:Create(TabFrame.Ico, TweenInfo.new(0.15, Enum.EasingStyle.Quad), {ImageTransparency = 0}):Play()
+				TweenService:Create(TabFrame.Title, TweenInfo.new(0.15, Enum.EasingStyle.Quad), {TextTransparency = 0}):Play()
 				if TabFrame:FindFirstChild("Indicator") then
-					TweenService:Create(TabFrame.Indicator, TweenInfo.new(0.15, Enum.EasingStyle.Quad), {BackgroundTransparency = 0}):Play()
+					TweenService:Create(TabFrame.Indicator, TweenInfo.new(0.12, Enum.EasingStyle.Quad), {BackgroundTransparency = 0}):Play()
 				end
-				TweenService:Create(TabFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {BackgroundTransparency = 0.92, BackgroundColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+				TweenService:Create(TabFrame, TweenInfo.new(0.15, Enum.EasingStyle.Quad), {BackgroundTransparency = 0.94, BackgroundColor3 = Color3.fromRGB(255, 255, 255)}):Play()
 				
 				Container.Visible = true
 			end)
