@@ -73,17 +73,11 @@ Orion.Name = "Orion"
 Orion.Parent = PARENT
 
 local _currentKey = Enum.KeyCode.RightShift
-function OrionLib:SetKeyToggleUI(key)
-    if typeof(key) == "EnumItem" then
-        _currentKey = key
-    elseif typeof(key) == "string" then
-        local success, keyui = pcall(function()
-            return Enum.KeyCode[key]
-        end)
-        _currentKey = (success and keyui or Enum.KeyCode.RightShift)
-    else
-        _currentKey = Enum.KeyCode.RightShift
-    end
+function OrionLib:SetKeyToggleUI(key: Enum.KeyCode)
+    local success, keyui = pcall(function()
+		return Enum.KeyCode[key]
+	end)
+	_currentKey = (success and keyui or Enum.KeyCode.RightShift)
 end
 
 function OrionLib:SetVideoLink(link: string)
@@ -103,17 +97,16 @@ function OrionLib:SetVideoLink(link: string)
 				
 				task.spawn(function()
 					local timeout = 0
-					repeat 
-					    task.wait(0.1) 
-					    timeout = timeout + 0.1
-					
-					until (MainWindowVideo and MainWindowVideo:FindFirstChild("ItemContainer", true)) or timeout > 5
-					
-					local foundContainer = MainWindowVideo:FindFirstChild("ItemContainer", true)
-					if foundContainer then
-						for k, j in pairs(foundContainer:GetChildren()) do
-							if j:IsA("Frame") and j.BackgroundTransparency < 1 then
-								j.BackgroundTransparency = 0.15
+repeat 
+    task.wait(0.1) 
+    timeout = timeout + 0.1
+until (MainWindowVideo and MainWindowVideo:FindFirstChild("ItemContainer")) or timeout > 5
+					for i, v in pairs(MainWindowVideo:GetChildren()) do
+						if v.Name == "ItemContainer" then
+							for k, j in pairs(v:GetChildren()) do
+								if j:IsA("Frame") and j.BackgroundTransparency < 1 then
+									j.BackgroundTransparency = 0.15
+								end
 							end
 						end
 					end
@@ -124,14 +117,13 @@ function OrionLib:SetVideoLink(link: string)
 					repeat 
 					    task.wait(0.1) 
 					    timeout = timeout + 0.1
-					
-					until (MainWindowVideo and MainWindowVideo:FindFirstChild("ItemContainer", true)) or timeout > 5
-					
-					local foundContainer = MainWindowVideo:FindFirstChild("ItemContainer", true)
-					if foundContainer then
-						for k, j in pairs(foundContainer:GetChildren()) do
-							if j:IsA("Frame") and j.BackgroundTransparency < 1 then
-								j.BackgroundTransparency = 0
+					until (MainWindowVideo and MainWindowVideo:FindFirstChild("ItemContainer")) or timeout > 5
+					for i, v in pairs(MainWindowVideo:GetChildren()) do
+						if v.Name == "ItemContainer" then
+							for k, j in pairs(v:GetChildren()) do
+								if j:IsA("Frame") and j.BackgroundTransparency < 1 then
+									j.BackgroundTransparency = 0
+								end
 							end
 						end
 					end
@@ -142,25 +134,18 @@ function OrionLib:SetVideoLink(link: string)
 	end
 end
 
-function OrionLib:SetFont(font)
-    if Orion then
-        local fontlocal = Enum.Font.GothamBold
-        if typeof(font) == "EnumItem" then
-            fontlocal = font
-        elseif typeof(font) == "string" then
-            local success, fontui = pcall(function()
-                return Enum.Font[font]
-            end)
-            if success and fontui then
-                fontlocal = fontui
-            end
-        end
-        for i, v in pairs(Orion:GetDescendants()) do
-            if (v:IsA("TextButton") or v:IsA("TextLabel") or v:IsA("TextBox")) then
-                v.Font = fontlocal
-            end
-        end
-    end
+function OrionLib:SetFont(font: Enum.Font)
+	if Orion then
+		local success, fontui = pcall(function()
+			return Enum.Font[font]
+		end)
+		local fontlocal = (success and fontui or Enum.Font.GothamBold)
+		for i, v in pairs(Orion:GetDescendants()) do
+			if (v:IsA("TextButton") or v:IsA("TextLabel") or v:IsA("TextBox")) then
+				v.Font = fontlocal
+			end
+		end
+	end
 end
 
 function OrionLib:AddConnect(Signal, Function)
@@ -223,12 +208,12 @@ local function MakeDraggable(instance: Instance, main: Instance)
             dragging = true
             mousePos = input.Position
             framePos = main.Position
-        end
-    end)
 
-    AddConnection(UserInputService.InputEnded, function(input: InputObject)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = false
+            AddConnection(input.Changed, function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
         end
     end)
 
@@ -620,7 +605,8 @@ end
 
 CreateElement("Corner", function(Scale, Offset)
         local Corner = Create("UICorner", {
-                CornerRadius = UDim.new(Scale or 0, Offset or 10)
+                
+                CornerRadius = UDim.new(Scale or 0, Offset or 8)
         })
         return Corner
 end)
@@ -628,7 +614,9 @@ end)
 CreateElement("Stroke", function(Color, Thickness)
         local Stroke = Create("UIStroke", {
                 Color = Color or Color3.fromRGB(255, 255, 255),
-                Thickness = Thickness or 1
+                Thickness = Thickness or 1,
+                
+                ApplyStrokeMode = Enum.ApplyStrokeMode.Border
         })
         return Stroke
 end)
@@ -711,11 +699,7 @@ CreateElement("ScrollFrame", function(Color, Width)
                 ScrollBarImageColor3 = Color,
                 BorderSizePixel = 0,
                 ScrollBarThickness = Width,
-                CanvasSize = UDim2.new(0, 0, 0, 0),
-                
-                ElasticBehavior = Enum.ElasticBehavior.Always,
-                ScrollingDirection = Enum.ScrollingDirection.Y,
-                Active = true
+                CanvasSize = UDim2.new(0, 0, 0, 0)
         })
         return ScrollFrame
 end)
@@ -1147,220 +1131,118 @@ function OrionLib:MakeWindow(WindowConfig)
         WindowConfig.SearchBar = WindowConfig.SearchBar or nil
         WindowConfig.LinkVideo = WindowConfig.LinkVideo or nil
 
-        local RoundMainWindow
-        if typeof(WindowConfig.LinkVideo) == "string" then
-                RoundMainWindow = "RoundVideo" 
-        else
-                RoundMainWindow = "RoundFrame"
-        end
-        
-        local MainWindow = AddThemeObject(SetChildren(SetProps(MakeElement(RoundMainWindow or "RoundFrame", Color3.fromRGB(255, 255, 255), 0, 14), { 
-                Parent = Orion,
-                Position = UDim2.new(0.5, -320, 0.5, -195),
-                Size = UDim2.new(0, 640, 0, 390),
-                ClipsDescendants = true
-        }), {
-                Create("UIStroke", {
-                    Color = Color3.fromRGB(255, 255, 255),
-                    Thickness = 1.2,
-                    ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-                }, {
-                    Create("UIGradient", {
-                        Color = ColorSequence.new({
-                            ColorSequenceKeypoint.new(0, OrionLib.Themes[OrionLib.SelectedTheme].Stroke),
-                            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(110, 110, 110)),
-                            ColorSequenceKeypoint.new(1, OrionLib.Themes[OrionLib.SelectedTheme].Stroke)
-                        }),
-                        Rotation = 45
-                    })
-                })
-        }), "Main")
-
-        local DragPoint = SetProps(MakeElement("TFrame"), {
-                Size = UDim2.new(1, 0, 0, 65),
-                Parent = MainWindow
-        })
-
-        local WindowName = AddThemeObject(SetChildren(SetProps(MakeElement("Label", WindowConfig.Name, 14), {
-                Size = UDim2.new(1, -120, 1, 0),
-                Position = UDim2.new(0, 15, 0, 0),
-                Font = Enum.Font.GothamBlack,
-                TextSize = 18
-        }), {AddThemeObject(MakeElement("Stroke"), "Stroke")}), "Text")
-
-        
-        local CloseBtn = SetChildren(SetProps(MakeElement("Button"), {
-                Size = UDim2.new(0.5, -2, 1, 0),
-                Position = UDim2.new(0.5, 1, 0, 0),
-                BackgroundTransparency = 1
-        }), {
-                AddThemeObject(SetProps(MakeElement("Image", "rbxassetid://7072725342"), {
-                        AnchorPoint = Vector2.new(0.5, 0.5),
-                        Position = UDim2.new(0.5, 0, 0.5, 0),
-                        Size = UDim2.new(0, 12, 0, 12), 
-                        ImageTransparency = 0.25 
-                }), "Text")
-        })
-
-        local MinimizeBtn = SetChildren(SetProps(MakeElement("Button"), {
-                Size = UDim2.new(0.5, -2, 1, 0),
-                Position = UDim2.new(0, 1, 0, 0),
-                BackgroundTransparency = 1
-        }), {
-                AddThemeObject(SetProps(MakeElement("Image", "rbxassetid://7072719338"), {
-                        AnchorPoint = Vector2.new(0.5, 0.5),
-                        Position = UDim2.new(0.5, 0, 0.5, 0),
-                        Size = UDim2.new(0, 12, 0, 12),
-                        ImageTransparency = 0.25,
-                        Name = "Ico"
-                }), "Text")
-        })
-
-        
-        local TopBarPanel = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 8), {
-                Size = UDim2.new(1, -24, 0, 48),
-                Position = UDim2.new(0, 12, 0, 12),
-                Parent = MainWindow,
-                Name = "TopBar"
-        }), {
-                WindowName,
-                AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 6), { 
-                        Size = UDim2.new(0, 56, 0, 24),
-                        BackgroundTransparency = typeof(WindowConfig.LinkVideo) == "string" and 0.2 or 0,
-                        Position = UDim2.new(1, -68, 0.5, -12)
-                }), {
-                        AddThemeObject(MakeElement("Stroke"), "Stroke"),
-                        AddThemeObject(SetProps(MakeElement("Frame"), {
-                                Size = UDim2.new(0, 1, 0, 12), 
-                                Position = UDim2.new(0.5, 0, 0.5, 0),
-                                AnchorPoint = Vector2.new(0.5, 0.5),
-                                BackgroundTransparency = 0.65 
-                        }), "Stroke"), 
-                        CloseBtn,
-                        MinimizeBtn
-                }), "Second"),
-                AddThemeObject(MakeElement("Stroke"), "Stroke")
-        }), "Second")
-
-        if WindowConfig.ShowIcon then
-                local WindowIcon = SetProps(MakeElement("Image", WindowConfig.Icon), {
-                        Size = UDim2.new(0, 20, 0, 20),
-                        Position = UDim2.new(0, 12, 0.5, -10),
-                        Parent = TopBarPanel
-                })
-                WindowName.Position = UDim2.new(0, 40, 0, 0)
-        end
-
-        local TabHolder = AddThemeObject(SetChildren(SetProps(MakeElement("ScrollFrame", Color3.fromRGB(255, 255, 255), 4), {
-                Size = UDim2.new(1, 0, 1, -58),
-                Position = UDim2.new(0, 0, 0, 8),
-                BackgroundTransparency = 1
-        }), {
-                MakeElement("List"),
-                MakeElement("Padding", 4, 4, 4, 4)
-        }), "Divider")
+        local TabHolder = AddThemeObject(SetChildren(SetProps(MakeElement("ScrollFrame", Color3.fromRGB(255, 255, 255), 4),
+                WindowConfig.SearchBar and WindowConfig.SearchBar.Tabs == true and {
+                        Size = UDim2.new(1, 0, 1, -90),
+                        Position = UDim2.new(0, 0, 0, 40),
+                } or {
+                        Size = UDim2.new(1, 0, 1, -50)
+                }),
+                {
+                        MakeElement("List"),
+                        MakeElement("Padding", 8, 0, 0, 8)
+                }), "Divider")
+                
+        if TabHolder then
+	        TabHolder.BackgroundTransparency = 1
+		end
 
         AddConnection(TabHolder.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"), function()
                 TabHolder.CanvasSize = UDim2.new(0, 0, 0, TabHolder.UIListLayout.AbsoluteContentSize.Y + 16)
         end)
 
+        local CloseBtn = SetChildren(SetProps(MakeElement("Button"), {
+                Size = UDim2.new(0, 12, 0, 12),
+                Position = UDim2.new(1, -22, 0, 19), 
+                BackgroundTransparency = 1
+        }), {
+                AddThemeObject(SetProps(MakeElement("Image", "rbxassetid://7072725342"), {
+                        AnchorPoint = Vector2.new(0.5, 0.5),
+                        Position = UDim2.new(0.5, 0, 0.5, 0),
+                        Size = UDim2.new(0, 10, 0, 10), 
+                        ImageTransparency = 0.3 
+                }), "Text")
+        })
+
+        local MinimizeBtn = SetChildren(SetProps(MakeElement("Button"), {
+                Size = UDim2.new(0, 12, 0, 12),
+                Position = UDim2.new(1, -44, 0, 19), 
+                BackgroundTransparency = 1
+        }), {
+                AddThemeObject(SetProps(MakeElement("Image", "rbxassetid://7072719338"), {
+                        AnchorPoint = Vector2.new(0.5, 0.5),
+                        Position = UDim2.new(0.5, 0, 0.5, 0),
+                        Size = UDim2.new(0, 10, 0, 10),
+                        ImageTransparency = 0.3,
+                        Name = "Ico"
+                }), "Text")
+        })
+
         
-        local hasLinkVideo = typeof(WindowConfig.LinkVideo) == "string"
         local WindowStuff = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 8), {
-                Size = UDim2.new(0, 160, 0, 306),
-                Position = UDim2.new(0, 12, 0, 72),
-                Parent = MainWindow,
-                BackgroundTransparency = hasLinkVideo and 1 or 0.35,
-                Name = "Sidebar"
+                
+                Size = UDim2.new(0, 145, 1, -24),
+                Position = UDim2.new(0, 12, 0, 12),
+                BackgroundTransparency = hasLinkVideo and 1 or 0.1 
         }), {
                 TabHolder,
-                AddThemeObject(MakeElement("Stroke"), "Stroke"),
                 
                 SetChildren(SetProps(MakeElement("TFrame"), {
-                        Size = UDim2.new(1, 0, 0, 46),
-                        Position = UDim2.new(0, 0, 1, -48)
+                        Size = UDim2.new(1, 0, 0, 45),
+                        Position = UDim2.new(0, 0, 1, -45)
                 }), {
-                        AddThemeObject(SetProps(MakeElement("Frame"), {
-                                Size = UDim2.new(1, -16, 0, 1),
-                                Position = UDim2.new(0, 8, 0, 0),
-                                BackgroundTransparency = 0.3
-                        }), "Stroke"), 
                         AddThemeObject(SetChildren(SetProps(MakeElement("Frame"), {
                                 AnchorPoint = Vector2.new(0, 0.5),
                                 Size = UDim2.new(0, 28, 0, 28),
-                                Position = UDim2.new(0, 10, 0.5, 0)
+                                Position = UDim2.new(0, 8, 0.5, 0)
                         }), {
                                 SetChildren(SetProps(MakeElement("Image", "https://www.roblox.com/headshot-thumbnail/image?userId=".. LocalPlayer.UserId .."&width=420&height=420&format=png"), {
                                         Size = UDim2.new(1, 0, 1, 0)
                                 }), {MakeElement("Corner", 1)}),
-                                AddThemeObject(SetChildren(SetProps(MakeElement("Image", "rbxassetid://4031889928"), {
-                                        Size = UDim2.new(1, 0, 1, 0),
-                                }), {MakeElement("Corner", 1)}), "Second"),
                                 MakeElement("Corner", 1)
-                        }), "Divider"),
-                        SetChildren(SetProps(MakeElement("TFrame"), {
-                                AnchorPoint = Vector2.new(0, 0.5),
-                                Size = UDim2.new(0, 28, 0, 28),
-                                Position = UDim2.new(0, 10, 0.5, 0)
-                        }), {
-                                AddThemeObject(MakeElement("Stroke"), "Stroke"),
-                                MakeElement("Corner", 1)
-                        }),
-                        AddThemeObject(SetProps(MakeElement("Label", LocalPlayer.DisplayName, WindowConfig.HidePremium and 13 or 12), {
-                                Size = UDim2.new(1, -48, 0, 13),
-                                Position = WindowConfig.HidePremium and UDim2.new(0, 44, 0, 16) or UDim2.new(0, 44, 0, 10),
+                        }), "Second"),
+                        AddThemeObject(SetProps(MakeElement("Label", LocalPlayer.DisplayName, WindowConfig.HidePremium and 12 or 11), {
+                                Size = UDim2.new(1, -45, 0, 13),
+                                Position = UDim2.new(0, 42, 0.5, -6),
                                 Font = Enum.Font.GothamBold,
                                 ClipsDescendants = true
                         }), "Text"),
-                        AddThemeObject(SetProps(MakeElement("Label", "Premium User", 11), {
-                                Size = UDim2.new(1, -48, 0, 12),
-                                Position = UDim2.new(0, 44, 1, -22),
-                                Visible = not WindowConfig.HidePremium
-                        }), "TextDark")
-                })
+                }),
         }), "Second")
 
-        if WindowConfig.SearchBar and WindowConfig.SearchBar.Tabs == true then
-                local SearchBox = Create("TextBox", {
-                        Size = UDim2.new(1, 0, 1, 0),
-                        BackgroundTransparency = 1,
-                        TextColor3 = Color3.fromRGB(255, 255, 255),
-                        PlaceholderColor3 = Color3.fromRGB(210,210,210),
-                        PlaceholderText = WindowConfig.SearchBar.Default or "🔍 Search",
-                        Font = Enum.Font.GothamBold,
-                        TextWrapped = true,
-                        Text = "",
-                        TextXAlignment = Enum.TextXAlignment.Center,
-                        TextSize = 13,
-                        ClearTextOnFocus = WindowConfig.SearchBar.ClearTextOnFocus or true
-                })
-
-                local TextboxActual = AddThemeObject(SearchBox, "Text")
-
-                local SearchBar = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 1, 6), {
-                        Parent = TopBarPanel,
-                        Size = UDim2.new(0, 140, 0, 24),
-                        Position = UDim2.new(1, -85, 0.5, -12),
-                        BackgroundTransparency = typeof(WindowConfig.LinkVideo) == "string" and 0.5 or 0,
+        local RoundMainWindow = typeof(WindowConfig.LinkVideo) == "string" and "RoundVideo" or "RoundFrame"
+        local MainWindow = AddThemeObject(SetChildren(SetProps(MakeElement(RoundMainWindow, Color3.fromRGB(255, 255, 255), 0, 14), { 
+                Parent = Orion,
+                Position = UDim2.new(0.5, -307, 0.5, -172),
+                Size = UDim2.new(0, 615, 0, 344),
+                ClipsDescendants = true
+        }), {
+                
+                Create("UIStroke", {
+                    Color = Color3.fromRGB(255, 255, 255),
+                    Thickness = 1,
+                    ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+                }, {
+                    Create("UIGradient", {
+                        Color = ColorSequence.new({
+                            ColorSequenceKeypoint.new(0, OrionLib.Themes[OrionLib.SelectedTheme].Stroke),
+                            ColorSequenceKeypoint.new(1, Color3.fromRGB(45, 45, 45))
+                        }),
+                        Rotation = 45
+                    })
+                }),
+                SetChildren(SetProps(MakeElement("TFrame"), {
+                        Size = UDim2.new(1, 0, 0, 50),
+                        Name = "TopBar"
                 }), {
-                        AddThemeObject(MakeElement("Stroke"), "Stroke"),
-                        TextboxActual
-                }), "Main")
-
-                local function SearchHandle()
-                        local Text = string.lower(SearchBox.Text)
-                        for i,v in pairs(TabHolder:GetChildren()) do
-                                if v:IsA("TextButton") then
-                                        if string.find(string.lower(i), Text, 1, true) then
-                                                v.Visible = true
-                                        else
-                                                v.Visible = false
-                                        end
-                                end
-                        end
-                end
-                AddConnection(TextboxActual:GetPropertyChangedSignal("Text"), SearchHandle);
-        end
+                        WindowName,
+                        
+                        CloseBtn,
+                        MinimizeBtn
+                }),
+                DragPoint,
+                WindowStuff
+        }), "Main")
         
         if WindowConfig.SearchBar and WindowConfig.SearchBar.Mains == true then
                 local SearchBox = Create("TextBox", {
@@ -1377,45 +1259,52 @@ function OrionLib:MakeWindow(WindowConfig)
                         ClearTextOnFocus = WindowConfig.SearchBar.ClearTextOnFocus or true
                 })
 
-                local TextboxActualMain = AddThemeObject(SearchBox, "Text")
+                local TextboxActual = AddThemeObject(SearchBox, "Text")
 
-                local SearchBarMain = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 1, 6), {
+                local SearchBar = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 1, 6), {
                         Parent = MainWindow,
                         BackgroundTransparency = typeof(WindowConfig.LinkVideo) == "string" and 0.5 or 0,
                         Size = UDim2.new(0, 447, 0, 24),
-                        Position = UDim2.new(0, 616, 0, 72),
+                        Position = UDim2.new(0, 606, 0, 72),
                         AnchorPoint = Vector2.new(1, 0.5)
                 }), {
                         AddThemeObject(MakeElement("Stroke"), "Stroke"),
-                        TextboxActualMain
+                        TextboxActual
                 }), "Main")
 
                 local function SearchHandleMain()
                         local Text = string.lower(SearchBox.Text)
-                        for i, v in pairs(MainWindow:GetChildren()) do
-                                -- Quét ContentCard đang hiển thị thay vì ItemContainer trực tiếp như bản cũ
-                                if v.Name == "ContentCard" and v.Visible == true then
-                                        local container = v:FindFirstChild("ItemContainer")
-                                        if container then
-                                                for _, j in pairs(container:GetChildren()) do
-                                                        if j:IsA("Frame") then
-                                                                local ContentFind = j:FindFirstChild("Content", true) or nil
-                                                                if ContentFind then
-                                                                        if string.find(string.lower(ContentFind.Text), Text, 1, true) then
-                                                                                j.Visible = true
-                                                                        else
-                                                                                j.Visible = false
-                                                                        end
-                                                                end
-                                                        end
-                                                end
-                                        end
-                                end
-                        end
+						for i, v in pairs(MainWindow:GetChildren()) do
+							if v.Name == "ItemContainer" and v.Visible == true then
+								for _, j in pairs(v:GetChildren()) do
+									if j:IsA("Frame") then
+										local ContentFind = j:FindFirstChild("Content", true) or nil
+										if ContentFind then
+											if string.find(string.lower(ContentFind.Text), Text, 1, true) then
+												j.Visible = true
+											else
+												j.Visible = false
+											end
+										end
+									end
+								end
+							end
+						end
                 end
-                AddConnection(TextboxActualMain:GetPropertyChangedSignal("Text"), SearchHandleMain)
+                AddConnection(TextboxActual:GetPropertyChangedSignal("Text"), SearchHandleMain)
         end
 
+        if WindowConfig.ShowIcon then
+		        local IconTogglesUi = "rbxassetid://"..WindowConfig.Icon:match("%d+")
+                WindowName.Position = UDim2.new(0, 50, 0, -24)
+                local WindowIcon = SetProps(MakeElement("Image", WindowConfig.Icon), {
+                        Size = UDim2.new(0, 20, 0, 20),
+                        Position = UDim2.new(0, 25, 0, 15)
+                })
+                WindowIcon.Parent = MainWindow.TopBar
+        end
+
+        MakeDraggable(DragPoint, MainWindow)
         local isMobile = table.find({Enum.Platform.IOS, Enum.Platform.Android}, UserInputService:GetPlatform())
         local MobileReopenButton = SetChildren(SetProps(MakeElement("Button"), {
                 Parent = Orion,
@@ -1434,95 +1323,101 @@ function OrionLib:MakeWindow(WindowConfig)
         })
 
         MakeDraggable(MobileReopenButton, MobileReopenButton)
+
         AddConnection(MobileReopenButton.MouseButton1Click, function()
                 ToggleUI(true)
         end)
 
-        local activeToggleTween = nil
-        local lastSize = UDim2.new(0, 640, 0, 390) 
+local activeToggleTween = nil
+local lastSize = UDim2.new(0, 615, 0, 344) 
 
-        ToggleUI = function(state) 
-            if Minimized then
-                if state == nil then
-                    state = not MinimizePill.Visible
-                end
-                MinimizePill.Visible = state
-                MainWindow.Visible = false
-                if MobileReopenButton then
-                    MobileReopenButton.Visible = not state
-                end
-                return
-            end
+ToggleUI = function(state) 
+    
+    if Minimized then
+        if state == nil then
+            state = not MinimizePill.Visible
+        end
+        MinimizePill.Visible = state
+        MainWindow.Visible = false
+        if MobileReopenButton then
+            MobileReopenButton.Visible = not state
+        end
+        return
+    end
 
-            if state == nil then
-                state = not MainWindow.Visible
-            end
-            
-            if activeToggleTween then
-                activeToggleTween:Cancel()
+    if state == nil then
+        state = not MainWindow.Visible
+    end
+    
+    if activeToggleTween then
+        activeToggleTween:Cancel()
+        activeToggleTween = nil
+    end
+    
+    local isMobileOrTouch = UserInputService.TouchEnabled or table.find({Enum.Platform.IOS, Enum.Platform.Android}, UserInputService:GetPlatform())
+    MainWindow.ClipsDescendants = true
+    
+    if state then
+        if MobileReopenButton then
+            MobileReopenButton.Visible = false
+        end
+        MainWindow.Visible = true
+        
+        if MainWindow.Size.X.Offset < 10 or MainWindow.Size.Y.Offset < 10 then
+            MainWindow.Size = UDim2.new(0, 0, 0, 0)
+        end
+        
+        local targetSize = lastSize or UDim2.new(0, 615, 0, 344)
+               
+        if targetSize.X.Offset < 50 or targetSize.Y.Offset < 20 then
+            targetSize = UDim2.new(0, 615, 0, 344)
+        end
+        
+        activeToggleTween = TweenService:Create(MainWindow, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+            Size = targetSize
+        })
+        activeToggleTween:Play()
+        
+        task.spawn(function()
+            local completedState = activeToggleTween.Completed:Wait()
+            if completedState == Enum.PlaybackState.Completed then
+                MainWindow.ClipsDescendants = false
                 activeToggleTween = nil
             end
-            
-            local isMobileOrTouch = UserInputService.TouchEnabled or table.find({Enum.Platform.IOS, Enum.Platform.Android}, UserInputService:GetPlatform())
-            MainWindow.ClipsDescendants = true
-            
-            if state then
-                if MobileReopenButton then
-                    MobileReopenButton.Visible = false
-                end
-                MainWindow.Visible = true
-                if MainWindow.Size.X.Offset < 10 or MainWindow.Size.Y.Offset < 10 then
-                    MainWindow.Size = UDim2.new(0, 0, 0, 0)
-                end
-                
-                local targetSize = lastSize or UDim2.new(0, 640, 0, 390)
-                if targetSize.X.Offset < 50 or targetSize.Y.Offset < 20 then
-                    targetSize = UDim2.new(0, 640, 0, 390)
-                end
-                
-                activeToggleTween = TweenService:Create(MainWindow, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                    Size = targetSize
-                })
-                activeToggleTween:Play()
-                
-                task.spawn(function()
-                    local completedState = activeToggleTween.Completed:Wait()
-                    if completedState == Enum.PlaybackState.Completed then
-                        MainWindow.ClipsDescendants = false
-                        activeToggleTween = nil
-                    end
-                end)
-            else
-                if MainWindow.Size.X.Offset > 50 and MainWindow.Size.Y.Offset > 20 then
-                    lastSize = MainWindow.Size
-                end
-                
-                activeToggleTween = TweenService:Create(MainWindow, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
-                    Size = UDim2.new(0, 0, 0, 0)
-                })
-                activeToggleTween:Play()
-                
-                task.spawn(function()
-                    local completedState = activeToggleTween.Completed:Wait()
-                    if completedState == Enum.PlaybackState.Completed then
-                        MainWindow.Visible = false
-                        if isMobileOrTouch and MobileReopenButton then
-                            MobileReopenButton.Visible = true
-                        end
-                        activeToggleTween = nil
-                    end
-                end)
-            end
+        end)
+    else
+        if MainWindow.Size.X.Offset > 50 and MainWindow.Size.Y.Offset > 20 then
+            lastSize = MainWindow.Size
         end
-
-        AddConnection(UserInputService.InputBegan, function(Input, processed)
-            if processed or UserInputService:GetFocusedTextBox() then 
-                return 
-            end
-            if Input.KeyCode == _currentKey then
-                ToggleUI()
+        
+        activeToggleTween = TweenService:Create(MainWindow, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
+            Size = UDim2.new(0, 0, 0, 0)
+        })
+        activeToggleTween:Play()
+        
+        task.spawn(function()
+            local completedState = activeToggleTween.Completed:Wait()
+            if completedState == Enum.PlaybackState.Completed then
+                MainWindow.Visible = false
+                
+                if isMobileOrTouch and MobileReopenButton then
+                    MobileReopenButton.Visible = true
+                end
+                activeToggleTween = nil
             end
         end)
+    end
+end
+
+AddConnection(UserInputService.InputBegan, function(Input, processed)
+    if processed or UserInputService:GetFocusedTextBox() then 
+        return 
+    end
+    
+    if Input.KeyCode == _currentKey then
+        ToggleUI()
+    end
+end)
 
         AddConnection(CloseBtn.MouseButton1Up, function()
                 ToggleUI(false)
@@ -1544,6 +1439,7 @@ function OrionLib:MakeWindow(WindowConfig)
                         Name = "ClickBtn",
                         ZIndex = 5
                 }),
+                
                 SetChildren(SetProps(MakeElement("TFrame"), {
                         Size = UDim2.new(1, 0, 1, 0),
                         Name = "ContentContainer"
@@ -1575,6 +1471,7 @@ function OrionLib:MakeWindow(WindowConfig)
         }), "Second")
 
         MakeDraggable(MinimizePill.ClickBtn, MinimizePill)
+
         local dragStartPos = Vector3.new()
         local isDraggingPill = false
 
@@ -1597,13 +1494,17 @@ function OrionLib:MakeWindow(WindowConfig)
                 if targetMinimizedState == nil then
                         targetMinimizedState = not Minimized
                 end
+
                 if targetMinimizedState == Minimized then return end
                 Minimized = targetMinimizedState
+
                 MainWindow.ClipsDescendants = true
 
                 if Minimized then
+                        
                         local targetPillSize = UDim2.new(0, MinimizePill.ContentContainer.Title.TextBounds.X + 52, 0, 36)
                         local originalPos = MainWindow.Position
+
                         local shrinkTween = TweenService:Create(MainWindow, TweenInfo.new(0.45, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
                                 Size = UDim2.new(0, 0, 0, 0),
                                 Position = MinimizePill.Position
@@ -1615,6 +1516,7 @@ function OrionLib:MakeWindow(WindowConfig)
                                 if Minimized then
                                         MainWindow.Visible = false
                                         MainWindow.Position = originalPos
+
                                         MinimizePill.Size = UDim2.new(0, 0, 0, 36)
                                         MinimizePill.Visible = true
                                         TweenService:Create(MinimizePill, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
@@ -1632,12 +1534,15 @@ function OrionLib:MakeWindow(WindowConfig)
                                 shrinkPill.Completed:Wait()
                                 if not Minimized then
                                         MinimizePill.Visible = false
+
                                         MainWindow.Size = UDim2.new(0, 0, 0, 0)
                                         MainWindow.Visible = true
+
                                         local expandTween = TweenService:Create(MainWindow, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                                                Size = UDim2.new(0, 640, 0, 390)
+                                                Size = UDim2.new(0, 615, 0, 344)
                                         })
                                         expandTween:Play()
+
                                         expandTween.Completed:Wait()
                                         if not Minimized then
                                                 MainWindow.ClipsDescendants = false
@@ -1660,215 +1565,191 @@ function OrionLib:MakeWindow(WindowConfig)
         end)
 
         local function LoadSequence()
-                MainWindow.Size = UDim2.new(0, 0, 0, 0)
-                MainWindow.Visible = false
-                local Blur = Create("BlurEffect", {
-                        Name = "IntroBlur",
-                        Size = 0,
-                        Parent = game:GetService("Lighting")
-                })
-                local BaseFrame = SetProps(MakeElement("Frame"), {
-                        Parent = Orion,
-                        Size = UDim2.new(1, 0, 1, 0),
-                        BackgroundTransparency = 1,
-                        ZIndex = 999
-                })
-                local LoadSequenceLogo = SetChildren(SetProps(MakeElement("Image", "rbxassetid://"..WindowConfig.IntroIcon:match("%d+")), {
-                        Parent = BaseFrame,
-                        AnchorPoint = Vector2.new(0.5, 0.5),
-                        Position = UDim2.new(0.5, 0, 0.4, 0),
-                        Size = UDim2.new(0, 0, 0, 0),
-                        ImageColor3 = Color3.fromRGB(255, 255, 255),
-                        ImageTransparency = 1,
-                        Rotation = -180,
-                        ZIndex = 101
-                }), {MakeElement("Corner", 0, 5)})
-                
-                local LoadSequenceGlow = SetProps(MakeElement("Image", "rbxassetid://7072706859"), {
-                        Parent = BaseFrame,
-                        AnchorPoint = Vector2.new(0.5, 0.5),
-                        Position = UDim2.new(0.5, 0, 0.45, 0),
-                        Size = UDim2.new(0, 0, 0, 0),
-                        ImageColor3 = Color3.fromRGB(255, 255, 255),
-                        ImageTransparency = 1,
-                        ZIndex = 100
-                })
-                local LoadSequenceText = SetProps(MakeElement("Label", WindowConfig.IntroText, 22), {
-                        Parent = BaseFrame,
-                        Size = UDim2.new(0, 400, 0, 40),
-                        AnchorPoint = Vector2.new(0.5, 0.5),
-                        Position = UDim2.new(0.5, 0, 0.55, 0),
-                        TextXAlignment = Enum.TextXAlignment.Center,
-                        Font = Enum.Font.GothamBlack,
-                        TextTransparency = 1,
-                        ZIndex = 101
-                })
-                
-                TweenService:Create(Blur, TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Size = 18}):Play()
-                task.wait(0.2)
-                TweenService:Create(LoadSequenceLogo, TweenInfo.new(1, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out, 0, false, 0.2), {
-                        Size = UDim2.new(0, 56, 0, 56), 
-                        ImageTransparency = 0,
-                        Rotation = 0
-                }):Play()
-                TweenService:Create(LoadSequenceGlow, TweenInfo.new(1, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out, 0, false, 0.2), {
-                        Size = UDim2.new(0, 140, 0, 140), 
-                        ImageTransparency = 0.6
-                }):Play()
-                task.wait(0.3)
-                TweenService:Create(LoadSequenceText, TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-                        TextTransparency = 0,
-                        Position = UDim2.new(0.5, 0, 0.52, 0)
-                }):Play()
-                task.wait(2)
-                TweenService:Create(LoadSequenceText, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
-                        TextTransparency = 1,
-                        Position = UDim2.new(0.5, 0, 0.55, 0)
-                }):Play()
-                task.wait(0.1)
-                TweenService:Create(LoadSequenceLogo, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
-                        Size = UDim2.new(0, 0, 0, 0), 
-                        Rotation = 56
-                }):Play()
-                TweenService:Create(LoadSequenceGlow, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
-                        Size = UDim2.new(0, 0, 0, 0)
-                }):Play()
-                local BlurTween = TweenService:Create(Blur, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = 0})
-                BlurTween:Play()
-                BlurTween.Completed:Wait()
-                task.wait(0.15)
-                MainWindow.Visible = true
-                Blur:Destroy()
-                BaseFrame:Destroy()
-                TweenService:Create(MainWindow, TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-                        Size = UDim2.new(0, 640, 0, 390),
-                }):Play()
-        end 
-        
-        if WindowConfig.IntroEnabled then
-                LoadSequence()
-        end
-        
-        if typeof(WindowConfig.LinkVideo) == "string" then
-                OrionLib:SetVideoLink(WindowConfig.LinkVideo)
-        end
+	        MainWindow.Size = UDim2.new(0, 0, 0, 0)
+			MainWindow.Visible = false
+			local Blur = Create("BlurEffect", {
+				Name = "IntroBlur",
+				Size = 0,
+				Parent = game:GetService("Lighting")
+			})
+		
+			local BaseFrame = SetProps(MakeElement("Frame"), {
+				Parent = Orion,
+				Size = UDim2.new(1, 0, 1, 0),
+				BackgroundTransparency = 1,
+				ZIndex = 999
+			})
+			
+			local LoadSequenceLogo = SetChildren(SetProps(MakeElement("Image", "rbxassetid://"..WindowConfig.IntroIcon:match("%d+")), {
+				Parent = BaseFrame,
+				AnchorPoint = Vector2.new(0.5, 0.5),
+				Position = UDim2.new(0.5, 0, 0.4, 0),
+				Size = UDim2.new(0, 0, 0, 0),
+				ImageColor3 = Color3.fromRGB(255, 255, 255),
+				ImageTransparency = 1,
+				Rotation = -180,
+				ZIndex = 101
+			}), {MakeElement("Corner", 0, 5)})
+			
+			local LoadSequenceGlow = SetProps(MakeElement("Image", "rbxassetid://7072706859"), {
+				Parent = BaseFrame,
+				AnchorPoint = Vector2.new(0.5, 0.5),
+				Position = UDim2.new(0.5, 0, 0.45, 0),
+				Size = UDim2.new(0, 0, 0, 0),
+				ImageColor3 = Color3.fromRGB(255, 255, 255),
+				ImageTransparency = 1,
+				ZIndex = 100
+			})
+		
+			local LoadSequenceText = SetProps(MakeElement("Label", WindowConfig.IntroText, 22), {
+				Parent = BaseFrame,
+				Size = UDim2.new(0, 400, 0, 40),
+				AnchorPoint = Vector2.new(0.5, 0.5),
+				Position = UDim2.new(0.5, 0, 0.55, 0),
+				TextXAlignment = Enum.TextXAlignment.Center,
+				Font = Enum.Font.GothamBlack,
+				TextTransparency = 1,
+				ZIndex = 101
+			})
+			
+			TweenService:Create(Blur, TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Size = 18}):Play()
+			task.wait(0.2)
+			TweenService:Create(LoadSequenceLogo, TweenInfo.new(1, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out, 0, false, 0.2), {
+				Size = UDim2.new(0, 56, 0, 56), 
+				ImageTransparency = 0,
+				Rotation = 0
+			}):Play()
+			TweenService:Create(LoadSequenceGlow, TweenInfo.new(1, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out, 0, false, 0.2), {
+				Size = UDim2.new(0, 140, 0, 140), 
+				ImageTransparency = 0.6
+			}):Play()
+			task.wait(0.3)
+			TweenService:Create(LoadSequenceText, TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+				TextTransparency = 0,
+				Position = UDim2.new(0.5, 0, 0.52, 0)
+			}):Play()
+			task.wait(2)
+			TweenService:Create(LoadSequenceText, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+				TextTransparency = 1,
+				Position = UDim2.new(0.5, 0, 0.55, 0)
+			}):Play()
+			task.wait(0.1)
+			TweenService:Create(LoadSequenceLogo, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
+				Size = UDim2.new(0, 0, 0, 0), 
+				Rotation = 56
+			}):Play()
+			TweenService:Create(LoadSequenceGlow, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
+				Size = UDim2.new(0, 0, 0, 0)
+			}):Play()
+			local BlurTween = TweenService:Create(Blur, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = 0})
+			BlurTween:Play()
+			BlurTween.Completed:Wait()
+			task.wait(0.15)
+			MainWindow.Visible = true
+			Blur:Destroy()
+			BaseFrame:Destroy()
+			TweenService:Create(MainWindow, TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+				Size = UDim2.new(0, 615, 0, 344),
+			}):Play()
+		end 
+		
+		if WindowConfig.IntroEnabled then
+			LoadSequence()
+		end
+		
+		if typeof(WindowConfig.LinkVideo) == "string" then
+			OrionLib:SetVideoLink(WindowConfig.LinkVideo)
+		end
 
         local Functions = {}
-        local TabName = {}
-        function Functions:MakeTab(TabConfig)
-                TabConfig = TabConfig or {}
-                TabConfig.Name = TabConfig.Name or "Tab"
-                TabConfig.Icon = TabConfig.Icon or ""
-                TabConfig.Visible = TabConfig.Visible ~= false
-                TabConfig.Disabled = TabConfig.Disabled == true
-        
-                local Tabs = {
-                        Disabled = TabConfig.Disabled,
-                        Visible = TabConfig.Visible,
-                        Type = "Tabs"
-                }
-        
-                -- Cải tiến 3: Thêm đường viền line đánh dấu khi Tab hoạt động (Active Indicator)
-                local ActiveIndicator = Create("Frame", {
-                        Name = "ActiveIndicator",
-                        Size = UDim2.new(0, 3, 0, 0),
-                        Position = UDim2.new(0, 2, 0.5, 0),
-                        AnchorPoint = Vector2.new(0, 0.5),
-                        BackgroundColor3 = Color3.fromRGB(0, 170, 255),
-                        BorderSizePixel = 0,
-                        Visible = true
-                }, {
-                        Create("UICorner", {CornerRadius = UDim.new(1, 0)})
-                })
+		local TabName = {}
+		function Functions:MakeTab(TabConfig)
+			TabConfig = TabConfig or {}
+			TabConfig.Name = TabConfig.Name or "Tab"
+			TabConfig.Icon = TabConfig.Icon or ""
+			TabConfig.Visible = TabConfig.Visible ~= false
+			TabConfig.Disabled = TabConfig.Disabled == true
+		
+			local Tabs = {
+				Disabled = TabConfig.Disabled,
+				Visible = TabConfig.Visible,
+				Type = "Tabs"
+			}					
 
-                local TabFrame = SetChildren(SetProps(MakeElement("Button"), {
-                        Size = UDim2.new(1, 0, 0, 30),
-                        Parent = TabHolder,
-                        Visible = TabConfig.Visible,
-                        AutoButtonColor = not TabConfig.Disabled
-                }), {
-                        ActiveIndicator,
-                        AddThemeObject(SetProps(MakeElement("Image", TabConfig.Icon), {
-                                AnchorPoint = Vector2.new(0, 0.5),
-                                Size = UDim2.new(0, 18, 0, 18),
-                                Position = UDim2.new(0, 12, 0.5, 0),
-                                ImageTransparency = TabConfig.Disabled and 0.7 or 0.4,
-                                Name = "Ico"
-                        }), "Text"),
-                        AddThemeObject(SetChildren(SetProps(MakeElement("Label", TabConfig.Name, 13), {
-                                Size = UDim2.new(1, -35, 1, 0),
-                                Position = UDim2.new(0, 36, 0, 0),
-                                Font = Enum.Font.GothamSemibold,
-                                TextTransparency = TabConfig.Disabled and 0.7 or 0.4,
-                                Name = "Title"
-                        }), {AddThemeObject(MakeElement("Stroke"), "Stroke")}), "Text")
-                })
-        
-                AddItemTable(Tabs, TabConfig.Name, TabFrame)
-                
-                -- Cải tiến 4: Khung nội dung Card tách rời hẳn (Detached Content Card)
-                local ContentCard = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 8), {
-                        Size = UDim2.new(1, -196, 0, 306),
-                        Position = UDim2.new(0, 184, 0, 72),
-                        Parent = MainWindow,
-                        Visible = false,
-                        Name = "ContentCard"
-                }), {
-                        AddThemeObject(MakeElement("Stroke"), "Stroke")
-                }), "Second")
+			local TabFrame = SetChildren(SetProps(MakeElement("Button"), {
+				Size = UDim2.new(1, -12, 0, 32), 
+				Position = UDim2.new(0, 6, 0, 0),
+				Parent = TabHolder,
+				Visible = TabConfig.Visible,
+				AutoButtonColor = not TabConfig.Disabled
+			}), {
+				
+				Create("UICorner", {CornerRadius = UDim.new(0, 6)}),
+				AddThemeObject(SetProps(MakeElement("Image", TabConfig.Icon), {
+					AnchorPoint = Vector2.new(0, 0.5),
+					Size = UDim2.new(0, 16, 0, 16),
+					Position = UDim2.new(0, 10, 0.5, 0),
+					ImageTransparency = TabConfig.Disabled and 0.7 or 0.5,
+					Name = "Ico"
+				}), "Text"),
+				AddThemeObject(SetChildren(SetProps(MakeElement("Label", TabConfig.Name, 13), { 
+					Size = UDim2.new(1, -35, 1, 0),
+					Position = UDim2.new(0, 32, 0, 0),
+					Font = Enum.Font.GothamSemibold,
+					TextTransparency = TabConfig.Disabled and 0.7 or 0.5,
+					Name = "Title"
+				}), {}), "Text")
+			})
+		
+			AddItemTable(Tabs, TabConfig.Name, TabFrame)			
 
-                local Container = AddThemeObject(SetChildren(SetProps(MakeElement("ScrollFrame", Color3.fromRGB(255, 255, 255), 5), {
-                        Size = UDim2.new(1, 0, 1, 0), 
-                        Position = UDim2.new(0, 0, 0, 0), 
-                        Parent = ContentCard,
-                        Visible = true,
-                        Name = "ItemContainer"
-                }), {
-                        MakeElement("List", 0, 6),
-                        MakeElement("Padding", 12, 12, 12, 12)
-                }), "Divider")
-                
-                AddConnection(Container.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"), function()
-                        Container.CanvasSize = UDim2.new(0, 0, 0, Container.UIListLayout.AbsoluteContentSize.Y + 25)
-                end)
-        
-                AddConnection(TabFrame.MouseButton1Click, function()
-                        if Tabs.Disabled then return end
-                        for _, Tab in next, TabHolder:GetChildren() do
-                                if Tab:IsA("TextButton") then
-                                        Tab.Ico.ImageTransparency = 0.4
-                                        Tab.Title.TextTransparency = 0.4
-                                        if Tab:FindFirstChild("ActiveIndicator") then
-                                                TweenService:Create(Tab.ActiveIndicator, TweenInfo.new(0.15, Enum.EasingStyle.Quad), {Size = UDim2.new(0, 3, 0, 0)}):Play()
-                                        end
-                                end
-                        end
-                        for _, c in next, MainWindow:GetChildren() do
-                                if c.Name == "ContentCard" then c.Visible = false end
-                        end
-                        TabFrame.Ico.ImageTransparency = 0
-                        TabFrame.Title.TextTransparency = 0
-                        if TabFrame:FindFirstChild("ActiveIndicator") then
-                                TweenService:Create(TabFrame.ActiveIndicator, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {Size = UDim2.new(0, 3, 0, 16)}):Play()
-                        end
-                        ContentCard.Visible = true
-                end)
-                
-                function Tabs:SetDisabled(state)
-                        Tabs.Disabled = state
-                        TabFrame.AutoButtonColor = not state
-                        TabFrame.Ico.ImageTransparency = state and 0.7 or 0.4
-                        TabFrame.Title.TextTransparency = state and 0.7 or 0.4
-                        if state then
-                                ContentCard.Visible = false
-                        end
-                end
+			local Container = AddThemeObject(SetChildren(SetProps(MakeElement("ScrollFrame", Color3.fromRGB(255, 255, 255), 3), {
+				
+				Size = UDim2.new(1, -180, 1, (WindowConfig.SearchBar and WindowConfig.SearchBar.Mains == true) and -95 or -70), 
+				Position = UDim2.new(0, 168, 0, (WindowConfig.SearchBar and WindowConfig.SearchBar.Mains == true) and 85 or 55), 
+				Parent = MainWindow,
+				Visible = false,
+				Name = "ItemContainer"
+			}), {
+				MakeElement("List", 0, 8), 
+				MakeElement("Padding", 12, 8, 8, (WindowConfig.SearchBar and WindowConfig.SearchBar.Mains == true) and 8 or 12)
+			}), "Divider")
+			
+			AddConnection(Container.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"), function()
+				Container.CanvasSize = UDim2.new(0, 0, 0, Container.UIListLayout.AbsoluteContentSize.Y + ((WindowConfig.SearchBar and WindowConfig.SearchBar.Mains == true) and 25 or 30))
+			end)
+		
+			AddConnection(TabFrame.MouseButton1Click, function()
+				if Tabs.Disabled then return end
+				for _, Tab in next, TabHolder:GetChildren() do
+					if Tab:IsA("TextButton") then
+						Tab.Ico.ImageTransparency = 0.4
+						Tab.Title.TextTransparency = 0.4
+					end
+				end
+				for _, c in next, MainWindow:GetChildren() do
+					if c.Name == "ItemContainer" then c.Visible = false end
+				end
+				TabFrame.Ico.ImageTransparency = 0
+				TabFrame.Title.TextTransparency = 0
+				Container.Visible = true
+			end)
+			
+			function Tabs:SetDisabled(state)
+				Tabs.Disabled = state
+				TabFrame.AutoButtonColor = not state
+				TabFrame.Ico.ImageTransparency = state and 0.7 or 0.4
+				TabFrame.Title.TextTransparency = state and 0.7 or 0.4
+				if state then
+					Container.Visible = false
+				end
+			end
 
-                function Tabs:SetVisible(state)
-                        Tabs.Visible = state
-                        TabFrame.Visible = state
-                        if not state then ContentCard.Visible = false end
-                end
+			function Tabs:SetVisible(state)
+				Tabs.Visible = state
+				TabFrame.Visible = state
+				if not state then Container.Visible = false end
+			end
 			
                 local function GetElements(ItemParent)
                         local ElementFunction = {}
@@ -4131,11 +4012,9 @@ function OrionLib:MakeWindow(WindowConfig)
 								return Color3.fromRGB(tonumber("0x" .. hex:sub(1, 2)), tonumber("0x" .. hex:sub(3, 4)), tonumber("0x" .. hex:sub(5, 6)))
 							end
 						
-							local initH, initS, initV = Color3.toHSV(Colorpicker.Value)
-
 							local ColorSelection = Create("ImageLabel", {
 								Size = UDim2.new(0, 18, 0, 18),
-								Position = UDim2.new(initS, 0, 1 - initV, 0),
+								Position = UDim2.new(select(3, Color3.toHSV(Colorpicker.Value))),
 								ScaleType = Enum.ScaleType.Fit,
 								AnchorPoint = Vector2.new(0.5, 0.5),
 								BackgroundTransparency = 1,
@@ -4144,7 +4023,7 @@ function OrionLib:MakeWindow(WindowConfig)
 						
 							local HueSelection = Create("ImageLabel", {
 								Size = UDim2.new(0, 18, 0, 18),
-								Position = UDim2.new(0.5, 0, 1 - initH, 0),
+								Position = UDim2.new(0.5, 0, 1 - select(1, Color3.toHSV(Colorpicker.Value))),
 								ScaleType = Enum.ScaleType.Fit,
 								AnchorPoint = Vector2.new(0.5, 0.5),
 								BackgroundTransparency = 1,
@@ -4643,11 +4522,13 @@ function OrionLib:MakeWindow(WindowConfig)
 					
         function Functions:Destroy()
                 for _, Connection in next, OrionLib.Connections do
-                        if Connection then Connection:Disconnect() end
+                        Connection:Disconnect()
                 end
-                if MainWindow then MainWindow:Destroy() end
-                if MobileReopenButton then MobileReopenButton:Destroy() end
-        end
+                MainWindow:Destroy()
+                MobileIcon:Destroy()
+        end        
+        return Functions
+end   
 
 function OrionLib:BuildSettings(Tab: table)
     Tab:AddToggle({
