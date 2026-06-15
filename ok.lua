@@ -1128,18 +1128,16 @@ function OrionLib:MakeWindow(WindowConfig)
         WindowConfig.SearchBar = WindowConfig.SearchBar or nil
         WindowConfig.LinkVideo = WindowConfig.LinkVideo or nil
 
-        -- Thiết lập TabHolder tinh giản tối đa bên trong Sidebar nổi
         local TabHolder = AddThemeObject(SetChildren(SetProps(MakeElement("ScrollFrame", Color3.fromRGB(255, 255, 255), 4),
                 WindowConfig.SearchBar and WindowConfig.SearchBar.Tabs == true and {
-                        Size = UDim2.new(1, -12, 1, -95),
-                        Position = UDim2.new(0, 6, 0, 38),
+                        Size = UDim2.new(1, 0, 1, -90),
+                        Position = UDim2.new(0, 0, 0, 40),
                 } or {
-                        Size = UDim2.new(1, -12, 1, -54),
-                        Position = UDim2.new(0, 6, 0, 4),
+                        Size = UDim2.new(1, 0, 1, -50)
                 }),
                 {
-                        MakeElement("List", 0, 3), 
-                        MakeElement("Padding", 2, 0, 0, 2)
+                        MakeElement("List"),
+                        MakeElement("Padding", 8, 0, 0, 8)
                 }), "Divider")
                 
         if TabHolder then
@@ -1147,270 +1145,108 @@ function OrionLib:MakeWindow(WindowConfig)
 		end
 
         AddConnection(TabHolder.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"), function()
-                TabHolder.CanvasSize = UDim2.new(0, 0, 0, TabHolder.UIListLayout.AbsoluteContentSize.Y + 6)
+                TabHolder.CanvasSize = UDim2.new(0, 0, 0, TabHolder.UIListLayout.AbsoluteContentSize.Y + 16)
         end)
 
-        -- NÚT ĐIỀU KHIỂN KÍNH PHÁT QUANG (Glow-Glass Apple Controls)
         local CloseBtn = SetChildren(SetProps(MakeElement("Button"), {
-                Size = UDim2.new(0, 22, 0, 22),
-                Position = UDim2.new(1, -34, 0, 11),
-                BackgroundTransparency = 1,
-                Name = "CloseBtn"
+                Size = UDim2.new(0.5, -2, 1, 0),
+                Position = UDim2.new(0.5, 1, 0, 0),
+                BackgroundTransparency = 1
         }), {
-                Create("UICorner", {CornerRadius = UDim.new(1, 0)}),
                 AddThemeObject(SetProps(MakeElement("Image", "rbxassetid://7072725342"), {
                         AnchorPoint = Vector2.new(0.5, 0.5),
                         Position = UDim2.new(0.5, 0, 0.5, 0),
-                        Size = UDim2.new(0, 8, 0, 8), 
-                        ImageTransparency = 0.5,
-                        Name = "Ico"
+                        Size = UDim2.new(0, 12, 0, 12), 
+                        ImageTransparency = 0.25 
                 }), "Text")
         })
 
         local MinimizeBtn = SetChildren(SetProps(MakeElement("Button"), {
-                Size = UDim2.new(0, 22, 0, 22),
-                Position = UDim2.new(1, -60, 0, 11),
-                BackgroundTransparency = 1,
-                Name = "MinimizeBtn"
+                Size = UDim2.new(0.5, -2, 1, 0),
+                Position = UDim2.new(0, 1, 0, 0),
+                BackgroundTransparency = 1
         }), {
-                Create("UICorner", {CornerRadius = UDim.new(1, 0)}),
                 AddThemeObject(SetProps(MakeElement("Image", "rbxassetid://7072719338"), {
                         AnchorPoint = Vector2.new(0.5, 0.5),
                         Position = UDim2.new(0.5, 0, 0.5, 0),
-                        Size = UDim2.new(0, 8, 0, 8),
-                        ImageTransparency = 0.5,
+                        Size = UDim2.new(0, 12, 0, 12),
+                        ImageTransparency = 0.25,
                         Name = "Ico"
                 }), "Text")
         })
 
-        AddConnection(CloseBtn.MouseEnter, function()
-                CloseBtn.BackgroundTransparency = 0.15
-                CloseBtn.BackgroundColor3 = Color3.fromRGB(250, 95, 85)
-                TweenService:Create(CloseBtn.Ico, TweenInfo.new(0.15), {ImageTransparency = 0}):Play()
-        end)
-        AddConnection(CloseBtn.MouseLeave, function()
-                CloseBtn.BackgroundTransparency = 1
-                TweenService:Create(CloseBtn.Ico, TweenInfo.new(0.15), {ImageTransparency = 0.5}):Play()
-        end)
-
-        AddConnection(MinimizeBtn.MouseEnter, function()
-                MinimizeBtn.BackgroundTransparency = 0.2
-                MinimizeBtn.BackgroundColor3 = Color3.fromRGB(250, 190, 80)
-                TweenService:Create(MinimizeBtn.Ico, TweenInfo.new(0.15), {ImageTransparency = 0}):Play()
-        end)
-        AddConnection(MinimizeBtn.MouseLeave, function()
-                MinimizeBtn.BackgroundTransparency = 1
-                TweenService:Create(MinimizeBtn.Ico, TweenInfo.new(0.15), {ImageTransparency = 0.5}):Play()
-        end)
-
         local DragPoint = SetProps(MakeElement("TFrame"), {
-                Size = UDim2.new(1, -190, 0, 44) -- Chừa khoảng trống bên phải cho bộ hiển thị hiệu năng [2]
+                Size = UDim2.new(1, 0, 0, 50)
         })
 		
 		local hasLinkVideo = typeof(WindowConfig.LinkVideo) == "string"
         
-        -- SIDEBAR CARD (Thẻ nổi trái): Chứa hệ thống Tab điều hướng và Avatar
-        local WindowStuff = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 8), {
-                Size = UDim2.new(0, 145, 1, -64), 
-                Position = UDim2.new(0, 12, 0, 52), 
-                BackgroundTransparency = hasLinkVideo and 1 or 0.15
-        }), {
-                AddThemeObject(MakeElement("Stroke"), "Stroke"),
-                TabHolder,
-        }), "Second")
-
-        -- [CHỨC NĂNG CÓ ÍCH] POPUP BẢNG ĐIỀU KHIỂN CHI TIẾT CHO PROFILE (Control Center Popup) [2]
-        local ProfilePopover = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(25, 25, 25), 0, 8), {
-                Size = UDim2.new(0, 133, 0, 122),
-                Position = UDim2.new(0, 6, 1, -40), -- Vị trí ban đầu bị ẩn xuống
-                Visible = false,
-                BackgroundTransparency = 0.05,
-                ClipsDescendants = true,
-                Parent = WindowStuff,
-                ZIndex = 15
-        }), {
-                AddThemeObject(MakeElement("Stroke"), "Stroke"),
-                Create("UIListLayout", {
-                        SortOrder = Enum.SortOrder.LayoutOrder,
-                        Padding = UDim.new(0, 4)
-                }),
-                Create("UIPadding", {
-                        PaddingLeft = UDim.new(0, 6),
-                        PaddingRight = UDim.new(0, 6),
-                        PaddingTop = UDim.new(0, 6),
-                        PaddingBottom = UDim.new(0, 6)
-                })
-        }), "Second")
-
-        -- Thẻ thông tin tuổi tài khoản lồng vào Popup [2]
-        local AccAgeLabel = AddThemeObject(SetProps(MakeElement("Label", "Loading Age...", 9), {
-                Size = UDim2.new(1, 0, 0, 12),
-                Font = Enum.Font.GothamBold,
-                TextXAlignment = Enum.TextXAlignment.Center,
-                LayoutOrder = 1
-        }), "TextDark")
-        AccAgeLabel.Parent = ProfilePopover
-        task.spawn(function()
-                local age = LocalPlayer.AccountAge
-                AccAgeLabel.Text = string.format("Acc Age: %d Days", age)
-        end)
-
-        -- Hàm sinh nhanh các nút chức năng (Rejoin, Hop, Copy) cho popup [2]
-        local function CreatePopoverButton(text, layoutOrder, callback)
-                local btn = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(32, 32, 32), 0, 4), {
-                        Size = UDim2.new(1, 0, 0, 24),
-                        BackgroundTransparency = 0.3,
-                        LayoutOrder = layoutOrder,
-                        Parent = ProfilePopover
-                }), {
-                        AddThemeObject(MakeElement("Stroke"), "Stroke"),
-                        SetProps(MakeElement("Label", text, 9), {
-                                Size = UDim2.new(1, 0, 1, 0),
-                                Font = Enum.Font.GothamBold,
-                                TextXAlignment = Enum.TextXAlignment.Center
-                        }),
-                        Create("TextButton", {
-                                Size = UDim2.new(1, 0, 1, 0),
-                                BackgroundTransparency = 1,
-                                Text = ""
-                        })
-                }), "Second")
-
-                local clickBtn = btn:FindFirstChildOfClass("TextButton")
-                AddConnection(clickBtn.MouseEnter, function()
-                        btn.BackgroundTransparency = 0.1
-                end)
-                AddConnection(clickBtn.MouseLeave, function()
-                        btn.BackgroundTransparency = 0.3
-                end)
-                AddConnection(clickBtn.MouseButton1Click, callback)
-                return btn
-        end
-
-        -- Định nghĩa chức năng cụ thể cho các nút tiện ích [2]
-        CreatePopoverButton("Copy Join Link", 2, function()
-                local link = string.format("UserID: %s | Place: %s | Job: %s", tostring(LocalPlayer.UserId), tostring(game.PlaceId), tostring(game.JobId))
-                if setclipboard then
-                        setclipboard(link)
-                        OrionLib:MakeNotification({Name = "System Link", Content = "Copied Account & Server JobId to clipboard!", Time = 3})
-                else
-                        print(link)
-                        OrionLib:MakeNotification({Name = "System Link", Content = "Printed to console (setclipboard not supported)", Time = 3})
-                end
-        end)
-
-        CreatePopoverButton("Rejoin Server", 3, function()
-                OrionLib:MakeNotification({Name = "Teleport", Content = "Rejoining current server...", Time = 3})
-                game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId, LocalPlayer)
-        end)
-
-        CreatePopoverButton("Server Hop", 4, function()
-                OrionLib:MakeNotification({Name = "Teleport", Content = "Finding another server...", Time = 3})
-                task.spawn(function()
-                        local x = game:GetService("HttpService")
-                        local teleportService = game:GetService("TeleportService")
-                        local api = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"
-                        local success, result = pcall(function()
-                                return game:HttpGet(api)
-                        end)
-                        if success then
-                                local data = x:JSONDecode(result)
-                                if data and data.data then
-                                        for _, server in ipairs(data.data) do
-                                                if server.playing < server.maxPlayers and server.id ~= game.JobId then
-                                                        teleportService:TeleportToPlaceInstance(game.PlaceId, server.id, LocalPlayer)
-                                                        return
-                                                end
-                                        end
-                                end
-                        end
-                        OrionLib:MakeNotification({Name = "Teleport", Content = "No alternative server found.", Time = 3})
-                end)
-        end)
-
-        -- Tạo khung Profile Card có thể tương tác [2]
-        local ProfileContainer = SetChildren(SetProps(MakeElement("TFrame"), {
-                Size = UDim2.new(1, -12, 0, 36),
-                Position = UDim2.new(0, 6, 1, -44),
-                Parent = WindowStuff
+        local WindowStuff = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 10), {
+                Size = UDim2.new(0, 145, 1, -66),
+                Position = UDim2.new(0, 12, 0, 56),
+                BackgroundTransparency = hasLinkVideo and 1 or 0.25
         }), {
                 AddThemeObject(SetProps(MakeElement("Frame"), {
-                        Size = UDim2.new(1, 0, 0, 1),
-                        Position = UDim2.new(0, 0, 0, -4),
-                        BackgroundTransparency = 0.95
+                        Size = UDim2.new(0, 1, 1, -20),
+                        Position = UDim2.new(1, 4, 0, 10),
+                        BackgroundTransparency = 0.85
                 }), "Stroke"), 
-                AddThemeObject(SetChildren(SetProps(MakeElement("Frame"), {
-                        AnchorPoint = Vector2.new(0, 0.5),
-                        Size = UDim2.new(0, 22, 0, 22),
-                        Position = UDim2.new(0, 4, 0.5, 0)
+                TabHolder,
+                SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(15, 15, 15), 0, 8), {
+                        Size = UDim2.new(1, -16, 0, 44),
+                        Position = UDim2.new(0, 8, 1, -52),
+                        BackgroundTransparency = 0.4
                 }), {
-                        SetChildren(SetProps(MakeElement("Image", "https://www.roblox.com/headshot-thumbnail/image?userId=".. LocalPlayer.UserId .."&width=420&height=420&format=png"), {
-                                Size = UDim2.new(1, 0, 1, 0)
-                        }), {MakeElement("Corner", 1)}),
-                        MakeElement("Corner", 1)
-                }), "Second"),
-                AddThemeObject(SetProps(MakeElement("Label", LocalPlayer.DisplayName, 11), {
-                        Size = UDim2.new(1, -34, 0, 13),
-                        Position = UDim2.new(0, 30, 0.5, -6),
-                        Font = Enum.Font.GothamBold,
-                        ClipsDescendants = true
-                }), "Text"),
-                Create("TextButton", {
-                        Size = UDim2.new(1, 0, 1, 0),
-                        BackgroundTransparency = 1,
-                        Text = "",
-                        ZIndex = 5,
-                        Name = "ClickBtn"
-                })
-        })
+                        AddThemeObject(SetChildren(SetProps(MakeElement("Frame"), {
+                                AnchorPoint = Vector2.new(0, 0.5),
+                                Size = UDim2.new(0, 28, 0, 28),
+                                Position = UDim2.new(0, 8, 0.5, 0)
+                        }), {
+                                SetChildren(SetProps(MakeElement("Image", "https://www.roblox.com/headshot-thumbnail/image?userId=".. LocalPlayer.UserId .."&width=420&height=420&format=png"), {
+                                        Size = UDim2.new(1, 0, 1, 0)
+                                }), {MakeElement("Corner", 1)}),
+                                AddThemeObject(SetChildren(SetProps(MakeElement("Image", "rbxassetid://4031889928"), {
+                                        Size = UDim2.new(1, 0, 1, 0),
+                                }), {MakeElement("Corner", 1)}), "Second"),
+                                MakeElement("Corner", 1)
+                        }), "Divider"),
+                        AddThemeObject(SetProps(MakeElement("Label", LocalPlayer.DisplayName, 12), {
+                                Size = UDim2.new(1, -48, 0, 13),
+                                Position = UDim2.new(0, 42, 0.5, -12),
+                                Font = Enum.Font.GothamBold,
+                                ClipsDescendants = true
+                        }), "Text"),
+                        AddThemeObject(SetProps(MakeElement("Label", "User", 10), {
+                                Size = UDim2.new(1, -48, 0, 12),
+                                Position = UDim2.new(0, 42, 0.5, 1),
+                                Visible = not WindowConfig.HidePremium
+                        }), "TextDark")
+                }),
+        }), "Second")
 
-        -- Xử lý đóng mở Bảng điều khiển Profile mượt mà [2]
-        local popoverToggled = false
-        AddConnection(ProfileContainer.ClickBtn.MouseButton1Click, function()
-                popoverToggled = not popoverToggled
-                if popoverToggled then
-                        ProfilePopover.Visible = true
-                        TweenService:Create(ProfilePopover, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-                                Position = UDim2.new(0, 6, 1, -172)
-                        }):Play()
-                else
-                        local tween = TweenService:Create(ProfilePopover, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
-                                Position = UDim2.new(0, 6, 1, -40)
-                        })
-                        tween:Play()
-                        task.spawn(function()
-                                tween.Completed:Wait()
-                                if not popoverToggled then
-                                        ProfilePopover.Visible = false
-                                end
-                        end)
-                end
-        end)
-
-        -- Hộp tìm kiếm tối giản bo góc mảnh của Sidebar
         if WindowConfig.SearchBar and WindowConfig.SearchBar.Tabs == true then
                 local SearchBox = Create("TextBox", {
-                        Size = UDim2.new(1, -12, 1, 0),
-                        Position = UDim2.fromOffset(6, 0),
+                        Size = UDim2.new(1, 0, 1, 0),
                         BackgroundTransparency = 1,
                         TextColor3 = Color3.fromRGB(255, 255, 255),
-                        PlaceholderColor3 = Color3.fromRGB(130, 130, 130),
-                        PlaceholderText = WindowConfig.SearchBar.Default or "Search...",
+                        PlaceholderColor3 = Color3.fromRGB(210,210,210),
+                        PlaceholderText = WindowConfig.SearchBar.Default or "🔍 Search",
                         Font = Enum.Font.GothamBold,
                         TextWrapped = true,
                         Text = "",
-                        TextXAlignment = Enum.TextXAlignment.Left,
-                        TextSize = 11,
+                        TextXAlignment = Enum.TextXAlignment.Center,
+                        TextSize = 14,
                         ClearTextOnFocus = WindowConfig.SearchBar.ClearTextOnFocus or true
                 })
 
                 local TextboxActual = AddThemeObject(SearchBox, "Text")
 
-                local SearchBar = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 1, 4), {
+                local SearchBar = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 1, 6), {
                         Parent = WindowStuff,
-                        Size = UDim2.new(1, -16, 0, 24),
-                        Position = UDim2.new(0, 8, 0, 4),
-                        BackgroundTransparency = typeof(WindowConfig.LinkVideo) == "string" and 0.5 or 0.15
+                        Size = UDim2.new(0, 130, 0, 24),
+                        Position = UDim2.new(1.013, -12, 0.075, 0),
+                        BackgroundTransparency = typeof(WindowConfig.LinkVideo) == "string" and 0.5 or 0,
+                        AnchorPoint = Vector2.new(1, 0.5)
                 }), {
                         AddThemeObject(MakeElement("Stroke"), "Stroke"),
                         TextboxActual
@@ -1418,6 +1254,7 @@ function OrionLib:MakeWindow(WindowConfig)
 
                 local function SearchHandle()
                         local Text = string.lower(SearchBox.Text)
+
                         for i,v in pairs(TabHolder:GetChildren()) do
                                 if v:IsA("TextButton") then
                                         if string.find(string.lower(i), Text, 1, true) then
@@ -1432,49 +1269,17 @@ function OrionLib:MakeWindow(WindowConfig)
                 AddConnection(TextboxActual:GetPropertyChangedSignal("Text"), SearchHandle);
         end
 
-        -- Căn lề Header sang trọng, phóng khoáng hơn
-        local WindowName = AddThemeObject(SetChildren(SetProps(MakeElement("Label", WindowConfig.Name, 13), {
-                Size = UDim2.new(0, 300, 0, 40),
-                Position = UDim2.new(0, 16, 0, 4),
-                Font = Enum.Font.GothamBold
-        }), {}), "Text")
+        local WindowName = AddThemeObject(SetChildren(SetProps(MakeElement("Label", WindowConfig.Name, 14), {
+                Size = UDim2.new(1, -30, 2, 0),
+                Position = UDim2.new(0, 25, 0, -24),
+                Font = Enum.Font.GothamBlack,
+                TextSize = 20
+        }), {AddThemeObject(MakeElement("Stroke"), "Stroke")}), "Text")
 
-        -- [CHỨC NĂNG CÓ ÍCH] BỘ ĐO HIỆU NĂNG THỜI GIAN THỰC (FPS / Ping Counter Widget) [2]
-        local PerfWidget = Create("TextLabel", {
-                Size = UDim2.new(0, 110, 0, 24),
-                Position = UDim2.new(1, -180, 0, 10),
-                BackgroundTransparency = 1,
-                TextColor3 = Color3.fromRGB(150, 150, 150),
-                TextSize = 10,
-                Font = Enum.Font.GothamBold,
-                TextXAlignment = Enum.TextXAlignment.Right,
-                Text = "FPS: -- | PING: --ms",
-                Name = "PerfWidget"
-        })
-
-        -- Tính toán FPS & Ping an toàn sử dụng RenderStepped [2]
-        local LastTime = os.clock()
-        local FrameCount = 0
-        local CurrentFPS = 60
-        local pingService = game:GetService("Stats").Network.ServerStatsItem["Data Ping"]
-
-        AddConnection(RunService.RenderStepped, function()
-                FrameCount = FrameCount + 1
-                local currentTime = os.clock()
-                if currentTime - LastTime >= 1 then
-                        CurrentFPS = FrameCount
-                        FrameCount = 0
-                        LastTime = currentTime
-                        local ping = math.floor(pingService:GetValue() + 0.5)
-                        PerfWidget.Text = string.format("FPS: %d | PING: %dms", CurrentFPS, ping)
-                end
-        end)
-
-        -- Đường kẻ phân chia mờ tối đa
         local WindowTopBarLine = AddThemeObject(SetProps(MakeElement("Frame"), {
                 Size = UDim2.new(1, 0, 0, 1),
-                Position = UDim2.new(0, 0, 0, 44),
-                BackgroundTransparency = 0.98
+                Position = UDim2.new(0, 0, 1, -1),
+                BackgroundTransparency = 0.85
         }), "Stroke")
 		
 		local RoundMainWindow
@@ -1484,8 +1289,8 @@ function OrionLib:MakeWindow(WindowConfig)
 			RoundMainWindow = "RoundFrame"
 		end
 
-        -- KHUNG CHÍNH (MainWindow)
-        local MainWindow = AddThemeObject(SetChildren(SetProps(MakeElement(RoundMainWindow or "RoundFrame", Color3.fromRGB(255, 255, 255), 0, 12), { 
+        -- Cấu trúc lại MainWindow và nút Close/Minimize dạng mờ (Translucent Glass Pill)
+        local MainWindow = AddThemeObject(SetChildren(SetProps(MakeElement(RoundMainWindow or "RoundFrame", Color3.fromRGB(255, 255, 255), 0, 14), { 
                 Parent = Orion,
                 Position = UDim2.new(0.5, -307, 0.5, -172),
                 Size = UDim2.new(0, 615, 0, 344),
@@ -1493,41 +1298,57 @@ function OrionLib:MakeWindow(WindowConfig)
         }), {
                 Create("UIStroke", {
                     Color = Color3.fromRGB(255, 255, 255),
-                    Thickness = 1,
+                    Thickness = 1.2,
                     ApplyStrokeMode = Enum.ApplyStrokeMode.Border
                 }, {
                     Create("UIGradient", {
                         Color = ColorSequence.new({
-                            ColorSequenceKeypoint.new(0, Color3.fromRGB(80, 80, 80)),
-                            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(45, 45, 45)),
-                            ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 80, 80))
+                            ColorSequenceKeypoint.new(0, OrionLib.Themes[OrionLib.SelectedTheme].Stroke),
+                            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(120, 120, 120)),
+                            ColorSequenceKeypoint.new(1, OrionLib.Themes[OrionLib.SelectedTheme].Stroke)
                         }),
-                        Rotation = 45
+                        Rotation = 135
                     })
                 }),
                 SetChildren(SetProps(MakeElement("TFrame"), {
-                        Size = UDim2.new(1, 0, 0, 44),
+                        Size = UDim2.new(1, 0, 0, 50),
                         Name = "TopBar"
                 }), {
                         WindowName,
-                        PerfWidget, -- Tích hợp widget đo hiệu năng vào Topbar [2]
                         WindowTopBarLine,
-                        CloseBtn,
-                        MinimizeBtn
+                        AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 12), { 
+                                Size = UDim2.new(0, 58, 0, 26),
+                                BackgroundTransparency = 0.4,
+                                Position = UDim2.new(1, -75, 0, 12)
+                        }), {
+                                AddThemeObject(MakeElement("Stroke"), "Stroke"),
+                                AddThemeObject(SetProps(MakeElement("Frame"), {
+                                        Size = UDim2.new(0, 1, 0, 10), 
+                                        Position = UDim2.new(0.5, 0, 0.5, 0),
+                                        AnchorPoint = Vector2.new(0.5, 0.5),
+                                        BackgroundTransparency = 0.8
+                                }), "Stroke"), 
+                                CloseBtn,
+                                MinimizeBtn
+                        }), "Second"),
                 }),
                 DragPoint,
                 WindowStuff
         }), "Main")
 
-        -- CONTENT BACKDROP (Thẻ nổi phải): Tạo phân vùng nổi riêng biệt cực kỳ cao cấp cho khu vực nội dung
-        local ContentBackdrop = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 8), {
-                Size = UDim2.new(1, -181, 1, -64),
-                Position = UDim2.new(0, 169, 0, 52),
+        
+        local ContentBackdrop = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(15, 15, 15), 0, 10), {
+                Size = UDim2.new(1, -177, 1, -66),
+                Position = UDim2.new(0, 165, 0, 56),
+                BackgroundTransparency = 0.5,
                 Parent = MainWindow,
-                BackgroundTransparency = hasLinkVideo and 1 or 0.15,
-                ZIndex = 1
+                ZIndex = 0
         }), {
-                AddThemeObject(MakeElement("Stroke"), "Stroke")
+                Create("UIStroke", {
+                        Color = OrionLib.Themes[OrionLib.SelectedTheme].Stroke,
+                        Thickness = 1,
+                        Transparency = 0.85
+                })
         }), "Second")
         
         if WindowConfig.SearchBar and WindowConfig.SearchBar.Mains == true then
@@ -1962,82 +1783,58 @@ end)
 				Type = "Tabs"
 			}
 		
-			-- GIAO DIỆN TAB VIÊN NHỘNG KÍNH MỜ (Floating Pill Ribbon)
 			local TabFrame = SetChildren(SetProps(MakeElement("Button"), {
-				Size = UDim2.new(1, -12, 0, 28),
-                Position = UDim2.new(0, 6, 0, 0),
+				Size = UDim2.new(1, 0, 0, 30),
 				Parent = TabHolder,
 				Visible = TabConfig.Visible,
 				AutoButtonColor = not TabConfig.Disabled
 			}), {
-				Create("UICorner", {CornerRadius = UDim.new(0, 5)}),
-				-- Thanh chỉ thị ánh sáng dọc (Accent Line Indicator) sát cạnh trái
-				AddThemeObject(SetProps(MakeElement("Frame"), {
-					Size = UDim2.new(0, 2, 0, 12),
-					Position = UDim2.new(0, 0, 0.5, -6),
-					BackgroundTransparency = 1, -- Sẽ hiện dần mượt mà khi tab hoạt động
-					Name = "Indicator"
-				}), "Text"),
 				AddThemeObject(SetProps(MakeElement("Image", TabConfig.Icon), {
 					AnchorPoint = Vector2.new(0, 0.5),
-					Size = UDim2.new(0, 14, 0, 14),
+					Size = UDim2.new(0, 18, 0, 18),
 					Position = UDim2.new(0, 10, 0.5, 0),
-					ImageTransparency = TabConfig.Disabled and 0.8 or 0.6,
+					ImageTransparency = TabConfig.Disabled and 0.7 or 0.4,
 					Name = "Ico"
 				}), "Text"),
-				AddThemeObject(SetChildren(SetProps(MakeElement("Label", TabConfig.Name, 12), {
-					Size = UDim2.new(1, -32, 1, 0),
-					Position = UDim2.new(0, 28, 0, 0),
-					Font = Enum.Font.GothamMedium,
-					TextTransparency = TabConfig.Disabled and 0.8 or 0.6,
+				AddThemeObject(SetChildren(SetProps(MakeElement("Label", TabConfig.Name, 14), {
+					Size = UDim2.new(1, -35, 1, 0),
+					Position = UDim2.new(0, 35, 0, 0),
+					Font = Enum.Font.GothamSemibold,
+					TextTransparency = TabConfig.Disabled and 0.7 or 0.4,
 					Name = "Title"
-				}), {}), "Text")
+				}), {AddThemeObject(MakeElement("Stroke"), "Stroke")}), "Text")
 			})
 		
 			AddItemTable(Tabs, TabConfig.Name, TabFrame)
 			
-			-- Tinh chỉnh container chứa nội dung nằm khớp tuyệt đối lồng lên ContentBackdrop phía trên
 			local Container = AddThemeObject(SetChildren(SetProps(MakeElement("ScrollFrame", Color3.fromRGB(255, 255, 255), 5), {
-				Size = UDim2.new(1, -193, 1, (WindowConfig.SearchBar and WindowConfig.SearchBar.Mains == true) and -76 or -76), 
-				Position = UDim2.new(0, 175, 0, (WindowConfig.SearchBar and WindowConfig.SearchBar.Mains == true) and 58 or 58), 
+				Size = UDim2.new(1, -185, 1, (WindowConfig.SearchBar and WindowConfig.SearchBar.Mains == true) and -90 or -70), 
+				Position = UDim2.new(0, 175, 0, (WindowConfig.SearchBar and WindowConfig.SearchBar.Mains == true) and 90 or 60), 
 				Parent = MainWindow,
 				Visible = false,
-				Name = "ItemContainer",
-                ZIndex = 2 -- Đặt lớp trên cao để người dùng thao tác trực tiếp mượt mà
+				Name = "ItemContainer"
 			}), {
 				MakeElement("List", 0, 6),
-				MakeElement("Padding", 6, 0, 6, (WindowConfig.SearchBar and WindowConfig.SearchBar.Mains == true) and 10 or 15)
+				MakeElement("Padding", 15, 10, 10, (WindowConfig.SearchBar and WindowConfig.SearchBar.Mains == true) and 10 or 15)
 			}), "Divider")
 			
 			AddConnection(Container.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"), function()
-				Container.CanvasSize = UDim2.new(0, 0, 0, Container.UIListLayout.AbsoluteContentSize.Y + ((WindowConfig.SearchBar and WindowConfig.SearchBar.Mains == true) and 20 or 25))
+				Container.CanvasSize = UDim2.new(0, 0, 0, Container.UIListLayout.AbsoluteContentSize.Y + ((WindowConfig.SearchBar and WindowConfig.SearchBar.Mains == true) and 25 or 30))
 			end)
 		
-			-- Trình chuyển đổi tab hoạt động bằng hoạt ảnh chuyển tiếp Fluent mượt mà
 			AddConnection(TabFrame.MouseButton1Click, function()
 				if Tabs.Disabled then return end
 				for _, Tab in next, TabHolder:GetChildren() do
 					if Tab:IsA("TextButton") then
-						TweenService:Create(Tab.Ico, TweenInfo.new(0.15, Enum.EasingStyle.Quad), {ImageTransparency = 0.6}):Play()
-						TweenService:Create(Tab.Title, TweenInfo.new(0.15, Enum.EasingStyle.Quad), {TextTransparency = 0.6}):Play()
-						if Tab:FindFirstChild("Indicator") then
-							TweenService:Create(Tab.Indicator, TweenInfo.new(0.12, Enum.EasingStyle.Quad), {BackgroundTransparency = 1}):Play()
-						end
-						TweenService:Create(Tab, TweenInfo.new(0.15, Enum.EasingStyle.Quad), {BackgroundTransparency = 1}):Play()
+						Tab.Ico.ImageTransparency = 0.4
+						Tab.Title.TextTransparency = 0.4
 					end
 				end
 				for _, c in next, MainWindow:GetChildren() do
 					if c.Name == "ItemContainer" then c.Visible = false end
 				end
-				
-				-- Kích hoạt độ sáng và thanh chỉ thị của tab được chọn
-				TweenService:Create(TabFrame.Ico, TweenInfo.new(0.15, Enum.EasingStyle.Quad), {ImageTransparency = 0}):Play()
-				TweenService:Create(TabFrame.Title, TweenInfo.new(0.15, Enum.EasingStyle.Quad), {TextTransparency = 0}):Play()
-				if TabFrame:FindFirstChild("Indicator") then
-					TweenService:Create(TabFrame.Indicator, TweenInfo.new(0.12, Enum.EasingStyle.Quad), {BackgroundTransparency = 0}):Play()
-				end
-				TweenService:Create(TabFrame, TweenInfo.new(0.15, Enum.EasingStyle.Quad), {BackgroundTransparency = 0.93, BackgroundColor3 = Color3.fromRGB(255, 255, 255)}):Play()
-				
+				TabFrame.Ico.ImageTransparency = 0
+				TabFrame.Title.TextTransparency = 0
 				Container.Visible = true
 			end)
 			
