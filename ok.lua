@@ -72,7 +72,6 @@ local Orion = Instance.new("ScreenGui")
 Orion.Name = "Orion"
 Orion.Parent = PARENT
 
-local _currentKey = Enum.KeyCode.RightShift
 function OrionLib:SetKeyToggleUI(key: Enum.KeyCode)
     local success, keyui = pcall(function()
 		return Enum.KeyCode[key]
@@ -210,12 +209,12 @@ local function MakeDraggable(instance: Instance, main: Instance)
             dragging = true
             mousePos = input.Position
             framePos = main.Position
+        end
+    end)
 
-            AddConnection(input.Changed, function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    dragging = false
-                end
-            end)
+    AddConnection(UserInputService.InputEnded, function(input: InputObject)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
         end
     end)
 
@@ -698,7 +697,11 @@ CreateElement("ScrollFrame", function(Color, Width)
                 ScrollBarImageColor3 = Color,
                 BorderSizePixel = 0,
                 ScrollBarThickness = Width,
-                CanvasSize = UDim2.new(0, 0, 0, 0)
+                CanvasSize = UDim2.new(0, 0, 0, 0),
+                
+                ElasticBehavior = Enum.ElasticBehavior.Always,
+                ScrollingDirection = Enum.ScrollingDirection.Y,
+                Active = true
         })
         return ScrollFrame
 end)
@@ -4114,9 +4117,11 @@ function OrionLib:MakeWindow(WindowConfig)
 								return Color3.fromRGB(tonumber("0x" .. hex:sub(1, 2)), tonumber("0x" .. hex:sub(3, 4)), tonumber("0x" .. hex:sub(5, 6)))
 							end
 						
+							local initH, initS, initV = Color3.toHSV(Colorpicker.Value)
+
 							local ColorSelection = Create("ImageLabel", {
 								Size = UDim2.new(0, 18, 0, 18),
-								Position = UDim2.new(select(3, Color3.toHSV(Colorpicker.Value))),
+								Position = UDim2.new(initS, 0, 1 - initV, 0),
 								ScaleType = Enum.ScaleType.Fit,
 								AnchorPoint = Vector2.new(0.5, 0.5),
 								BackgroundTransparency = 1,
@@ -4125,7 +4130,7 @@ function OrionLib:MakeWindow(WindowConfig)
 						
 							local HueSelection = Create("ImageLabel", {
 								Size = UDim2.new(0, 18, 0, 18),
-								Position = UDim2.new(0.5, 0, 1 - select(1, Color3.toHSV(Colorpicker.Value))),
+								Position = UDim2.new(0.5, 0, 1 - initH, 0),
 								ScaleType = Enum.ScaleType.Fit,
 								AnchorPoint = Vector2.new(0.5, 0.5),
 								BackgroundTransparency = 1,
@@ -4624,13 +4629,11 @@ function OrionLib:MakeWindow(WindowConfig)
 					
         function Functions:Destroy()
                 for _, Connection in next, OrionLib.Connections do
-                        Connection:Disconnect()
+                        if Connection then Connection:Disconnect() end
                 end
-                MainWindow:Destroy()
-                MobileIcon:Destroy()
-        end        
-        return Functions
-end   
+                if MainWindow then MainWindow:Destroy() end
+                if MobileReopenButton then MobileReopenButton:Destroy() end
+        end
 
 function OrionLib:BuildSettings(Tab: table)
     Tab:AddToggle({
