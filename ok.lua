@@ -72,6 +72,7 @@ local Orion = Instance.new("ScreenGui")
 Orion.Name = "Orion"
 Orion.Parent = PARENT
 
+local _currentKey = Enum.KeyCode.RightShift
 function OrionLib:SetKeyToggleUI(key: Enum.KeyCode)
     local success, keyui = pcall(function()
 		return Enum.KeyCode[key]
