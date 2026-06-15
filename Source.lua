@@ -755,7 +755,7 @@ function OrionLib:MakeNotification(NotificationConfig)
 	task.spawn(function()
 		NotificationConfig.Name = NotificationConfig.Name or "Notification"
 		NotificationConfig.Content = NotificationConfig.Content or "Content"
-		NotificationConfig.Image = NotificationConfig.Image or "rbxassetid://14229447778"
+		NotificationConfig.Image = NotificationConfig.Image or "rbxassetid://108533901677473"
 		NotificationConfig.Time = NotificationConfig.Time or 5
 		NotificationConfig.Volume = NotificationConfig.Volume or OrionLib.NotifyVolume
 		
@@ -1055,6 +1055,7 @@ function OrionLib:MakeWindow(WindowConfig)
         local Loaded = false
         local UIHidden = false
         local MinimizedKey = false
+        local ToggleUI 
 
         WindowConfig = WindowConfig or {}
         WindowConfig.Name = WindowConfig.Name or "Library"
@@ -1067,8 +1068,8 @@ function OrionLib:MakeWindow(WindowConfig)
         WindowConfig.IntroText = WindowConfig.IntroText or "Orion Library"
         WindowConfig.CloseCallback = WindowConfig.CloseCallback or function() end
         WindowConfig.ShowIcon = WindowConfig.ShowIcon or false
-        WindowConfig.Icon = WindowConfig.Icon or "rbxassetid://14229447778"
-        WindowConfig.IntroIcon = WindowConfig.IntroIcon or "rbxassetid://14229447778"
+        WindowConfig.Icon = WindowConfig.Icon or "rbxassetid://108533901677473"
+        WindowConfig.IntroIcon = WindowConfig.IntroIcon or "rbxassetid://108533901677473"
         WindowConfig.SearchBar = WindowConfig.SearchBar or nil
         WindowConfig.LinkVideo = WindowConfig.LinkVideo or nil
 
@@ -1129,11 +1130,11 @@ function OrionLib:MakeWindow(WindowConfig)
                 Position = UDim2.new(0, 10, 0, 60),
                 BackgroundTransparency = hasLinkVideo and 1 or 0.35
         }), {
-                -- Đã lược bỏ các Frame đè góc thô cứng cũ để lộ góc bo tự nhiên
+                
                 AddThemeObject(SetProps(MakeElement("Frame"), {
                         Size = UDim2.new(0, 1, 1, 0),
                         Position = UDim2.new(1, -1, 0, 0),
-                        BackgroundTransparency = 1 -- Làm mờ đường kẻ phân cách để tăng không gian mở
+                        BackgroundTransparency = 1 
                 }), "Stroke"), 
                 TabHolder,
                 SetChildren(SetProps(MakeElement("TFrame"), {
@@ -1370,73 +1371,91 @@ function OrionLib:MakeWindow(WindowConfig)
         MakeDraggable(MobileReopenButton, MobileReopenButton)
 
         AddConnection(MobileReopenButton.MouseButton1Click, function()
-                MainWindow.Visible = true
-                TweenService:Create(MainWindow, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-					Size = UDim2.new(0, 615, 0, 344),
-				}):Play()
-				WindowStuff.Visible = true
-				WindowTopBarLine.Visible = true
-				MinimizeBtn.Ico.Image = "rbxassetid://7072719338"
-                MobileReopenButton.Visible = false
-                Minimized = false
+                ToggleUI(true)
         end)
 
-local function ToggleUI(state)
-    if isToggling then return end
-    isToggling = true
+local activeToggleTween = nil
+local lastSize = UDim2.new(0, 615, 0, 344) 
+
+ToggleUI = function(state) 
     
-    local isMobileOrTouch = UserInputService.TouchEnabled or table.find({Enum.Platform.IOS, Enum.Platform.Android}, UserInputService:GetPlatform())
-    
-    if state == nil then
-        
-        if isMobileOrTouch then
-            state = not MainWindow.Visible
-        else
-            state = not Orion.Enabled
+    if Minimized then
+        if state == nil then
+            state = not MinimizePill.Visible
         end
+        MinimizePill.Visible = state
+        MainWindow.Visible = false
+        if MobileReopenButton then
+            MobileReopenButton.Visible = not state
+        end
+        return
+    end
+
+    if state == nil then
+        state = not MainWindow.Visible
     end
     
+    if activeToggleTween then
+        activeToggleTween:Cancel()
+        activeToggleTween = nil
+    end
+    
+    local isMobileOrTouch = UserInputService.TouchEnabled or table.find({Enum.Platform.IOS, Enum.Platform.Android}, UserInputService:GetPlatform())
     MainWindow.ClipsDescendants = true
     
     if state then
-        
-        MainWindow.Size = UDim2.new(0, 0, 0, 0)
-        MainWindow.Visible = true
-        Orion.Enabled = true
-        
-        local showTween = TweenService:Create(MainWindow, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            Size = UDim2.new(0, 615, 0, 344)
-        })
-        showTween:Play()
-        showTween.Completed:Wait()
-        
-        if not Minimized then
-            MainWindow.ClipsDescendants = false
+        if MobileReopenButton then
+            MobileReopenButton.Visible = false
         end
-    else
+        MainWindow.Visible = true
         
-        local hideTween = TweenService:Create(MainWindow, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+        if MainWindow.Size.X.Offset < 10 or MainWindow.Size.Y.Offset < 10 then
+            MainWindow.Size = UDim2.new(0, 0, 0, 0)
+        end
+        
+        local targetSize = lastSize or UDim2.new(0, 615, 0, 344)
+               
+        if targetSize.X.Offset < 50 or targetSize.Y.Offset < 20 then
+            targetSize = UDim2.new(0, 615, 0, 344)
+        end
+        
+        activeToggleTween = TweenService:Create(MainWindow, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+            Size = targetSize
+        })
+        activeToggleTween:Play()
+        
+        task.spawn(function()
+            local completedState = activeToggleTween.Completed:Wait()
+            if completedState == Enum.PlaybackState.Completed then
+                MainWindow.ClipsDescendants = false
+                activeToggleTween = nil
+            end
+        end)
+    else
+        if MainWindow.Size.X.Offset > 50 and MainWindow.Size.Y.Offset > 20 then
+            lastSize = MainWindow.Size
+        end
+        
+        activeToggleTween = TweenService:Create(MainWindow, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
             Size = UDim2.new(0, 0, 0, 0)
         })
-        hideTween:Play()
-        hideTween.Completed:Wait()
+        activeToggleTween:Play()
         
-        MainWindow.Visible = false
-        
-        if not isMobileOrTouch then
-            
-            Orion.Enabled = false
-        else
-            
-            MobileReopenButton.Visible = true
-        end
+        task.spawn(function()
+            local completedState = activeToggleTween.Completed:Wait()
+            if completedState == Enum.PlaybackState.Completed then
+                MainWindow.Visible = false
+                
+                if isMobileOrTouch and MobileReopenButton then
+                    MobileReopenButton.Visible = true
+                end
+                activeToggleTween = nil
+            end
+        end)
     end
-    
-    isToggling = false
 end
 
 AddConnection(UserInputService.InputBegan, function(Input, processed)
-    
     if processed or UserInputService:GetFocusedTextBox() then 
         return 
     end
@@ -1449,79 +1468,146 @@ end)
         AddConnection(CloseBtn.MouseButton1Up, function()
                 ToggleUI(false)
                 UIHidden = true
-
-                if UserInputService.TouchEnabled then
-                        MobileReopenButton.Visible = true
-                end
-                
                 OrionLib:SafeScript(WindowConfig.CloseCallback)
         end)
+        
+        local MinimizePill = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(25, 25, 25), 0, 18), {
+                Parent = Orion,
+                Size = UDim2.new(0, 0, 0, 36),
+                Position = UDim2.new(0.5, 0, 0, 20),
+                AnchorPoint = Vector2.new(0.5, 0),
+                Visible = false,
+                ClipsDescendants = true
+        }), {
+                AddThemeObject(MakeElement("Stroke"), "Stroke"),
+                SetProps(MakeElement("Button"), {
+                        Size = UDim2.new(1, 0, 1, 0),
+                        Name = "ClickBtn",
+                        ZIndex = 5
+                }),
+                
+                SetChildren(SetProps(MakeElement("TFrame"), {
+                        Size = UDim2.new(1, 0, 1, 0),
+                        Name = "ContentContainer"
+                }), {
+                        Create("UIListLayout", {
+                                FillDirection = Enum.FillDirection.Horizontal,
+                                VerticalAlignment = Enum.VerticalAlignment.Center,
+                                HorizontalAlignment = Enum.HorizontalAlignment.Center,
+                                Padding = UDim.new(0, 8),
+                                SortOrder = Enum.SortOrder.LayoutOrder
+                        }),
+                        Create("UIPadding", {
+                                PaddingLeft = UDim.new(0, 12),
+                                PaddingRight = UDim.new(0, 12)
+                        }),
+                        AddThemeObject(SetProps(MakeElement("Image", WindowConfig.Icon or "rbxassetid://108533901677473"), {
+                                Size = UDim2.new(0, 18, 0, 18),
+                                LayoutOrder = 1,
+                                Name = "Icon"
+                        }), "Text"),
+                        AddThemeObject(SetProps(MakeElement("Label", WindowConfig.Name, 12), {
+                                Size = UDim2.new(0, 0, 1, 0),
+                                AutomaticSize = Enum.AutomaticSize.X,
+                                Font = Enum.Font.GothamBold,
+                                LayoutOrder = 2,
+                                Name = "Title"
+                        }), "Text")
+                })
+        }), "Second")
 
-        AddConnection(MinimizeBtn.MouseButton1Up, function()
-                local MainWindowStroke = MainWindow:FindFirstChildOfClass("UIStroke")
-                local StrokeGradient = MainWindowStroke and MainWindowStroke:FindFirstChildOfClass("UIGradient")
+        MakeDraggable(MinimizePill.ClickBtn, MinimizePill)
+
+        local dragStartPos = Vector3.new()
+        local isDraggingPill = false
+
+        AddConnection(MinimizePill.ClickBtn.InputBegan, function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                        dragStartPos = input.Position
+                        isDraggingPill = false
+                end
+        end)
+
+        AddConnection(MinimizePill.ClickBtn.InputChanged, function(input)
+                if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+                        if (input.Position - dragStartPos).Magnitude > 8 then
+                                isDraggingPill = true
+                        end
+                end
+        end)
+
+        local function toggleMinimize(targetMinimizedState)
+                if targetMinimizedState == nil then
+                        targetMinimizedState = not Minimized
+                end
+
+                if targetMinimizedState == Minimized then return end
+                Minimized = targetMinimizedState
+
+                MainWindow.ClipsDescendants = true
 
                 if Minimized then
                         
-                        MainWindow.ClipsDescendants = true
-                                                
-                        if MainWindowStroke then
-                                TweenService:Create(MainWindowStroke, TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                                        Thickness = 1.2
-                                }):Play()
-                        end
-                        if StrokeGradient then
-                                TweenService:Create(StrokeGradient, TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                                        Rotation = 45
-                                }):Play()
-                        end
+                        local targetPillSize = UDim2.new(0, MinimizePill.ContentContainer.Title.TextBounds.X + 52, 0, 36)
+                        local originalPos = MainWindow.Position
 
-                        local expandTween = TweenService:Create(MainWindow, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                                Size = UDim2.new(0, 615, 0, 344)
+                        local shrinkTween = TweenService:Create(MainWindow, TweenInfo.new(0.45, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
+                                Size = UDim2.new(0, 0, 0, 0),
+                                Position = MinimizePill.Position
                         })
-                        expandTween:Play()
-                        
-                        local icoImage = MinimizeBtn:FindFirstChild("Ico", true)
-                        if icoImage then
-                                icoImage.Image = "rbxassetid://7072719338"
-                        end
-                                              
-                        task.wait(0.18) 
-                        WindowStuff.Visible = true
-                        WindowTopBarLine.Visible = true
-                        
-                        expandTween.Completed:Wait()
-                        MainWindow.ClipsDescendants = false
+                        shrinkTween:Play()
+
+                        task.spawn(function()
+                                shrinkTween.Completed:Wait()
+                                if Minimized then
+                                        MainWindow.Visible = false
+                                        MainWindow.Position = originalPos
+
+                                        MinimizePill.Size = UDim2.new(0, 0, 0, 36)
+                                        MinimizePill.Visible = true
+                                        TweenService:Create(MinimizePill, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                                                Size = targetPillSize
+                                        }):Play()
+                                end
+                        end)
                 else
-                        
-                        MainWindow.ClipsDescendants = true
-                                             
-                        if MainWindowStroke then
-                                TweenService:Create(MainWindowStroke, TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                                        Thickness = 1.5
-                                }):Play()
-                        end
-                        if StrokeGradient then
-                                TweenService:Create(StrokeGradient, TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                                        Rotation = 90
-                                }):Play()
-                        end
-                      
-                        WindowTopBarLine.Visible = false
-                        WindowStuff.Visible = false 
-                        
-                        local icoImage = MinimizeBtn:FindFirstChild("Ico", true)
-                        if icoImage then
-                                icoImage.Image = "rbxassetid://7072720870" 
-                        end
-                      
-                        local collapsedWidth = math.max(WindowName.TextBounds.X + 115, 175)
-                                             
-                        TweenService:Create(MainWindow, TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                                Size = UDim2.new(0, collapsedWidth, 0, 50)
-                        }):Play()
+                        local shrinkPill = TweenService:Create(MinimizePill, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
+                                Size = UDim2.new(0, 0, 0, 36)
+                        })
+                        shrinkPill:Play()
+
+                        task.spawn(function()
+                                shrinkPill.Completed:Wait()
+                                if not Minimized then
+                                        MinimizePill.Visible = false
+
+                                        MainWindow.Size = UDim2.new(0, 0, 0, 0)
+                                        MainWindow.Visible = true
+
+                                        local expandTween = TweenService:Create(MainWindow, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                                                Size = UDim2.new(0, 615, 0, 344)
+                                        })
+                                        expandTween:Play()
+
+                                        expandTween.Completed:Wait()
+                                        if not Minimized then
+                                                MainWindow.ClipsDescendants = false
+                                        end
+                                end
+                        end)
                 end
-                Minimized = not Minimized    
+        end
+
+        AddConnection(MinimizeBtn.MouseButton1Up, function()
+                toggleMinimize(true)
+        end)
+
+        AddConnection(MinimizePill.ClickBtn.InputEnded, function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                        if not isDraggingPill then
+                                toggleMinimize(false)
+                        end
+                end
         end)
 
         local function LoadSequence()
