@@ -745,7 +745,7 @@ local NotificationHolder = SetProps(SetChildren(MakeElement("TFrame"), {
         })
 }), {
         Position = UDim2.new(1, -20, 1, -20),
-        Size = UDim2.new(0, 340, 1, -20), 
+        Size = UDim2.new(0, 320, 1, -20),
         AnchorPoint = Vector2.new(1, 1),
         Parent = Orion
 })
@@ -780,7 +780,7 @@ function OrionLib:MakeNotification(NotificationConfig)
 			ClipsDescendants = true
 		})
 		
-		local Card = SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(25, 25, 25), 0, 14), {
+		local Card = SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(25, 25, 25), 0, 12), {
 			Parent = NotificationParent,
 			Size = UDim2.new(1, -10, 0, 0),
 			Position = UDim2.new(1.5, 0, 0, 0), 
@@ -802,9 +802,9 @@ function OrionLib:MakeNotification(NotificationConfig)
 			}, {
 				Create("UIGradient", {
 					Color = ColorSequence.new({
-						ColorSequenceKeypoint.new(0, Color3.fromRGB(80, 80, 80)),
+						ColorSequenceKeypoint.new(0, Color3.fromRGB(70, 70, 70)),
 						ColorSequenceKeypoint.new(0.5, Color3.fromRGB(45, 45, 45)),
-						ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 80, 80))
+						ColorSequenceKeypoint.new(1, Color3.fromRGB(70, 70, 70))
 					}),
 					Rotation = 90
 				})
@@ -817,53 +817,38 @@ function OrionLib:MakeNotification(NotificationConfig)
 			})
 		})
 
-		local IconBadge = Create("Frame", {
+		local LeftSection = Create("Frame", {
 			Parent = Card,
-			Size = UDim2.new(0, 36, 0, 36),
+			Size = UDim2.new(0, 32, 0, 32),
 			Position = UDim2.new(0, 0, 0, 0),
-			BackgroundColor3 = Color3.fromRGB(32, 32, 32),
-			BorderSizePixel = 0,
-			ZIndex = 2
+			BackgroundTransparency = 1
 		}, {
-			Create("UICorner", {CornerRadius = UDim.new(1, 0)}),
-			
-			Create("UIStroke", {
-				Color = Color3.fromRGB(0, 170, 255),
-				Thickness = 1.5,
-				Transparency = 0.4
-			}),
-			Create("ImageLabel", {
-				Size = UDim2.new(0, 20, 0, 20),
-				AnchorPoint = Vector2.new(0.5, 0.5),
-				Position = UDim2.new(0.5, 0, 0.5, 0),
-				Image = IconId,
-				ImageColor3 = Color3.fromRGB(255, 255, 255),
-				BackgroundTransparency = 1,
-				ZIndex = 3
-			})
-		})
-
-		local VerticalDivider = Create("Frame", {
-			Parent = Card,
-			Size = UDim2.new(0, 1, 0, 32),
-			Position = UDim2.new(0, 48, 0, 2),
-			BackgroundColor3 = Color3.fromRGB(60, 60, 60),
-			BorderSizePixel = 0
-		}, {
-			Create("UIGradient", {
-				Transparency = NumberSequence.new({
-					NumberSequenceKeypoint.new(0, 1),
-					NumberSequenceKeypoint.new(0.5, 0),
-					NumberSequenceKeypoint.new(1, 1)
+			Create("Frame", {
+				Size = UDim2.new(1, 0, 1, 0),
+				BackgroundColor3 = Color3.fromRGB(32, 32, 32),
+				BorderSizePixel = 0
+			}, {
+				Create("UICorner", {CornerRadius = UDim.new(1, 0)}),
+				Create("UIStroke", {
+					Color = Color3.fromRGB(0, 170, 255),
+					Thickness = 1.2,
+					Transparency = 0.4
 				}),
-				Rotation = 90
+				Create("ImageLabel", {
+					Size = UDim2.new(0, 18, 0, 18),
+					AnchorPoint = Vector2.new(0.5, 0.5),
+					Position = UDim2.new(0.5, 0, 0.5, 0),
+					Image = IconId,
+					ImageColor3 = Color3.fromRGB(255, 255, 255),
+					BackgroundTransparency = 1
+				})
 			})
 		})
 
-		local ContentArea = Create("Frame", {
+		local RightSection = Create("Frame", {
 			Parent = Card,
-			Position = UDim2.new(0, 60, 0, 0),
-			Size = UDim2.new(1, -60, 0, 0),
+			Position = UDim2.new(0, 44, 0, 0),
+			Size = UDim2.new(1, -44, 0, 0),
 			AutomaticSize = Enum.AutomaticSize.Y,
 			BackgroundTransparency = 1
 		}, {
@@ -875,7 +860,7 @@ function OrionLib:MakeNotification(NotificationConfig)
 		})
 
 		local Header = Create("Frame", {
-			Parent = ContentArea,
+			Parent = RightSection,
 			Size = UDim2.new(1, 0, 0, 16),
 			BackgroundTransparency = 1,
 			LayoutOrder = 1
@@ -907,7 +892,7 @@ function OrionLib:MakeNotification(NotificationConfig)
 
 		if NotificationConfig.Banner then
 			local Banner = Create("ImageLabel", {
-				Parent = ContentArea,
+				Parent = RightSection,
 				Size = UDim2.new(1, 0, 0, 90),
 				Image = NotificationConfig.Banner,
 				ScaleType = Enum.ScaleType.Crop,
@@ -924,12 +909,12 @@ function OrionLib:MakeNotification(NotificationConfig)
 		end
 		
 		local ContentLabel = Create("TextLabel", {
-			Parent = ContentArea,
+			Parent = RightSection,
 			Size = UDim2.new(1, 0, 0, 0),
 			AutomaticSize = Enum.AutomaticSize.Y,
 			Text = ParseText(NotificationConfig.Content),
 			Font = Enum.Font.GothamSemibold,
-			TextSize = 11, 
+			TextSize = 11,
 			TextColor3 = Color3.fromRGB(180, 180, 180),
 			BackgroundTransparency = 1,
 			TextXAlignment = Enum.TextXAlignment.Left,
@@ -939,7 +924,7 @@ function OrionLib:MakeNotification(NotificationConfig)
 		})
 
 		local BarWrapper = Create("Frame", {
-			Parent = ContentArea,
+			Parent = RightSection,
 			Size = UDim2.new(1, 0, 0, 2),
 			BackgroundColor3 = Color3.fromRGB(40, 40, 40),
 			BorderSizePixel = 0,
@@ -950,7 +935,7 @@ function OrionLib:MakeNotification(NotificationConfig)
 		local Bar = Create("Frame", {
 			Parent = BarWrapper,
 			Size = UDim2.new(0, 0, 1, 0),
-			BackgroundColor3 = Color3.fromRGB(0, 170, 255), 
+			BackgroundColor3 = Color3.fromRGB(0, 170, 255),
 			BorderSizePixel = 0
 		})
 		Create("UICorner", {CornerRadius = UDim.new(1, 0), Parent = Bar})
@@ -971,7 +956,6 @@ function OrionLib:MakeNotification(NotificationConfig)
 		local function closeNotification()
 			if isClosed then return end
 			isClosed = true
-			
 			local Out = TweenService:Create(Card, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
 				Position = UDim2.new(1.5, 0, 0, 0)
 			})
