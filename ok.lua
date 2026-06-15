@@ -1180,117 +1180,108 @@ function OrionLib:MakeWindow(WindowConfig)
         })
 		
 		
+        -- [THAY THẾ TOÀN BỘ KHỐI KHỞI TẠO MAINWINDOW PHÍA TRÊN]
         local hasLinkVideo = typeof(WindowConfig.LinkVideo) == "string"
-        
-        
-        local WindowStuff = AddThemeObject(SetChildren(SetProps(MakeElement("TFrame"), {
-                Size = UDim2.new(0, 140, 1, -50),
-                Position = UDim2.new(0, 10, 0, 50),
-                BackgroundTransparency = 1
-        }), {
-                TabHolder,
-                
-                SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(30, 30, 30), 0, 16), {
-                        Size = UDim2.new(1, -12, 0, 32),
-                        Position = UDim2.new(0, 6, 1, -42),
-                        BackgroundTransparency = 0.2
-                }), {
-                        AddThemeObject(MakeElement("Stroke"), "Stroke"),
-                        SetChildren(SetProps(MakeElement("TFrame"), {
-                                AnchorPoint = Vector2.new(0, 0.5),
-                                Size = UDim2.new(0, 22, 0, 22),
-                                Position = UDim2.new(0, 6, 0.5, 0)
-                        }), {
-                                SetChildren(SetProps(MakeElement("Image", "https://www.roblox.com/headshot-thumbnail/image?userId=".. LocalPlayer.UserId .."&width=420&height=420&format=png"), {
-                                        Size = UDim2.new(1, 0, 1, 0)
-                                }), {MakeElement("Corner", 1)}),
-                                MakeElement("Corner", 1)
-                        }),
-                        AddThemeObject(SetProps(MakeElement("Label", LocalPlayer.DisplayName, 11), {
-                                Size = UDim2.new(1, -38, 1, 0),
-                                Position = UDim2.new(0, 34, 0, 0),
-                                Font = Enum.Font.GothamBold,
-                                ClipsDescendants = true
-                        }), "Text")
+        local RoundMainWindow = (typeof(WindowConfig.LinkVideo) == "string") and "RoundVideo" or "RoundFrame"
+
+        -- 1. Dải sáng chuyển màu Neon công nghệ ở đỉnh cửa sổ
+        local AccentLine = Create("Frame", {
+                Size = UDim2.new(1, 0, 0, 3),
+                Position = UDim2.new(0, 0, 0, 0),
+                BorderSizePixel = 0,
+                ZIndex = 12
+        }, {
+                Create("UIGradient", {
+                        Color = ColorSequence.new({
+                                ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 170, 255)),   -- Xanh cyan
+                                ColorSequenceKeypoint.new(0.5, Color3.fromRGB(140, 20, 255)), -- Tím neon
+                                ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 255, 150))    -- Xanh lục bảo
+                        })
                 }),
-        }), "Second")
+                Create("UICorner", {CornerRadius = UDim.new(0, 14)})
+        })
 
-        if WindowConfig.SearchBar and WindowConfig.SearchBar.Tabs == true then
-                local SearchBox = Create("TextBox", {
-                        Size = UDim2.new(1, 0, 1, 0),
-                        BackgroundTransparency = 1,
-                        TextColor3 = Color3.fromRGB(255, 255, 255),
-                        PlaceholderColor3 = Color3.fromRGB(160, 160, 160),
-                        PlaceholderText = WindowConfig.SearchBar.Default or "Search...",
-                        Font = Enum.Font.GothamBold,
-                        TextWrapped = true,
-                        Text = "",
-                        TextXAlignment = Enum.TextXAlignment.Center,
-                        TextSize = 12,
-                        ClearTextOnFocus = WindowConfig.SearchBar.ClearTextOnFocus or true
+        -- 2. Bộ đo FPS & Ping thời gian thực tích hợp trên TopBar
+        local StatsContainer = Create("Frame", {
+                Size = UDim2.new(0, 150, 0, 20),
+                Position = UDim2.new(1, -220, 0, 12),
+                BackgroundTransparency = 1,
+                ZIndex = 5
+        }, {
+                Create("UIListLayout", {
+                        FillDirection = Enum.FillDirection.Horizontal,
+                        HorizontalAlignment = Enum.HorizontalAlignment.Right,
+                        VerticalAlignment = Enum.VerticalAlignment.Center,
+                        Padding = UDim.new(0, 8)
                 })
+        })
 
-                local TextboxActual = AddThemeObject(SearchBox, "Text")
+        local FpsLabel = AddThemeObject(SetProps(MakeElement("Label", "FPS: --", 10), {
+                Size = UDim2.new(0, 50, 1, 0),
+                Font = Enum.Font.Code,
+                TextXAlignment = Enum.TextXAlignment.Right
+        }), "TextDark")
 
-                local SearchBar = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 1, 8), {
-                        Parent = WindowStuff,
-                        Size = UDim2.new(1, -12, 0, 26),
-                        Position = UDim2.new(0, 6, 0, 8),
-                        BackgroundTransparency = 0.3,
-                }), {
-                        AddThemeObject(MakeElement("Stroke"), "Stroke"),
-                        TextboxActual
-                }), "Main")
+        local PingLabel = AddThemeObject(SetProps(MakeElement("Label", "MS: --", 10), {
+                Size = UDim2.new(0, 50, 1, 0),
+                Font = Enum.Font.Code,
+                TextXAlignment = Enum.TextXAlignment.Right
+        }), "TextDark")
 
-                local function SearchHandle()
-                        local Text = string.lower(SearchBox.Text)
-                        for i,v in pairs(TabHolder:GetChildren()) do
-                                if v:IsA("TextButton") then
-                                        if string.find(string.lower(i), Text, 1, true) then
-                                                v.Visible = true
-                                        else
-                                                v.Visible = false
-                                        end
-                                end
+        FpsLabel.Parent = StatsContainer
+        PingLabel.Parent = StatsContainer
+
+        -- Loop tính toán FPS và Ping thực tế
+        task.spawn(function()
+                local LastIteration, StartSecond = os.clock(), os.clock()
+                local FrameInterval = 0
+                while task.wait() do
+                        if getgenv().Destroy then break end
+                        FrameInterval = FrameInterval + 1
+                        local Cycle = os.clock()
+                        if Cycle - StartSecond >= 1 then
+                                FpsLabel.Text = "FPS: " .. tostring(FrameInterval)
+                                FrameInterval = 0
+                                StartSecond = Cycle
+                        end
+                        -- Lấy dữ liệu Ping từ Stats service của Roblox
+                        local NetworkStats = game:GetService("Stats"):FindFirstChild("Network")
+                        if NetworkStats then
+                                local CurrentPing = math.round(NetworkStats.ServerPingAccumulator:GetValue())
+                                PingLabel.Text = "MS: " .. CurrentPing
                         end
                 end
+        end)
 
-                AddConnection(TextboxActual:GetPropertyChangedSignal("Text"), SearchHandle);
-        end
-
-        local WindowName = AddThemeObject(SetChildren(SetProps(MakeElement("Label", WindowConfig.Name, 14), {
-                Size = UDim2.new(1, -30, 2, 0),
-                Position = UDim2.new(0, 20, 0, -22),
-                Font = Enum.Font.GothamBold,
-                TextSize = 16
-        }), {}), "Text")
-
-        local WindowTopBarLine = AddThemeObject(SetProps(MakeElement("Frame"), {
-                Size = UDim2.new(1, 0, 0, 1),
-                Position = UDim2.new(0, 0, 1, -1),
-                BackgroundTransparency = 0.85
-        }), "Stroke")
-		
-		local RoundMainWindow = (typeof(WindowConfig.LinkVideo) == "string") and "RoundVideo" or "RoundFrame"
-        local MainWindow = AddThemeObject(SetChildren(SetProps(MakeElement(RoundMainWindow, Color3.fromRGB(255, 255, 255), 0, 14), { 
+        -- 3. Cửa sổ chính với cấu trúc Viền Phản Quang Kép (Dual Border Stroke)
+        local MainWindow = AddThemeObject(SetChildren(SetProps(MakeElement(RoundMainWindow, Color3.fromRGB(25, 25, 25), 0, 14), { 
                 Parent = Orion,
                 Position = UDim2.new(0.5, -307, 0.5, -172),
                 Size = UDim2.new(0, 615, 0, 344),
                 ClipsDescendants = true
         }), {
+                AccentLine,
+                -- Lớp Stroke 1: Viền mờ bên ngoài
                 Create("UIStroke", {
-                    Color = Color3.fromRGB(255, 255, 255),
-                    Thickness = 1.2,
-                    ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+                        Color = Color3.fromRGB(0, 0, 0),
+                        Thickness = 1.6,
+                        ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+                        Transparency = 0.4
+                }),
+                -- Lớp Stroke 2: Viền phản quang chuyển sắc bên trong
+                Create("UIStroke", {
+                        Color = Color3.fromRGB(255, 255, 255),
+                        Thickness = 1,
+                        ApplyStrokeMode = Enum.ApplyStrokeMode.Border
                 }, {
-                    Create("UIGradient", {
-                        Color = ColorSequence.new({
-                            ColorSequenceKeypoint.new(0, OrionLib.Themes[OrionLib.SelectedTheme].Stroke),
-                            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(90, 90, 90)),
-                            ColorSequenceKeypoint.new(1, OrionLib.Themes[OrionLib.SelectedTheme].Stroke)
-                        }),
-                        Rotation = 45
-                    })
+                        Create("UIGradient", {
+                                Color = ColorSequence.new({
+                                        ColorSequenceKeypoint.new(0, Color3.fromRGB(80, 80, 80)),
+                                        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(150, 150, 150)),
+                                        ColorSequenceKeypoint.new(1, Color3.fromRGB(50, 50, 50))
+                                }),
+                                Rotation = 45
+                        })
                 }),
                 SetChildren(SetProps(MakeElement("TFrame"), {
                         Size = UDim2.new(1, 0, 0, 45),
@@ -1298,6 +1289,7 @@ function OrionLib:MakeWindow(WindowConfig)
                 }), {
                         WindowName,
                         WindowTopBarLine,
+                        StatsContainer,
                         AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 8), { 
                                 Size = UDim2.new(0, 48, 0, 20),
                                 BackgroundTransparency = 0.2,
@@ -1738,6 +1730,7 @@ end)
         local Functions = {}
 		local TabName = {}
 		
+		-- [THAY THẾ ĐOẠN KHỞI TẠO TABS TRONG FUNCTIONS:MAKETAB]
 		function Functions:MakeTab(TabConfig)
 			TabConfig = TabConfig or {}
 			TabConfig.Name = TabConfig.Name or "Tab"
@@ -1751,14 +1744,20 @@ end)
 				Type = "Tabs"
 			}
 		
+			-- Đèn hiệu trạng thái được bo tròn phát sáng nhẹ
 			local ActiveIndicator = Create("Frame", {
 				Size = UDim2.new(0, 4, 0, 4),
-				Position = UDim2.new(1, -12, 0.5, -2),
+				Position = UDim2.new(1, -14, 0.5, -2),
 				BackgroundColor3 = Color3.fromRGB(0, 170, 255),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0
 			}, {
-				Create("UICorner", {CornerRadius = UDim.new(1, 0)})
+				Create("UICorner", {CornerRadius = UDim.new(1, 0)}),
+				Create("UIStroke", {
+					Color = Color3.fromRGB(0, 170, 255),
+					Thickness = 1,
+					Transparency = 0.5
+				})
 			})
 
 			local TabFrame = SetChildren(SetProps(MakeElement("Button"), {
@@ -1787,25 +1786,45 @@ end)
 			})
 		
 			AddItemTable(Tabs, TabConfig.Name, TabFrame)
-						
+			
+			-- Container được bao bọc với viền phát sáng nhẹ bao quanh
 			local Container = AddThemeObject(SetChildren(SetProps(MakeElement("ScrollFrame", Color3.fromRGB(255, 255, 255), 4), {
 				Size = UDim2.new(1, -170, 1, -65), 
 				Position = UDim2.new(0, 158, 0, 52), 
 				Parent = MainWindow,
 				Visible = false,
 				Name = "ItemContainer",
-				BackgroundTransparency = 0.45 
+				BackgroundTransparency = 0.5
 			}), {
 				MakeElement("List", 0, 6),
 				MakeElement("Padding", 12, 10, 10, 12),
 				Create("UICorner", {CornerRadius = UDim.new(0, 10)}),
-				AddThemeObject(MakeElement("Stroke"), "Stroke") 
+				Create("UIStroke", {
+					Color = Color3.fromRGB(50, 50, 50),
+					Thickness = 1,
+					ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+				})
 			}), "Second")
 			
 			AddConnection(Container.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"), function()
 				Container.CanvasSize = UDim2.new(0, 0, 0, Container.UIListLayout.AbsoluteContentSize.Y + 30)
 			end)
 		
+			-- Animation mượt mà khi di chuột và nhấn chọn Tab
+			AddConnection(TabFrame.MouseEnter, function()
+				if Tabs.Disabled or TabFrame.Title.TextTransparency == 0 then return end
+				TweenService:Create(TabFrame, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(45, 45, 45), BackgroundTransparency = 0.7}):Play()
+				TweenService:Create(TabFrame.Title, TweenInfo.new(0.2), {TextTransparency = 0.25}):Play()
+				TweenService:Create(TabFrame.Ico, TweenInfo.new(0.2), {ImageTransparency = 0.25}):Play()
+			end)
+
+			AddConnection(TabFrame.MouseLeave, function()
+				if Tabs.Disabled or TabFrame.Title.TextTransparency == 0 then return end
+				TweenService:Create(TabFrame, TweenInfo.new(0.2), {BackgroundTransparency = 1}):Play()
+				TweenService:Create(TabFrame.Title, TweenInfo.new(0.2), {TextTransparency = 0.5}):Play()
+				TweenService:Create(TabFrame.Ico, TweenInfo.new(0.2), {ImageTransparency = 0.5}):Play()
+			end)
+
 			AddConnection(TabFrame.MouseButton1Click, function()
 				if Tabs.Disabled then return end
 				for _, Tab in next, TabHolder:GetChildren() do
@@ -1813,9 +1832,9 @@ end)
 						Tab.Ico.ImageTransparency = 0.5
 						Tab.Title.TextTransparency = 0.5
 						if Tab:FindFirstChild("Frame") then
-							TweenService:Create(Tab.Frame, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {BackgroundTransparency = 1}):Play()
+							TweenService:Create(Tab.Frame, TweenInfo.new(0.15, Enum.EasingStyle.Quad), {BackgroundTransparency = 1}):Play()
 						end
-						TweenService:Create(Tab, TweenInfo.new(0.2), {BackgroundTransparency = 1}):Play()
+						TweenService:Create(Tab, TweenInfo.new(0.15), {BackgroundTransparency = 1}):Play()
 					end
 				end
 				for _, c in next, MainWindow:GetChildren() do
@@ -1823,8 +1842,8 @@ end)
 				end
 				TabFrame.Ico.ImageTransparency = 0
 				TabFrame.Title.TextTransparency = 0
-				TweenService:Create(ActiveIndicator, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {BackgroundTransparency = 0}):Play()
-				TweenService:Create(TabFrame, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(45, 45, 45), BackgroundTransparency = 0.5}):Play()
+				TweenService:Create(ActiveIndicator, TweenInfo.new(0.15, Enum.EasingStyle.Quad), {BackgroundTransparency = 0}):Play()
+				TweenService:Create(TabFrame, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(45, 45, 45), BackgroundTransparency = 0.4}):Play()
 				Container.Visible = true
 			end)
 			
