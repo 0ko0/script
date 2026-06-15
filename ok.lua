@@ -1470,7 +1470,7 @@ end)
                 UIHidden = true
                 OrionLib:SafeScript(WindowConfig.CloseCallback)
         end)
-
+        
         local MinimizePill = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(25, 25, 25), 0, 18), {
                 Parent = Orion,
                 Size = UDim2.new(0, 0, 0, 36),
@@ -1485,29 +1485,35 @@ end)
                         Name = "ClickBtn",
                         ZIndex = 5
                 }),
-                Create("UIListLayout", {
-                        FillDirection = Enum.FillDirection.Horizontal,
-                        VerticalAlignment = Enum.VerticalAlignment.Center,
-                        HorizontalAlignment = Enum.HorizontalAlignment.Center,
-                        Padding = UDim.new(0, 8),
-                        SortOrder = Enum.SortOrder.LayoutOrder
-                }),
-                Create("UIPadding", {
-                        PaddingLeft = UDim.new(0, 12),
-                        PaddingRight = UDim.new(0, 12)
-                }),
-                AddThemeObject(SetProps(MakeElement("Image", WindowConfig.Icon or "rbxassetid://14229447778"), {
-                        Size = UDim2.new(0, 18, 0, 18),
-                        LayoutOrder = 1,
-                        Name = "Icon"
-                }), "Text"),
-                AddThemeObject(SetProps(MakeElement("Label", WindowConfig.Name, 12), {
-                        Size = UDim2.new(0, 0, 1, 0),
-                        AutomaticSize = Enum.AutomaticSize.X,
-                        Font = Enum.Font.GothamBold,
-                        LayoutOrder = 2,
-                        Name = "Title"
-                }), "Text")
+                
+                SetChildren(SetProps(MakeElement("TFrame"), {
+                        Size = UDim2.new(1, 0, 1, 0),
+                        Name = "ContentContainer"
+                }), {
+                        Create("UIListLayout", {
+                                FillDirection = Enum.FillDirection.Horizontal,
+                                VerticalAlignment = Enum.VerticalAlignment.Center,
+                                HorizontalAlignment = Enum.HorizontalAlignment.Center,
+                                Padding = UDim.new(0, 8),
+                                SortOrder = Enum.SortOrder.LayoutOrder
+                        }),
+                        Create("UIPadding", {
+                                PaddingLeft = UDim.new(0, 12),
+                                PaddingRight = UDim.new(0, 12)
+                        }),
+                        AddThemeObject(SetProps(MakeElement("Image", WindowConfig.Icon or "rbxassetid://14229447778"), {
+                                Size = UDim2.new(0, 18, 0, 18),
+                                LayoutOrder = 1,
+                                Name = "Icon"
+                        }), "Text"),
+                        AddThemeObject(SetProps(MakeElement("Label", WindowConfig.Name, 12), {
+                                Size = UDim2.new(0, 0, 1, 0),
+                                AutomaticSize = Enum.AutomaticSize.X,
+                                Font = Enum.Font.GothamBold,
+                                LayoutOrder = 2,
+                                Name = "Title"
+                        }), "Text")
+                })
         }), "Second")
 
         MakeDraggable(MinimizePill.ClickBtn, MinimizePill)
@@ -1541,7 +1547,8 @@ end)
                 MainWindow.ClipsDescendants = true
 
                 if Minimized then
-                        local targetPillSize = UDim2.new(0, MinimizePill.Title.TextBounds.X + 52, 0, 36)
+                        
+                        local targetPillSize = UDim2.new(0, MinimizePill.ContentContainer.Title.TextBounds.X + 52, 0, 36)
                         local originalPos = MainWindow.Position
 
                         local shrinkTween = TweenService:Create(MainWindow, TweenInfo.new(0.45, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
