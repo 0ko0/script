@@ -741,11 +741,11 @@ local NotificationHolder = SetProps(SetChildren(MakeElement("TFrame"), {
                 HorizontalAlignment = Enum.HorizontalAlignment.Right,
                 SortOrder = Enum.SortOrder.LayoutOrder,
                 VerticalAlignment = Enum.VerticalAlignment.Bottom,
-                Padding = UDim.new(0, 10) 
+                Padding = UDim.new(0, 12) 
         })
 }), {
         Position = UDim2.new(1, -20, 1, -20),
-        Size = UDim2.new(0, 320, 1, -20),
+        Size = UDim2.new(0, 340, 1, -20), 
         AnchorPoint = Vector2.new(1, 1),
         Parent = Orion
 })
@@ -755,7 +755,7 @@ function OrionLib:MakeNotification(NotificationConfig)
 	task.spawn(function()
 		NotificationConfig.Name = NotificationConfig.Name or "Notification"
 		NotificationConfig.Content = NotificationConfig.Content or "Content"
-		NotificationConfig.Image = NotificationConfig.Image or "rbxassetid://108533901677473"
+		NotificationConfig.Image = NotificationConfig.Image or "rbxassetid://118254173055216"
 		NotificationConfig.Time = NotificationConfig.Time or 5
 		NotificationConfig.Volume = NotificationConfig.Volume or OrionLib.NotifyVolume
 		
@@ -780,63 +780,110 @@ function OrionLib:MakeNotification(NotificationConfig)
 			ClipsDescendants = true
 		})
 		
-		local Card = SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(25, 25, 25), 0, 8), {
+		local Card = SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(25, 25, 25), 0, 14), {
 			Parent = NotificationParent,
 			Size = UDim2.new(1, -10, 0, 0),
-			Position = UDim2.new(1.3, 0, 0, 0), 
+			Position = UDim2.new(1.5, 0, 0, 0), 
 			AutomaticSize = Enum.AutomaticSize.Y
 		}), {
-			MakeElement("Stroke", Color3.fromRGB(60, 60, 60), 1), 
+			
+			Create("UIGradient", {
+				Color = ColorSequence.new({
+					ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 30, 30)),
+					ColorSequenceKeypoint.new(1, Color3.fromRGB(18, 18, 18))
+				}),
+				Rotation = 45
+			}),
+			
+			Create("UIStroke", {
+				Color = Color3.fromRGB(255, 255, 255),
+				Thickness = 1.2,
+				ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+			}, {
+				Create("UIGradient", {
+					Color = ColorSequence.new({
+						ColorSequenceKeypoint.new(0, Color3.fromRGB(80, 80, 80)),
+						ColorSequenceKeypoint.new(0.5, Color3.fromRGB(45, 45, 45)),
+						ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 80, 80))
+					}),
+					Rotation = 90
+				})
+			}),
 			Create("UIPadding", {
 				PaddingTop = UDim.new(0, 12),
 				PaddingBottom = UDim.new(0, 12),
-				PaddingLeft = UDim.new(0, 16),
-				PaddingRight = UDim.new(0, 14)
+				PaddingLeft = UDim.new(0, 12),
+				PaddingRight = UDim.new(0, 12)
 			})
 		})
 
-		local AccentBar = Create("Frame", {
+		local IconBadge = Create("Frame", {
 			Parent = Card,
-			Size = UDim2.new(0, 4, 1, 0),
-			Position = UDim2.new(0, -16, 0, 0),
-			BackgroundColor3 = Color3.fromRGB(0, 170, 255),
+			Size = UDim2.new(0, 36, 0, 36),
+			Position = UDim2.new(0, 0, 0, 0),
+			BackgroundColor3 = Color3.fromRGB(32, 32, 32),
 			BorderSizePixel = 0,
-			ZIndex = 3
+			ZIndex = 2
+		}, {
+			Create("UICorner", {CornerRadius = UDim.new(1, 0)}),
+			
+			Create("UIStroke", {
+				Color = Color3.fromRGB(0, 170, 255),
+				Thickness = 1.5,
+				Transparency = 0.4
+			}),
+			Create("ImageLabel", {
+				Size = UDim2.new(0, 20, 0, 20),
+				AnchorPoint = Vector2.new(0.5, 0.5),
+				Position = UDim2.new(0.5, 0, 0.5, 0),
+				Image = IconId,
+				ImageColor3 = Color3.fromRGB(255, 255, 255),
+				BackgroundTransparency = 1,
+				ZIndex = 3
+			})
 		})
-		Create("UICorner", {CornerRadius = UDim.new(1, 0), Parent = AccentBar})
 
-		local List = Create("UIListLayout", {
+		local VerticalDivider = Create("Frame", {
 			Parent = Card,
-			SortOrder = Enum.SortOrder.LayoutOrder,
-			Padding = UDim.new(0, 8),
-			HorizontalAlignment = Enum.HorizontalAlignment.Left
+			Size = UDim2.new(0, 1, 0, 32),
+			Position = UDim2.new(0, 48, 0, 2),
+			BackgroundColor3 = Color3.fromRGB(60, 60, 60),
+			BorderSizePixel = 0
+		}, {
+			Create("UIGradient", {
+				Transparency = NumberSequence.new({
+					NumberSequenceKeypoint.new(0, 1),
+					NumberSequenceKeypoint.new(0.5, 0),
+					NumberSequenceKeypoint.new(1, 1)
+				}),
+				Rotation = 90
+			})
 		})
-		
-		local Header = Create("Frame", {
+
+		local ContentArea = Create("Frame", {
 			Parent = Card,
-			Size = UDim2.new(1, 0, 0, 22),
+			Position = UDim2.new(0, 60, 0, 0),
+			Size = UDim2.new(1, -60, 0, 0),
+			AutomaticSize = Enum.AutomaticSize.Y,
+			BackgroundTransparency = 1
+		}, {
+			Create("UIListLayout", {
+				SortOrder = Enum.SortOrder.LayoutOrder,
+				Padding = UDim.new(0, 6),
+				HorizontalAlignment = Enum.HorizontalAlignment.Left
+			})
+		})
+
+		local Header = Create("Frame", {
+			Parent = ContentArea,
+			Size = UDim2.new(1, 0, 0, 16),
 			BackgroundTransparency = 1,
 			LayoutOrder = 1
 		})
-		
-		Create("UIListLayout", {
-			Parent = Header,
-			FillDirection = Enum.FillDirection.Horizontal,
-			VerticalAlignment = Enum.VerticalAlignment.Center,
-			Padding = UDim.new(0, 10)
-		})
-		
-		local NotificationIcon = Create("ImageLabel", {
-			Parent = Header,
-			Size = UDim2.new(0, 18, 0, 18),
-			Image = IconId,
-			ImageColor3 = Color3.fromRGB(255, 255, 255),
-			BackgroundTransparency = 1
-		})
-		
+
 		local TitleText = Create("TextLabel", {
 			Parent = Header,
-			Size = UDim2.new(1, -44, 1, 0),
+			Size = UDim2.new(1, -20, 1, 0),
 			Text = ParseText(NotificationConfig.Name),
 			Font = Enum.Font.GothamBold,
 			TextSize = 13,
@@ -850,6 +897,8 @@ function OrionLib:MakeNotification(NotificationConfig)
 		local CloseBtn = Create("ImageButton", {
 			Parent = Header,
 			Size = UDim2.new(0, 14, 0, 14),
+			Position = UDim2.new(1, 0, 0, 1),
+			AnchorPoint = Vector2.new(1, 0),
 			Image = "rbxassetid://9886659671",
 			ImageColor3 = Color3.fromRGB(150, 150, 150),
 			BackgroundTransparency = 1,
@@ -858,8 +907,8 @@ function OrionLib:MakeNotification(NotificationConfig)
 
 		if NotificationConfig.Banner then
 			local Banner = Create("ImageLabel", {
-				Parent = Card,
-				Size = UDim2.new(1, 0, 0, 100),
+				Parent = ContentArea,
+				Size = UDim2.new(1, 0, 0, 90),
 				Image = NotificationConfig.Banner,
 				ScaleType = Enum.ScaleType.Crop,
 				BackgroundTransparency = 1,
@@ -875,13 +924,13 @@ function OrionLib:MakeNotification(NotificationConfig)
 		end
 		
 		local ContentLabel = Create("TextLabel", {
-			Parent = Card,
+			Parent = ContentArea,
 			Size = UDim2.new(1, 0, 0, 0),
 			AutomaticSize = Enum.AutomaticSize.Y,
 			Text = ParseText(NotificationConfig.Content),
 			Font = Enum.Font.GothamSemibold,
-			TextSize = 12,
-			TextColor3 = Color3.fromRGB(190, 190, 190),
+			TextSize = 11, 
+			TextColor3 = Color3.fromRGB(180, 180, 180),
 			BackgroundTransparency = 1,
 			TextXAlignment = Enum.TextXAlignment.Left,
 			TextWrapped = true,
@@ -889,21 +938,19 @@ function OrionLib:MakeNotification(NotificationConfig)
 			LayoutOrder = 3
 		})
 
-		Create("Frame", {Parent = Card, Size = UDim2.new(1,0,0,1), BackgroundTransparency = 1, LayoutOrder = 4})
-
 		local BarWrapper = Create("Frame", {
-			Parent = Card,
+			Parent = ContentArea,
 			Size = UDim2.new(1, 0, 0, 2),
-			BackgroundColor3 = Color3.fromRGB(45, 45, 45),
+			BackgroundColor3 = Color3.fromRGB(40, 40, 40),
 			BorderSizePixel = 0,
-			LayoutOrder = 5
+			LayoutOrder = 4
 		})
 		Create("UICorner", {CornerRadius = UDim.new(1, 0), Parent = BarWrapper})
 
 		local Bar = Create("Frame", {
 			Parent = BarWrapper,
 			Size = UDim2.new(0, 0, 1, 0),
-			BackgroundColor3 = Color3.fromRGB(0, 170, 255),
+			BackgroundColor3 = Color3.fromRGB(0, 170, 255), 
 			BorderSizePixel = 0
 		})
 		Create("UICorner", {CornerRadius = UDim.new(1, 0), Parent = Bar})
@@ -925,8 +972,8 @@ function OrionLib:MakeNotification(NotificationConfig)
 			if isClosed then return end
 			isClosed = true
 			
-			local Out = TweenService:Create(Card, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
-				Position = UDim2.new(1.3, 0, 0, 0)
+			local Out = TweenService:Create(Card, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
+				Position = UDim2.new(1.5, 0, 0, 0)
 			})
 			Out:Play()
 			Out.Completed:Wait()
@@ -938,20 +985,20 @@ function OrionLib:MakeNotification(NotificationConfig)
 		end)
 
 		AddConnection(CloseBtn.MouseEnter, function()
-			TweenService:Create(CloseBtn, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {
+			TweenService:Create(CloseBtn, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
 				ImageColor3 = Color3.fromRGB(240, 240, 240),
 				Rotation = 90
 			}):Play()
 		end)
 
 		AddConnection(CloseBtn.MouseLeave, function()
-			TweenService:Create(CloseBtn, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {
+			TweenService:Create(CloseBtn, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
 				ImageColor3 = Color3.fromRGB(150, 150, 150),
 				Rotation = 0
 			}):Play()
 		end)
 
-		TweenService:Create(Card, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+		TweenService:Create(Card, TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
 			Position = UDim2.new(0, 0, 0, 0)
 		}):Play()
 		
