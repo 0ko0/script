@@ -1474,8 +1474,8 @@ end)
         local MinimizePill = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(25, 25, 25), 0, 18), {
                 Parent = Orion,
                 Size = UDim2.new(0, 0, 0, 36),
-                Position = UDim2.new(1, -20, 0.4, 0),
-                AnchorPoint = Vector2.new(1, 0.5),
+                Position = UDim2.new(0.5, 0, 0, 20),
+                AnchorPoint = Vector2.new(0.5, 0),
                 Visible = false,
                 ClipsDescendants = true
         }), {
@@ -1501,7 +1501,7 @@ end)
                                 PaddingLeft = UDim.new(0, 12),
                                 PaddingRight = UDim.new(0, 12)
                         }),
-                        AddThemeObject(SetProps(MakeElement("Image", WindowConfig.Icon or "rbxassetid://14229447778"), {
+                        AddThemeObject(SetProps(MakeElement("Image", WindowConfig.Icon or "rbxassetid://108533901677473"), {
                                 Size = UDim2.new(0, 18, 0, 18),
                                 LayoutOrder = 1,
                                 Name = "Icon"
