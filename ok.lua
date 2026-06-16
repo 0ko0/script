@@ -1783,58 +1783,99 @@ end)
 				Type = "Tabs"
 			}
 		
+			
 			local TabFrame = SetChildren(SetProps(MakeElement("Button"), {
-				Size = UDim2.new(1, 0, 0, 30),
+				Size = UDim2.new(1, -16, 0, 32),
+				Position = UDim2.new(0, 8, 0, 0),
 				Parent = TabHolder,
 				Visible = TabConfig.Visible,
 				AutoButtonColor = not TabConfig.Disabled
 			}), {
+				
+				Create("Frame", {
+					Size = UDim2.new(1, 0, 1, 0),
+					BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+					BackgroundTransparency = 1,
+					Name = "SelectAccent"
+				}, {
+					Create("UICorner", {CornerRadius = UDim.new(0, 6)})
+				}),
+				
+				
+				Create("Frame", {
+					Size = UDim2.new(0, 3, 0, 0), 
+					Position = UDim2.new(0, 2, 0.5, 0),
+					AnchorPoint = Vector2.new(0, 0.5),
+					BackgroundColor3 = Color3.fromRGB(0, 170, 255), 
+					BackgroundTransparency = 1,
+					Name = "IndicatorBar"
+				}, {
+					Create("UICorner", {CornerRadius = UDim.new(1, 0)})
+				}),
+
 				AddThemeObject(SetProps(MakeElement("Image", TabConfig.Icon), {
 					AnchorPoint = Vector2.new(0, 0.5),
-					Size = UDim2.new(0, 18, 0, 18),
-					Position = UDim2.new(0, 10, 0.5, 0),
+					Size = UDim2.new(0, 16, 0, 16),
+					Position = UDim2.new(0, 14, 0.5, 0), 
 					ImageTransparency = TabConfig.Disabled and 0.7 or 0.4,
 					Name = "Ico"
 				}), "Text"),
-				AddThemeObject(SetChildren(SetProps(MakeElement("Label", TabConfig.Name, 14), {
-					Size = UDim2.new(1, -35, 1, 0),
-					Position = UDim2.new(0, 35, 0, 0),
-					Font = Enum.Font.GothamSemibold,
+				AddThemeObject(SetChildren(SetProps(MakeElement("Label", TabConfig.Name, 13), {
+					Size = UDim2.new(1, -39, 1, 0),
+					Position = UDim2.new(0, 36, 0, 0),
+					Font = Enum.Font.GothamMedium,
 					TextTransparency = TabConfig.Disabled and 0.7 or 0.4,
 					Name = "Title"
-				}), {AddThemeObject(MakeElement("Stroke"), "Stroke")}), "Text")
+				}), {}), "Text")
 			})
 		
 			AddItemTable(Tabs, TabConfig.Name, TabFrame)
 			
-			local Container = AddThemeObject(SetChildren(SetProps(MakeElement("ScrollFrame", Color3.fromRGB(255, 255, 255), 5), {
+			local Container = AddThemeObject(SetChildren(SetProps(MakeElement("ScrollFrame", Color3.fromRGB(255, 255, 255), 3), {
 				Size = UDim2.new(1, -185, 1, (WindowConfig.SearchBar and WindowConfig.SearchBar.Mains == true) and -90 or -70), 
-				Position = UDim2.new(0, 175, 0, (WindowConfig.SearchBar and WindowConfig.SearchBar.Mains == true) and 90 or 60), 
+				Position = UDim2.new(0, 171, 0, (WindowConfig.SearchBar and WindowConfig.SearchBar.Mains == true) and 90 or 60), 
 				Parent = MainWindow,
 				Visible = false,
 				Name = "ItemContainer"
 			}), {
-				MakeElement("List", 0, 6),
-				MakeElement("Padding", 15, 10, 10, (WindowConfig.SearchBar and WindowConfig.SearchBar.Mains == true) and 10 or 15)
+				MakeElement("List", 0, 8),
+				MakeElement("Padding", 12, 10, 10, (WindowConfig.SearchBar and WindowConfig.SearchBar.Mains == true) and 10 or 12)
 			}), "Divider")
 			
 			AddConnection(Container.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"), function()
 				Container.CanvasSize = UDim2.new(0, 0, 0, Container.UIListLayout.AbsoluteContentSize.Y + ((WindowConfig.SearchBar and WindowConfig.SearchBar.Mains == true) and 25 or 30))
 			end)
-		
+					
 			AddConnection(TabFrame.MouseButton1Click, function()
 				if Tabs.Disabled then return end
 				for _, Tab in next, TabHolder:GetChildren() do
 					if Tab:IsA("TextButton") then
 						Tab.Ico.ImageTransparency = 0.4
 						Tab.Title.TextTransparency = 0.4
+						
+						if Tab:FindFirstChild("SelectAccent") then
+							TweenService:Create(Tab.SelectAccent, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {BackgroundTransparency = 1}):Play()
+						end
+						if Tab:FindFirstChild("IndicatorBar") then
+							TweenService:Create(Tab.IndicatorBar, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
+								Size = UDim2.new(0, 3, 0, 0),
+								BackgroundTransparency = 1
+							}):Play()
+						end
 					end
 				end
-				for _, c in next, MainWindow:GetChildren() do
-					if c.Name == "ItemContainer" then c.Visible = false end
-				end
+				
 				TabFrame.Ico.ImageTransparency = 0
 				TabFrame.Title.TextTransparency = 0
+				if TabFrame:FindFirstChild("SelectAccent") then
+					TweenService:Create(TabFrame.SelectAccent, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {BackgroundTransparency = 0.94}):Play()
+				end
+				if TabFrame:FindFirstChild("IndicatorBar") then
+					TweenService:Create(TabFrame.IndicatorBar, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+						Size = UDim2.new(0, 3, 0, 16), 
+						BackgroundTransparency = 0
+					}):Play()
+				end
 				Container.Visible = true
 			end)
 			
