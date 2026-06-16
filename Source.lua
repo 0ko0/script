@@ -694,9 +694,11 @@ CreateElement("ScrollFrame", function(Color, Width)
                 BottomImage = "rbxassetid://7445543667",
                 TopImage = "rbxassetid://7445543667",
                 ScrollBarImageColor3 = Color,
+                ScrollBarImageTransparency = 0.35, 
                 BorderSizePixel = 0,
-                ScrollBarThickness = Width,
-                CanvasSize = UDim2.new(0, 0, 0, 0)
+                ScrollBarThickness = 2, 
+                CanvasSize = UDim2.new(0, 0, 0, 0),
+                VerticalScrollBarInset = Enum.ScrollBarInset.None 
         })
         return ScrollFrame
 end)
@@ -772,9 +774,6 @@ function OrionLib:MakeNotification(NotificationConfig)
 			IconId = "rbxassetid://" .. tostring(IconId):match("%d+")
 		end
 
-		local theme = OrionLib.Themes[OrionLib.SelectedTheme] or OrionLib.Themes.Default
-		local accentColor = Color3.fromRGB(0, 170, 255) 
-
 		local NotificationParent = SetProps(MakeElement("Frame"), {
 			Size = UDim2.new(1, 0, 0, 0),
 			AutomaticSize = Enum.AutomaticSize.Y,
@@ -783,7 +782,7 @@ function OrionLib:MakeNotification(NotificationConfig)
 			ClipsDescendants = true
 		})
 		
-		local Card = SetChildren(SetProps(MakeElement("RoundFrame", theme.Second, 0, 12), {
+		local Card = SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(25, 25, 25), 0, 12), {
 			Parent = NotificationParent,
 			Size = UDim2.new(1, -10, 0, 0),
 			Position = UDim2.new(1.5, 0, 0, 0), 
@@ -792,16 +791,25 @@ function OrionLib:MakeNotification(NotificationConfig)
 			
 			Create("UIGradient", {
 				Color = ColorSequence.new({
-					ColorSequenceKeypoint.new(0, Color3.fromRGB(theme.Second.R * 255 + 5, theme.Second.G * 255 + 5, theme.Second.B * 255 + 5)),
-					ColorSequenceKeypoint.new(1, theme.Main)
+					ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 30, 30)),
+					ColorSequenceKeypoint.new(1, Color3.fromRGB(18, 18, 18))
 				}),
 				Rotation = 45
 			}),
 			
 			Create("UIStroke", {
-				Color = theme.Stroke,
+				Color = Color3.fromRGB(255, 255, 255),
 				Thickness = 1.2,
 				ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+			}, {
+				Create("UIGradient", {
+					Color = ColorSequence.new({
+						ColorSequenceKeypoint.new(0, Color3.fromRGB(70, 70, 70)),
+						ColorSequenceKeypoint.new(0.5, Color3.fromRGB(45, 45, 45)),
+						ColorSequenceKeypoint.new(1, Color3.fromRGB(70, 70, 70))
+					}),
+					Rotation = 90
+				})
 			}),
 			Create("UIPadding", {
 				PaddingTop = UDim.new(0, 12),
@@ -819,12 +827,12 @@ function OrionLib:MakeNotification(NotificationConfig)
 		}, {
 			Create("Frame", {
 				Size = UDim2.new(1, 0, 1, 0),
-				BackgroundColor3 = theme.Second, 
+				BackgroundColor3 = Color3.fromRGB(32, 32, 32),
 				BorderSizePixel = 0
 			}, {
 				Create("UICorner", {CornerRadius = UDim.new(1, 0)}),
 				Create("UIStroke", {
-					Color = accentColor, 
+					Color = Color3.fromRGB(0, 170, 255),
 					Thickness = 1.2,
 					Transparency = 0.4
 				}),
@@ -866,7 +874,7 @@ function OrionLib:MakeNotification(NotificationConfig)
 			Text = ParseText(NotificationConfig.Name),
 			Font = Enum.Font.GothamBold,
 			TextSize = 13,
-			TextColor3 = theme.Text, 
+			TextColor3 = Color3.fromRGB(255, 255, 255),
 			BackgroundTransparency = 1,
 			RichText = true,
 			TextXAlignment = Enum.TextXAlignment.Left,
@@ -879,7 +887,7 @@ function OrionLib:MakeNotification(NotificationConfig)
 			Position = UDim2.new(1, 0, 0, 1),
 			AnchorPoint = Vector2.new(1, 0),
 			Image = "rbxassetid://9886659671",
-			ImageColor3 = theme.TextDark, 
+			ImageColor3 = Color3.fromRGB(150, 150, 150),
 			BackgroundTransparency = 1,
 			ZIndex = 5
 		})
@@ -897,7 +905,7 @@ function OrionLib:MakeNotification(NotificationConfig)
 			Create("UIStroke", {
 				Parent = Banner, 
 				Transparency = 0.5, 
-				Color = theme.Stroke, 
+				Color = Color3.fromRGB(80,80,80),
 				ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 			})
 		end
@@ -909,7 +917,7 @@ function OrionLib:MakeNotification(NotificationConfig)
 			Text = ParseText(NotificationConfig.Content),
 			Font = Enum.Font.GothamSemibold,
 			TextSize = 11,
-			TextColor3 = theme.TextDark, 
+			TextColor3 = Color3.fromRGB(180, 180, 180),
 			BackgroundTransparency = 1,
 			TextXAlignment = Enum.TextXAlignment.Left,
 			TextWrapped = true,
@@ -920,7 +928,7 @@ function OrionLib:MakeNotification(NotificationConfig)
 		local BarWrapper = Create("Frame", {
 			Parent = RightSection,
 			Size = UDim2.new(1, 0, 0, 2),
-			BackgroundColor3 = theme.Main, 
+			BackgroundColor3 = Color3.fromRGB(40, 40, 40),
 			BorderSizePixel = 0,
 			LayoutOrder = 4
 		})
@@ -929,7 +937,7 @@ function OrionLib:MakeNotification(NotificationConfig)
 		local Bar = Create("Frame", {
 			Parent = BarWrapper,
 			Size = UDim2.new(0, 0, 1, 0),
-			BackgroundColor3 = accentColor, 
+			BackgroundColor3 = Color3.fromRGB(0, 170, 255),
 			BorderSizePixel = 0
 		})
 		Create("UICorner", {CornerRadius = UDim.new(1, 0), Parent = Bar})
@@ -1124,14 +1132,15 @@ function OrionLib:MakeWindow(WindowConfig)
 
         local TabHolder = AddThemeObject(SetChildren(SetProps(MakeElement("ScrollFrame", Color3.fromRGB(255, 255, 255), 4),
                 WindowConfig.SearchBar and WindowConfig.SearchBar.Tabs == true and {
-                        Size = UDim2.new(1, 0, 1, -90),
-                        Position = UDim2.new(0, 0, 0, 40),
+                        Size = UDim2.new(1, 0, 1, -100), 
+                        Position = UDim2.new(0, 0, 0, 36), 
                 } or {
-                        Size = UDim2.new(1, 0, 1, -50)
+                        Size = UDim2.new(1, 0, 1, -62),
+                        Position = UDim2.new(0, 0, 0, 6)
                 }),
                 {
                         MakeElement("List"),
-                        MakeElement("Padding", 8, 0, 0, 8)
+                        MakeElement("Padding", 4, 0, 0, 4)
                 }), "Divider")
                 
         if TabHolder then
@@ -1174,86 +1183,49 @@ function OrionLib:MakeWindow(WindowConfig)
         })
 		
 		local hasLinkVideo = typeof(WindowConfig.LinkVideo) == "string"
-
-		local isProfileVisible = true
-		local IconShow = "rbxassetid://100553310917137" 
-		local IconHide = "rbxassetid://112731150255946" 
-
-		local AvatarFrame = AddThemeObject(SetChildren(SetProps(MakeElement("Frame"), {
-				AnchorPoint = Vector2.new(0, 0.5),
-				Size = UDim2.new(0, 28, 0, 28),
-				Position = UDim2.new(0, 8, 0.5, 0),
-				Name = "AvatarFrame"
-		}), {
-				SetChildren(SetProps(MakeElement("Image", "https://www.roblox.com/headshot-thumbnail/image?userId=".. LocalPlayer.UserId .."&width=420&height=420&format=png"), {
-						Size = UDim2.new(1, 0, 1, 0)
-				}), {MakeElement("Corner", 1)}),
-				AddThemeObject(SetChildren(SetProps(MakeElement("Image", "rbxassetid://4031889928"), {
-						Size = UDim2.new(1, 0, 1, 0),
-				}), {MakeElement("Corner", 1)}), "Second"),
-				MakeElement("Corner", 1)
-		}), "Divider")
-
-		local ProfileName = AddThemeObject(SetProps(MakeElement("Label", LocalPlayer.DisplayName, 12), {
-				Size = UDim2.new(1, -74, 0, 13), 
-				Position = UDim2.new(0, 42, 0.5, -12),
-				Font = Enum.Font.GothamBold,
-				ClipsDescendants = true
-		}), "Text")
-
-		local ProfileTag = AddThemeObject(SetProps(MakeElement("Label", "User", 10), {
-				Size = UDim2.new(1, -74, 0, 12),
-				Position = UDim2.new(0, 42, 0.5, 1),
-				Visible = not WindowConfig.HidePremium
-		}), "TextDark")
-
-		local ToggleProfileBtn = Create("ImageButton", {
-				Size = UDim2.new(0, 16, 0, 16),
-				Position = UDim2.new(1, -8, 0.5, 0),
-				AnchorPoint = Vector2.new(1, 0.5),
-				BackgroundTransparency = 1,
-				Image = IconShow, 
-				ZIndex = 5
-		})
-
-		AddConnection(ToggleProfileBtn.MouseButton1Click, function()
-				isProfileVisible = not isProfileVisible
-				
-				ToggleProfileBtn.Image = isProfileVisible and IconShow or IconHide
-				
-				AvatarFrame.Visible = isProfileVisible
-				ProfileName.Visible = isProfileVisible
-				if not WindowConfig.HidePremium then
-						ProfileTag.Visible = isProfileVisible
-				end
-		end)
-
-		local ProfileCard = SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(15, 15, 15), 0, 8), {
-				Size = UDim2.new(1, -16, 0, 44),
-				Position = UDim2.new(0, 8, 1, -52),
-				BackgroundTransparency = 0.4
-		}), {
-				AvatarFrame,
-				ProfileName,
-				ProfileTag,
-				ToggleProfileBtn
-		})
-
-		local WindowStuff = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 10), {
-				Parent = MainWindow,
-				Size = UDim2.new(0, 145, 1, -66),
-				Position = UDim2.new(0, 12, 0, 56),
-				BackgroundTransparency = hasLinkVideo and 1 or 0.25,
-				ZIndex = 1
-		}), {
-				AddThemeObject(SetProps(MakeElement("Frame"), {
-						Size = UDim2.new(0, 1, 1, -20),
-						Position = UDim2.new(1, 4, 0, 10),
-						BackgroundTransparency = 0.85
-				}), "Stroke"), 
-				TabHolder,
-				ProfileCard
-		}), "Second")
+        
+        local WindowStuff = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 10), {
+                Size = UDim2.new(0, 140, 0, 278),
+                Position = UDim2.new(0, 12, 0, 54),
+                BackgroundTransparency = hasLinkVideo and 1 or 0.15
+        }), {
+                AddThemeObject(SetProps(MakeElement("Frame"), {
+                        Size = UDim2.new(1, 0, 1, 0),
+                        BackgroundTransparency = 1 
+                }), "Stroke"), 
+                TabHolder,
+                SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(25, 25, 25), 0, 8), {
+                        Size = UDim2.new(1, -12, 0, 44),
+                        Position = UDim2.new(0, 6, 1, -50),
+                        BackgroundTransparency = 0.3
+                }), {
+                        AddThemeObject(MakeElement("Stroke"), "Stroke"),
+                        AddThemeObject(SetChildren(SetProps(MakeElement("Frame"), {
+                                AnchorPoint = Vector2.new(0, 0.5),
+                                Size = UDim2.new(0, 28, 0, 28),
+                                Position = UDim2.new(0, 8, 0.5, 0)
+                        }), {
+                                SetChildren(SetProps(MakeElement("Image", "https://www.roblox.com/headshot-thumbnail/image?userId=".. LocalPlayer.UserId .."&width=420&height=420&format=png"), {
+                                        Size = UDim2.new(1, 0, 1, 0)
+                                }), {MakeElement("Corner", 1)}),
+                                AddThemeObject(SetChildren(SetProps(MakeElement("Image", "rbxassetid://4031889928"), {
+                                        Size = UDim2.new(1, 0, 1, 0),
+                                }), {MakeElement("Corner", 1)}), "Second"),
+                                MakeElement("Corner", 1)
+                        }), "Divider"),
+                        AddThemeObject(SetProps(MakeElement("Label", LocalPlayer.DisplayName, WindowConfig.HidePremium and 12 or 11), {
+                                Size = UDim2.new(1, -46, 0, 12),
+                                Position = WindowConfig.HidePremium and UDim2.new(0, 42, 0, 16) or UDim2.new(0, 42, 0, 10),
+                                Font = Enum.Font.GothamBold,
+                                ClipsDescendants = true
+                        }), "Text"),
+                        AddThemeObject(SetProps(MakeElement("Label", "User", 10), {
+                                Size = UDim2.new(1, -46, 0, 10),
+                                Position = UDim2.new(0, 42, 1, -20),
+                                Visible = not WindowConfig.HidePremium
+                        }), "TextDark")
+                }),
+        }), "Second")
 
         if WindowConfig.SearchBar and WindowConfig.SearchBar.Tabs == true then
                 local SearchBox = Create("TextBox", {
@@ -1266,18 +1238,18 @@ function OrionLib:MakeWindow(WindowConfig)
                         TextWrapped = true,
                         Text = "",
                         TextXAlignment = Enum.TextXAlignment.Center,
-                        TextSize = 14,
+                        TextSize = 12,
                         ClearTextOnFocus = WindowConfig.SearchBar.ClearTextOnFocus or true
                 })
 
                 local TextboxActual = AddThemeObject(SearchBox, "Text")
-
-                local SearchBar = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 1, 6), {
+                
+                local SearchBar = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 1, 8), {
                         Parent = WindowStuff,
-                        Size = UDim2.new(0, 130, 0, 24),
-                        Position = UDim2.new(1.013, -12, 0.075, 0),
-                        BackgroundTransparency = typeof(WindowConfig.LinkVideo) == "string" and 0.5 or 0,
-                        AnchorPoint = Vector2.new(1, 0.5)
+                        Size = UDim2.new(1, -12, 0, 24),
+                        Position = UDim2.new(0.5, 0, 0, 6),
+                        BackgroundTransparency = typeof(WindowConfig.LinkVideo) == "string" and 0.5 or 0.2,
+                        AnchorPoint = Vector2.new(0.5, 0)
                 }), {
                         AddThemeObject(MakeElement("Stroke"), "Stroke"),
                         TextboxActual
@@ -1304,13 +1276,14 @@ function OrionLib:MakeWindow(WindowConfig)
                 Size = UDim2.new(1, -30, 2, 0),
                 Position = UDim2.new(0, 25, 0, -24),
                 Font = Enum.Font.GothamBlack,
-                TextSize = 20
+                TextSize = 18
         }), {AddThemeObject(MakeElement("Stroke"), "Stroke")}), "Text")
 
+        
         local WindowTopBarLine = AddThemeObject(SetProps(MakeElement("Frame"), {
-                Size = UDim2.new(1, 0, 0, 1),
-                Position = UDim2.new(0, 0, 1, -1),
-                BackgroundTransparency = 0.85
+                Size = UDim2.new(1, -24, 0, 1),
+                Position = UDim2.new(0, 12, 1, -1),
+                BackgroundTransparency = 0.8
         }), "Stroke")
 		
 		local RoundMainWindow
@@ -1319,14 +1292,14 @@ function OrionLib:MakeWindow(WindowConfig)
 		else
 			RoundMainWindow = "RoundFrame"
 		end
-
-        
+		
         local MainWindow = AddThemeObject(SetChildren(SetProps(MakeElement(RoundMainWindow or "RoundFrame", Color3.fromRGB(255, 255, 255), 0, 14), { 
                 Parent = Orion,
                 Position = UDim2.new(0.5, -307, 0.5, -172),
                 Size = UDim2.new(0, 615, 0, 344),
                 ClipsDescendants = true
         }), {
+                
                 Create("UIStroke", {
                     Color = Color3.fromRGB(255, 255, 255),
                     Thickness = 1.2,
@@ -1334,11 +1307,11 @@ function OrionLib:MakeWindow(WindowConfig)
                 }, {
                     Create("UIGradient", {
                         Color = ColorSequence.new({
-                            ColorSequenceKeypoint.new(0, OrionLib.Themes[OrionLib.SelectedTheme].Stroke),
-                            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(120, 120, 120)),
-                            ColorSequenceKeypoint.new(1, OrionLib.Themes[OrionLib.SelectedTheme].Stroke)
+                            ColorSequenceKeypoint.new(0, Color3.fromRGB(80, 80, 80)),
+                            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(160, 160, 160)),
+                            ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 80, 80))
                         }),
-                        Rotation = 135
+                        Rotation = 45
                     })
                 }),
                 SetChildren(SetProps(MakeElement("TFrame"), {
@@ -1347,17 +1320,18 @@ function OrionLib:MakeWindow(WindowConfig)
                 }), {
                         WindowName,
                         WindowTopBarLine,
+                        
                         AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 12), { 
-                                Size = UDim2.new(0, 58, 0, 26),
-                                BackgroundTransparency = 0.4,
-                                Position = UDim2.new(1, -75, 0, 12)
+                                Size = UDim2.new(0, 52, 0, 24),
+                                BackgroundTransparency = typeof(WindowConfig.LinkVideo) == "string" and 0.2 or 0.3,
+                                Position = UDim2.new(1, -64, 0, 13)
                         }), {
                                 AddThemeObject(MakeElement("Stroke"), "Stroke"),
                                 AddThemeObject(SetProps(MakeElement("Frame"), {
-                                        Size = UDim2.new(0, 1, 0, 10), 
+                                        Size = UDim2.new(0, 1, 0, 12), 
                                         Position = UDim2.new(0.5, 0, 0.5, 0),
                                         AnchorPoint = Vector2.new(0.5, 0.5),
-                                        BackgroundTransparency = 0.8
+                                        BackgroundTransparency = 0.7 
                                 }), "Stroke"), 
                                 CloseBtn,
                                 MinimizeBtn
@@ -1367,18 +1341,19 @@ function OrionLib:MakeWindow(WindowConfig)
                 WindowStuff
         }), "Main")
 
-        
-        local ContentBackdrop = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(15, 15, 15), 0, 10), {
-                Size = UDim2.new(1, -177, 1, -66),
-                Position = UDim2.new(0, 165, 0, 56),
-                BackgroundTransparency = 0.5,
+        local ContentCardBackground = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 10), {
                 Parent = MainWindow,
-                ZIndex = 0
+                Position = UDim2.new(0, 164, 0, 54),
+                Size = UDim2.new(0, 439, 0, 278),
+                BackgroundTransparency = 0.55
         }), {
-                Create("UIStroke", {
-                        Color = OrionLib.Themes[OrionLib.SelectedTheme].Stroke,
-                        Thickness = 1,
-                        Transparency = 0.85
+                AddThemeObject(MakeElement("Stroke"), "Stroke"),
+                Create("UIGradient", {
+                    Color = ColorSequence.new({
+                        ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 30, 30)),
+                        ColorSequenceKeypoint.new(1, Color3.fromRGB(18, 18, 18))
+                    }),
+                    Rotation = 45
                 })
         }), "Second")
         
@@ -1814,107 +1789,114 @@ end)
 				Type = "Tabs"
 			}
 		
-			
 			local TabFrame = SetChildren(SetProps(MakeElement("Button"), {
-				Size = UDim2.new(1, -16, 0, 32),
-				Position = UDim2.new(0, 8, 0, 0),
+				Size = UDim2.new(1, 0, 0, 32),
 				Parent = TabHolder,
 				Visible = TabConfig.Visible,
-				AutoButtonColor = not TabConfig.Disabled
+				AutoButtonColor = false
 			}), {
-				
-				Create("Frame", {
-					Size = UDim2.new(1, 0, 1, 0),
-					BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+				AddThemeObject(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 6), {
+					Size = UDim2.new(1, -8, 1, 0),
+					Position = UDim2.new(0, 4, 0, 0),
 					BackgroundTransparency = 1,
-					Name = "SelectAccent"
-				}, {
-					Create("UICorner", {CornerRadius = UDim.new(0, 6)})
-				}),
+					Name = "PillBackground"
+				}), "Stroke"),
 				
-				
-				Create("Frame", {
-					Size = UDim2.new(0, 3, 0, 0), 
+				SetProps(MakeElement("RoundFrame", Color3.fromRGB(0, 170, 255), 0, 1.5), {
+					Size = UDim2.new(0, 0, 0.6, 0),
 					Position = UDim2.new(0, 2, 0.5, 0),
 					AnchorPoint = Vector2.new(0, 0.5),
-					BackgroundColor3 = Color3.fromRGB(0, 170, 255), 
 					BackgroundTransparency = 1,
-					Name = "IndicatorBar"
-				}, {
-					Create("UICorner", {CornerRadius = UDim.new(1, 0)})
+					Name = "ActiveIndicator"
 				}),
-
 				AddThemeObject(SetProps(MakeElement("Image", TabConfig.Icon), {
 					AnchorPoint = Vector2.new(0, 0.5),
 					Size = UDim2.new(0, 16, 0, 16),
-					Position = UDim2.new(0, 14, 0.5, 0), 
+					Position = UDim2.new(0, 14, 0.5, 0),
 					ImageTransparency = TabConfig.Disabled and 0.7 or 0.4,
 					Name = "Ico"
 				}), "Text"),
 				AddThemeObject(SetChildren(SetProps(MakeElement("Label", TabConfig.Name, 13), {
-					Size = UDim2.new(1, -39, 1, 0),
-					Position = UDim2.new(0, 36, 0, 0),
-					Font = Enum.Font.GothamMedium,
+					Size = UDim2.new(1, -38, 1, 0),
+					Position = UDim2.new(0, 38, 0, 0),
+					Font = Enum.Font.GothamSemibold,
 					TextTransparency = TabConfig.Disabled and 0.7 or 0.4,
 					Name = "Title"
-				}), {}), "Text")
+				}), {AddThemeObject(MakeElement("Stroke"), "Stroke")}), "Text")
 			})
 		
 			AddItemTable(Tabs, TabConfig.Name, TabFrame)
 			
-			local Container = AddThemeObject(SetChildren(SetProps(MakeElement("ScrollFrame", Color3.fromRGB(255, 255, 255), 3), {
-				Size = UDim2.new(1, -185, 1, (WindowConfig.SearchBar and WindowConfig.SearchBar.Mains == true) and -90 or -70), 
-				Position = UDim2.new(0, 171, 0, (WindowConfig.SearchBar and WindowConfig.SearchBar.Mains == true) and 90 or 60), 
+			local Container = AddThemeObject(SetChildren(SetProps(MakeElement("ScrollFrame", Color3.fromRGB(255, 255, 255), 5), {
+				Size = UDim2.new(0, 439, 0, (WindowConfig.SearchBar and WindowConfig.SearchBar.Mains == true) and 242 or 278), 
+				Position = UDim2.new(0, 164, 0, (WindowConfig.SearchBar and WindowConfig.SearchBar.Mains == true) and 90 or 54), 
 				Parent = MainWindow,
 				Visible = false,
 				Name = "ItemContainer"
 			}), {
-				MakeElement("List", 0, 8),
-				MakeElement("Padding", 12, 10, 10, (WindowConfig.SearchBar and WindowConfig.SearchBar.Mains == true) and 10 or 12)
+				MakeElement("List", 0, 6),
+				MakeElement("Padding", 15, 10, 10, (WindowConfig.SearchBar and WindowConfig.SearchBar.Mains == true) and 10 or 15)
 			}), "Divider")
 			
 			AddConnection(Container.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"), function()
 				Container.CanvasSize = UDim2.new(0, 0, 0, Container.UIListLayout.AbsoluteContentSize.Y + ((WindowConfig.SearchBar and WindowConfig.SearchBar.Mains == true) and 25 or 30))
 			end)
-					
+		
 			AddConnection(TabFrame.MouseButton1Click, function()
 				if Tabs.Disabled then return end
-				
 				for _, Tab in next, TabHolder:GetChildren() do
 					if Tab:IsA("TextButton") then
-						Tab.Ico.ImageTransparency = 0.4
-						Tab.Title.TextTransparency = 0.4
-						if Tab:FindFirstChild("SelectAccent") then
-							TweenService:Create(Tab.SelectAccent, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {BackgroundTransparency = 1}):Play()
+						TweenService:Create(Tab.Ico, TweenInfo.new(0.2), {ImageTransparency = 0.4}):Play()
+						TweenService:Create(Tab.Title, TweenInfo.new(0.2), {TextTransparency = 0.4}):Play()
+						if Tab:FindFirstChild("ActiveIndicator") then
+							TweenService:Create(Tab.ActiveIndicator, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+								Size = UDim2.new(0, 0, 0.6, 0),
+								BackgroundTransparency = 1
+							}):Play()
 						end
-						if Tab:FindFirstChild("IndicatorBar") then
-							TweenService:Create(Tab.IndicatorBar, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
-								Size = UDim2.new(0, 3, 0, 0),
+						if Tab:FindFirstChild("PillBackground") then
+							TweenService:Create(Tab.PillBackground, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
 								BackgroundTransparency = 1
 							}):Play()
 						end
 					end
 				end
-				
 				for _, c in next, MainWindow:GetChildren() do
-					if c.Name == "ItemContainer" then 
-						c.Visible = false 
-					end
+					if c.Name == "ItemContainer" then c.Visible = false end
 				end
-								
-				TabFrame.Ico.ImageTransparency = 0
-				TabFrame.Title.TextTransparency = 0
-				if TabFrame:FindFirstChild("SelectAccent") then
-					TweenService:Create(TabFrame.SelectAccent, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {BackgroundTransparency = 0.94}):Play()
-				end
-				if TabFrame:FindFirstChild("IndicatorBar") then
-					TweenService:Create(TabFrame.IndicatorBar, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-						Size = UDim2.new(0, 3, 0, 16),
+				
+				TweenService:Create(TabFrame.Ico, TweenInfo.new(0.2), {ImageTransparency = 0}):Play()
+				TweenService:Create(TabFrame.Title, TweenInfo.new(0.2), {TextTransparency = 0}):Play()
+				if TabFrame:FindFirstChild("ActiveIndicator") then
+					TweenService:Create(TabFrame.ActiveIndicator, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+						Size = UDim2.new(0, 3, 0.6, 0),
 						BackgroundTransparency = 0
 					}):Play()
 				end
-				
+				if TabFrame:FindFirstChild("PillBackground") then
+					TweenService:Create(TabFrame.PillBackground, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+						BackgroundTransparency = 0.92
+					}):Play()
+				end
 				Container.Visible = true
+			end)
+			
+			AddConnection(TabFrame.MouseEnter, function()
+				if Tabs.Disabled or Container.Visible then return end
+				if TabFrame:FindFirstChild("PillBackground") then
+					TweenService:Create(TabFrame.PillBackground, TweenInfo.new(0.2), {BackgroundTransparency = 0.96}):Play()
+				end
+				TweenService:Create(TabFrame.Ico, TweenInfo.new(0.2), {ImageTransparency = 0.2}):Play()
+				TweenService:Create(TabFrame.Title, TweenInfo.new(0.2), {TextTransparency = 0.2}):Play()
+			end)
+
+			AddConnection(TabFrame.MouseLeave, function()
+				if Tabs.Disabled or Container.Visible then return end
+				if TabFrame:FindFirstChild("PillBackground") then
+					TweenService:Create(TabFrame.PillBackground, TweenInfo.new(0.2), {BackgroundTransparency = 1}):Play()
+				end
+				TweenService:Create(TabFrame.Ico, TweenInfo.new(0.2), {ImageTransparency = 0.4}):Play()
+				TweenService:Create(TabFrame.Title, TweenInfo.new(0.2), {TextTransparency = 0.4}):Play()
 			end)
 			
 			function Tabs:SetDisabled(state)
@@ -4699,6 +4681,21 @@ end)
 								}), "Text")
 							})
 						end
+						
+						if FirstTab then
+				FirstTab = false
+				TabFrame.Ico.ImageTransparency = 0
+				TabFrame.Title.TextTransparency = 0
+				if TabFrame:FindFirstChild("ActiveIndicator") then
+					TabFrame.ActiveIndicator.Size = UDim2.new(0, 3, 0.6, 0)
+					TabFrame.ActiveIndicator.BackgroundTransparency = 0
+				end
+				if TabFrame:FindFirstChild("PillBackground") then
+					TabFrame.PillBackground.BackgroundTransparency = 0.92
+				end
+				Container.Visible = true
+			end
+						
 						return ElementFunction, Tabs
 					end  
 					
