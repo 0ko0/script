@@ -1180,49 +1180,86 @@ function OrionLib:MakeWindow(WindowConfig)
         })
 		
 		local hasLinkVideo = typeof(WindowConfig.LinkVideo) == "string"
-        
-        local WindowStuff = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 10), {
-                Size = UDim2.new(0, 145, 1, -66),
-                Position = UDim2.new(0, 12, 0, 56),
-                BackgroundTransparency = hasLinkVideo and 1 or 0.25
-        }), {
-                AddThemeObject(SetProps(MakeElement("Frame"), {
-                        Size = UDim2.new(0, 1, 1, -20),
-                        Position = UDim2.new(1, 4, 0, 10),
-                        BackgroundTransparency = 0.85
-                }), "Stroke"), 
-                TabHolder,
-                SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(15, 15, 15), 0, 8), {
-                        Size = UDim2.new(1, -16, 0, 44),
-                        Position = UDim2.new(0, 8, 1, -52),
-                        BackgroundTransparency = 0.4
-                }), {
-                        AddThemeObject(SetChildren(SetProps(MakeElement("Frame"), {
-                                AnchorPoint = Vector2.new(0, 0.5),
-                                Size = UDim2.new(0, 28, 0, 28),
-                                Position = UDim2.new(0, 8, 0.5, 0)
-                        }), {
-                                SetChildren(SetProps(MakeElement("Image", "https://www.roblox.com/headshot-thumbnail/image?userId=".. LocalPlayer.UserId .."&width=420&height=420&format=png"), {
-                                        Size = UDim2.new(1, 0, 1, 0)
-                                }), {MakeElement("Corner", 1)}),
-                                AddThemeObject(SetChildren(SetProps(MakeElement("Image", "rbxassetid://4031889928"), {
-                                        Size = UDim2.new(1, 0, 1, 0),
-                                }), {MakeElement("Corner", 1)}), "Second"),
-                                MakeElement("Corner", 1)
-                        }), "Divider"),
-                        AddThemeObject(SetProps(MakeElement("Label", LocalPlayer.DisplayName, 12), {
-                                Size = UDim2.new(1, -48, 0, 13),
-                                Position = UDim2.new(0, 42, 0.5, -12),
-                                Font = Enum.Font.GothamBold,
-                                ClipsDescendants = true
-                        }), "Text"),
-                        AddThemeObject(SetProps(MakeElement("Label", "User", 10), {
-                                Size = UDim2.new(1, -48, 0, 12),
-                                Position = UDim2.new(0, 42, 0.5, 1),
-                                Visible = not WindowConfig.HidePremium
-                        }), "TextDark")
-                }),
-        }), "Second")
+
+		local isProfileVisible = true
+		local IconShow = "rbxassetid://100553310917137" 
+		local IconHide = "rbxassetid://112731150255946" 
+
+		local AvatarFrame = AddThemeObject(SetChildren(SetProps(MakeElement("Frame"), {
+				AnchorPoint = Vector2.new(0, 0.5),
+				Size = UDim2.new(0, 28, 0, 28),
+				Position = UDim2.new(0, 8, 0.5, 0),
+				Name = "AvatarFrame"
+		}), {
+				SetChildren(SetProps(MakeElement("Image", "https://www.roblox.com/headshot-thumbnail/image?userId=".. LocalPlayer.UserId .."&width=420&height=420&format=png"), {
+						Size = UDim2.new(1, 0, 1, 0)
+				}), {MakeElement("Corner", 1)}),
+				AddThemeObject(SetChildren(SetProps(MakeElement("Image", "rbxassetid://4031889928"), {
+						Size = UDim2.new(1, 0, 1, 0),
+				}), {MakeElement("Corner", 1)}), "Second"),
+				MakeElement("Corner", 1)
+		}), "Divider")
+
+		local ProfileName = AddThemeObject(SetProps(MakeElement("Label", LocalPlayer.DisplayName, 12), {
+				Size = UDim2.new(1, -74, 0, 13), 
+				Position = UDim2.new(0, 42, 0.5, -12),
+				Font = Enum.Font.GothamBold,
+				ClipsDescendants = true
+		}), "Text")
+
+		local ProfileTag = AddThemeObject(SetProps(MakeElement("Label", "User", 10), {
+				Size = UDim2.new(1, -74, 0, 12),
+				Position = UDim2.new(0, 42, 0.5, 1),
+				Visible = not WindowConfig.HidePremium
+		}), "TextDark")
+
+		local ToggleProfileBtn = Create("ImageButton", {
+				Size = UDim2.new(0, 16, 0, 16),
+				Position = UDim2.new(1, -8, 0.5, 0),
+				AnchorPoint = Vector2.new(1, 0.5),
+				BackgroundTransparency = 1,
+				Image = IconShow, 
+				ZIndex = 5
+		})
+
+		AddConnection(ToggleProfileBtn.MouseButton1Click, function()
+				isProfileVisible = not isProfileVisible
+				
+				ToggleProfileBtn.Image = isProfileVisible and IconShow or IconHide
+				
+				AvatarFrame.Visible = isProfileVisible
+				ProfileName.Visible = isProfileVisible
+				if not WindowConfig.HidePremium then
+						ProfileTag.Visible = isProfileVisible
+				end
+		end)
+
+		local ProfileCard = SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(15, 15, 15), 0, 8), {
+				Size = UDim2.new(1, -16, 0, 44),
+				Position = UDim2.new(0, 8, 1, -52),
+				BackgroundTransparency = 0.4
+		}), {
+				AvatarFrame,
+				ProfileName,
+				ProfileTag,
+				ToggleProfileBtn
+		})
+
+		local WindowStuff = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 10), {
+				Parent = MainWindow,
+				Size = UDim2.new(0, 145, 1, -66),
+				Position = UDim2.new(0, 12, 0, 56),
+				BackgroundTransparency = hasLinkVideo and 1 or 0.25,
+				ZIndex = 1
+		}), {
+				AddThemeObject(SetProps(MakeElement("Frame"), {
+						Size = UDim2.new(0, 1, 1, -20),
+						Position = UDim2.new(1, 4, 0, 10),
+						BackgroundTransparency = 0.85
+				}), "Stroke"), 
+				TabHolder,
+				ProfileCard
+		}), "Second")
 
         if WindowConfig.SearchBar and WindowConfig.SearchBar.Tabs == true then
                 local SearchBox = Create("TextBox", {
@@ -1289,7 +1326,7 @@ function OrionLib:MakeWindow(WindowConfig)
 			RoundMainWindow = "RoundFrame"
 		end
 
-        -- Cấu trúc lại MainWindow và nút Close/Minimize dạng mờ (Translucent Glass Pill)
+        
         local MainWindow = AddThemeObject(SetChildren(SetProps(MakeElement(RoundMainWindow or "RoundFrame", Color3.fromRGB(255, 255, 255), 0, 14), { 
                 Parent = Orion,
                 Position = UDim2.new(0.5, -307, 0.5, -172),
@@ -1848,11 +1885,11 @@ end)
 					
 			AddConnection(TabFrame.MouseButton1Click, function()
 				if Tabs.Disabled then return end
+				
 				for _, Tab in next, TabHolder:GetChildren() do
 					if Tab:IsA("TextButton") then
 						Tab.Ico.ImageTransparency = 0.4
 						Tab.Title.TextTransparency = 0.4
-						
 						if Tab:FindFirstChild("SelectAccent") then
 							TweenService:Create(Tab.SelectAccent, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {BackgroundTransparency = 1}):Play()
 						end
@@ -1865,6 +1902,12 @@ end)
 					end
 				end
 				
+				for _, c in next, MainWindow:GetChildren() do
+					if c.Name == "ItemContainer" then 
+						c.Visible = false 
+					end
+				end
+								
 				TabFrame.Ico.ImageTransparency = 0
 				TabFrame.Title.TextTransparency = 0
 				if TabFrame:FindFirstChild("SelectAccent") then
@@ -1872,10 +1915,11 @@ end)
 				end
 				if TabFrame:FindFirstChild("IndicatorBar") then
 					TweenService:Create(TabFrame.IndicatorBar, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-						Size = UDim2.new(0, 3, 0, 16), 
+						Size = UDim2.new(0, 3, 0, 16),
 						BackgroundTransparency = 0
 					}):Play()
 				end
+				
 				Container.Visible = true
 			end)
 			
