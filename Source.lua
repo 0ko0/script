@@ -782,7 +782,7 @@ function OrionLib:MakeNotification(NotificationConfig)
 			ClipsDescendants = true
 		})
 		
-		local Card = SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(25, 25, 25), 0, 12), {
+		local Card = SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 12), {
 			Parent = NotificationParent,
 			Size = UDim2.new(1, -10, 0, 0),
 			Position = UDim2.new(1.5, 0, 0, 0), 
@@ -791,22 +791,22 @@ function OrionLib:MakeNotification(NotificationConfig)
 			
 			Create("UIGradient", {
 				Color = ColorSequence.new({
-					ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 30, 30)),
-					ColorSequenceKeypoint.new(1, Color3.fromRGB(18, 18, 18))
+					ColorSequenceKeypoint.new(0, Color3.fromRGB(24, 24, 24)), 
+					ColorSequenceKeypoint.new(1, Color3.fromRGB(18, 18, 18))  
 				}),
 				Rotation = 45
 			}),
 			
 			Create("UIStroke", {
 				Color = Color3.fromRGB(255, 255, 255),
-				Thickness = 1.2,
+				Thickness = 1.0, 
 				ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 			}, {
 				Create("UIGradient", {
 					Color = ColorSequence.new({
-						ColorSequenceKeypoint.new(0, Color3.fromRGB(70, 70, 70)),
-						ColorSequenceKeypoint.new(0.5, Color3.fromRGB(45, 45, 45)),
-						ColorSequenceKeypoint.new(1, Color3.fromRGB(70, 70, 70))
+						ColorSequenceKeypoint.new(0, Color3.fromRGB(50, 50, 50)), 
+						ColorSequenceKeypoint.new(0.5, Color3.fromRGB(35, 35, 35)),
+						ColorSequenceKeypoint.new(1, Color3.fromRGB(50, 50, 50))
 					}),
 					Rotation = 90
 				})
@@ -827,14 +827,14 @@ function OrionLib:MakeNotification(NotificationConfig)
 		}, {
 			Create("Frame", {
 				Size = UDim2.new(1, 0, 1, 0),
-				BackgroundColor3 = Color3.fromRGB(32, 32, 32),
+				BackgroundColor3 = Color3.fromRGB(24, 24, 24), 
 				BorderSizePixel = 0
 			}, {
 				Create("UICorner", {CornerRadius = UDim.new(1, 0)}),
 				Create("UIStroke", {
-					Color = Color3.fromRGB(0, 170, 255),
-					Thickness = 1.2,
-					Transparency = 0.4
+					Color = Color3.fromRGB(55, 55, 55), 
+					Thickness = 1.0,
+					Transparency = 0.5
 				}),
 				Create("ImageLabel", {
 					Size = UDim2.new(0, 18, 0, 18),
