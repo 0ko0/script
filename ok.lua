@@ -3714,41 +3714,41 @@ end
 								end
 							end
 						
-							-- [GIAO DIỆN MỚI] Khung chứa trong suốt có tính năng cắt góc 
+							-- Khung chứa chính (Chiều cao mặc định 38px chuẩn Orion, không có chữ thừa bên ngoài)
 							local DropdownFrame = SetProps(MakeElement("TFrame"), {
-								Size = UDim2.new(1, 0, 0, 56), -- Chiều cao ban đầu khi đóng (Gồm nhãn tiêu đề + Selector Card)
+								Size = UDim2.new(1, 0, 0, 38), 
 								Parent = ItemParent,
 								ClipsDescendants = true,
 								Visible = DropdownConfig.Visible
 							})
 
-							-- Nhãn tiêu đề nhỏ nhắn, sắc nét nằm trên cùng
-							local TitleLabel = AddThemeObject(SetProps(MakeElement("Label", DropdownConfig.Name, 11), {
-								Parent = DropdownFrame,
-								Size = UDim2.new(1, 0, 0, 16),
-								Position = UDim2.new(0, 4, 0, 0),
-								Font = Enum.Font.GothamBold,
-								Name = "TitleLabel"
-							}), "TextDark")
-
-							-- Selector Card (Khối tương tác để nhấn mở danh sách)
+							-- Hộp chọn chính (Selector Card)
 							local SelectorCard = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 6), {
 								Parent = DropdownFrame,
-								Size = UDim2.new(1, 0, 0, 36),
-								Position = UDim2.new(0, 0, 0, 20),
+								Size = UDim2.new(1, 0, 0, 38),
+								Position = UDim2.new(0, 0, 0, 0),
 								Name = "SelectorCard"
 							}), {
 								AddThemeObject(MakeElement("Stroke"), "Stroke"),
 								
-								-- Nhãn văn bản thể hiện giá trị đang chọn
-								AddThemeObject(SetProps(MakeElement("Label", "Select Option...", 13), {
-									Size = UDim2.new(1, -40, 1, 0),
+								-- [MỚI] Tên Dropdown được tích hợp vào phía bên trái hộp chọn
+								AddThemeObject(SetProps(MakeElement("Label", DropdownConfig.Name, 13), {
+									Size = UDim2.new(0.5, -12, 1, 0),
 									Position = UDim2.new(0, 12, 0, 0),
-									Font = Enum.Font.GothamSemibold,
-									Name = "SelectedText"
+									Font = Enum.Font.GothamBold,
+									Name = "DropdownName"
 								}), "Text"),
 								
-								-- Biểu tượng chevron tinh tế hướng bên phải
+								-- [MỚI] Giá trị được lựa chọn hiển thị lệch phải, tinh tế
+								AddThemeObject(SetProps(MakeElement("Label", "Select Option...", 12), {
+									Size = UDim2.new(0.5, -34, 1, 0),
+									Position = UDim2.new(0.5, 0, 0, 0),
+									Font = Enum.Font.GothamSemibold,
+									TextXAlignment = Enum.TextXAlignment.Right,
+									Name = "SelectedText"
+								}), "TextDark"),
+								
+								-- Mũi tên chỉ hướng thả xuống
 								AddThemeObject(SetProps(MakeElement("Image", "rbxassetid://7072706796"), {
 									Size = UDim2.new(0, 16, 0, 16),
 									AnchorPoint = Vector2.new(1, 0.5),
@@ -3757,47 +3757,56 @@ end
 									ImageTransparency = 0.4
 								}), "TextDark"),
 								
-								-- Nút kích hoạt vô hình bao phủ toàn bộ bề mặt
+								-- Nút ấn tương tác mở danh sách
 								SetProps(MakeElement("Button"), {
 									Size = UDim2.new(1, 0, 1, 0),
 									Name = "ClickButton"
 								})
 							}), "Second")
 
-							-- Khung chứa cuộn danh sách tùy chọn (ScrollFrame) hiển thị dưới Selector Card
+							-- [CẢI TIẾN] Thiết kế lại nền Panel danh sách tối sẫm màu, bo góc, tạo khối đổ bóng
 							local DropdownList = MakeElement("List", 0, 4)
 							local DropdownContainer = AddThemeObject(SetProps(SetChildren(
-								MakeElement("ScrollFrame", Color3.fromRGB(40, 40, 40), 3),
+								MakeElement("ScrollFrame", Color3.fromRGB(255, 255, 255), 3),
 								{
 									DropdownList,
-									MakeElement("Padding", 4, 4, 4, 4)
+									MakeElement("Padding", 6, 6, 6, 6),
+									Create("UICorner", {CornerRadius = UDim.new(0, 6)}) -- Bo tròn danh sách thả xuống
 								}
 							), {
 								Parent = DropdownFrame,
-								Position = UDim2.new(0, 0, 0, 60),
-								Size = UDim2.new(1, 0, 0, 0), -- Ban đầu cao bằng 0 để ẩn đi
+								Position = UDim2.new(0, 0, 0, 42), -- Khoảng cách nhỏ tinh tế so với hộp chọn chính
+								Size = UDim2.new(1, 0, 0, 0), 
 								ClipsDescendants = true,
-								BackgroundTransparency = 0.4
-							}), "Second")
+								BackgroundTransparency = 0, -- Làm nền đặc sang trọng
+								BackgroundColor3 = Color3.fromRGB(16, 16, 16) -- Nền tối tương phản sắc nét với giao diện chính
+							}), "Divider")
 
-							local ContainerStroke = AddThemeObject(MakeElement("Stroke"), "Stroke")
+							-- Viền bao ngoài tinh xảo cho danh sách tùy chọn
+							local ContainerStroke = AddThemeObject(Create("UIStroke", {
+								Color = Color3.fromRGB(45, 45, 45),
+								Thickness = 1.2,
+								ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+							}), "Stroke")
 							ContainerStroke.Parent = DropdownContainer
 
-							-- Cập nhật đồng bộ hiển thị các nút Option dựa theo trạng thái đã chọn hay chưa
+							-- Cập nhật trạng thái hiển thị của các Option khi được chọn
 							local function UpdateOptionVisuals(OptionVal, isSelected)
 								local btn = Dropdown.Buttons[OptionVal]
 								if not btn then return end
 								
-								local activeColor = Color3.fromRGB(0, 170, 255) -- Màu chỉ báo xanh hiện đại
+								local activeColor = Color3.fromRGB(0, 170, 255) -- Màu xanh Neon sang trọng
 								
 								if isSelected then
-									TweenService:Create(btn, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {
-										BackgroundTransparency = 0.92
+									-- Khi được chọn: Nền sáng nhẹ màu xanh
+									TweenService:Create(btn, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {
+										BackgroundTransparency = 0.94,
+										BackgroundColor3 = activeColor
 									}):Play()
 									
 									if btn:FindFirstChild("ActivePill") then
-										TweenService:Create(btn.ActivePill, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {
-											Size = UDim2.new(0, 3, 0.6, 0),
+										TweenService:Create(btn.ActivePill, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {
+											Size = UDim2.new(0, 3, 0.5, 0),
 											BackgroundTransparency = 0,
 											BackgroundColor3 = activeColor
 										}):Play()
@@ -3805,26 +3814,32 @@ end
 									
 									if btn:FindFirstChild("CheckIndicator") and btn.CheckIndicator:FindFirstChild("Fill") then
 										TweenService:Create(btn.CheckIndicator.Fill, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-											Size = UDim2.new(0, 10, 0, 10),
-											BackgroundColor3 = activeColor
+											Size = UDim2.new(1, -4, 1, -4),
+											BackgroundColor3 = activeColor,
+											BackgroundTransparency = 0
 										}):Play()
 										if btn.CheckIndicator:FindFirstChild("CheckStroke") then
-											TweenService:Create(btn.CheckIndicator.CheckStroke, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {
+											TweenService:Create(btn.CheckIndicator.CheckStroke, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {
 												Color = activeColor
 											}):Play()
 										end
 									end
 									
 									if btn:FindFirstChild("Title") then
-										TweenService:Create(btn.Title, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {TextTransparency = 0}):Play()
+										TweenService:Create(btn.Title, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {
+											TextTransparency = 0,
+											TextColor3 = Color3.fromRGB(255, 255, 255)
+										}):Play()
 									end
 								else
-									TweenService:Create(btn, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {
-										BackgroundTransparency = 1
+									-- Khi không được chọn: Đưa về trong suốt mặc định
+									TweenService:Create(btn, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {
+										BackgroundTransparency = 1,
+										BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 									}):Play()
 									
 									if btn:FindFirstChild("ActivePill") then
-										TweenService:Create(btn.ActivePill, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {
+										TweenService:Create(btn.ActivePill, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {
 											Size = UDim2.new(0, 3, 0, 0),
 											BackgroundTransparency = 1
 										}):Play()
@@ -3832,17 +3847,21 @@ end
 									
 									if btn:FindFirstChild("CheckIndicator") and btn.CheckIndicator:FindFirstChild("Fill") then
 										TweenService:Create(btn.CheckIndicator.Fill, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {
-											Size = UDim2.new(0, 0, 0, 0)
+											Size = UDim2.new(0, 0, 0, 0),
+											BackgroundTransparency = 1
 										}):Play()
 										if btn.CheckIndicator:FindFirstChild("CheckStroke") then
 											TweenService:Create(btn.CheckIndicator.CheckStroke, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {
-												Color = Color3.fromRGB(80, 80, 80)
+												Color = Color3.fromRGB(70, 70, 70)
 											}):Play()
 										end
 									end
 									
 									if btn:FindFirstChild("Title") then
-										TweenService:Create(btn.Title, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {TextTransparency = 0.3}):Play()
+										TweenService:Create(btn.Title, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {
+											TextTransparency = 0.35,
+											TextColor3 = Color3.fromRGB(230, 230, 230)
+										}):Play()
 									end
 								end
 							end
@@ -3860,7 +3879,7 @@ end
 									
 									local ButtonHeight = (ThumbStr and 60) or ((DescStr or IconStr) and 42) or 32
 						
-									-- Thanh chỉ báo dọc khi di chuột/chọn
+									-- Thanh chỉ báo trạng thái bên trái
 									local ActivePill = SetProps(MakeElement("RoundFrame", Color3.fromRGB(0, 170, 255), 0, 4), {
 										Size = UDim2.new(0, 3, 0, 0),
 										Position = UDim2.new(0, 4, 0.5, 0),
@@ -3869,7 +3888,7 @@ end
 										Name = "ActivePill"
 									})
 
-									-- Hộp kiểm nhỏ tròn thanh lịch nằm bên phải
+									-- Điểm đánh dấu chọn bên phải mỏng nhẹ, tối giản
 									local CheckIndicator = SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(24, 24, 24), 0, 10), {
 										Size = UDim2.new(0, 16, 0, 16),
 										AnchorPoint = Vector2.new(1, 0.5),
@@ -3878,7 +3897,7 @@ end
 										BackgroundTransparency = 0.4
 									}), {
 										SetProps(MakeElement("Stroke"), {
-											Color = Color3.fromRGB(80, 80, 80),
+											Color = Color3.fromRGB(70, 70, 70),
 											Thickness = 1,
 											Name = "CheckStroke"
 										}),
@@ -3931,7 +3950,7 @@ end
 									local TitleY = DescStr and 4 or 0
 									if ThumbStr and DescStr then TitleY = 10 end
 						
-									table.insert(Elements, AddThemeObject(SetProps(MakeElement("Label", TitleStr, 12, 0.3), {
+									table.insert(Elements, AddThemeObject(SetProps(MakeElement("Label", TitleStr, 12, 0.35), {
 										Position = UDim2.new(0, TextLeftPadding, 0, TitleY),
 										Size = UDim2.new(1, -(TextLeftPadding + 36), (DescStr and 0 or 1), (DescStr and 14 or 0)),
 										TextXAlignment = Enum.TextXAlignment.Left,
@@ -3963,7 +3982,7 @@ end
 										ClipsDescendants = true
 									}), "Divider")
 						
-									-- Hiệu ứng Hover mượt mà
+									-- Hiệu ứng Hover chuyển động nhẹ
 									AddConnection(OptionBtn.MouseEnter, function()
 										if Dropdown.Disabled then return end
 										TweenService:Create(OptionBtn, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {BackgroundTransparency = 0.8}):Play()
@@ -3988,7 +4007,7 @@ end
 										if not isSelected then
 											TweenService:Create(OptionBtn, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {BackgroundTransparency = 1}):Play()
 											if OptionBtn:FindFirstChild("Title") then
-												TweenService:Create(OptionBtn.Title, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {TextTransparency = 0.3}):Play()
+												TweenService:Create(OptionBtn.Title, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {TextTransparency = 0.35}):Play()
 											end
 										end
 									end)
@@ -4003,13 +4022,13 @@ end
 							end
 							
 							AddConnection(DropdownList:GetPropertyChangedSignal("AbsoluteContentSize"), function()
-								DropdownContainer.CanvasSize = UDim2.new(0, 0, 0, DropdownList.AbsoluteContentSize.Y + 8)
+								DropdownContainer.CanvasSize = UDim2.new(0, 0, 0, DropdownList.AbsoluteContentSize.Y + 12)
 								if Dropdown.Toggled then
-									local currentContentSize = DropdownList.AbsoluteContentSize.Y + 8
+									local currentContentSize = DropdownList.AbsoluteContentSize.Y + 12
 									local expandSize = math.min(currentContentSize, MaxElementsHeight)
 									
 									DropdownContainer.Size = UDim2.new(1, 0, 0, expandSize)
-									DropdownFrame.Size = UDim2.new(1, 0, 0, 56 + expandSize + 4)
+									DropdownFrame.Size = UDim2.new(1, 0, 0, 38 + expandSize + 8)
 								end
 							end)
 
@@ -4021,7 +4040,7 @@ end
 									Dropdown.Toggled = false
 									TweenService:Create(SelectorCard.Chevron, TweenInfo.new(.15), {Rotation = 0}):Play()
 									TweenService:Create(DropdownContainer, TweenInfo.new(.15), {Size = UDim2.new(1, 0, 0, 0)}):Play()
-									TweenService:Create(DropdownFrame, TweenInfo.new(.15), {Size = UDim2.new(1, 0, 0, 56)}):Play()
+									TweenService:Create(DropdownFrame, TweenInfo.new(.15), {Size = UDim2.new(1, 0, 0, 38)}):Play()
 								end
 								if SelectorCard then
 									TweenService:Create(SelectorCard, TweenInfo.new(0.2), {
@@ -4070,6 +4089,7 @@ end
 								if not table.find(Dropdown.Options, Value) then
 									Dropdown.Value = DropdownConfig.Multi and {} or nil
 									SelectorCard.SelectedText.Text = "Select Option..."
+									SelectorCard.SelectedText.TextColor3 = Color3.fromRGB(140, 140, 140)
 									for opt, _ in pairs(Dropdown.Buttons) do
 										UpdateOptionVisuals(opt, false)
 									end
@@ -4092,10 +4112,11 @@ end
 								        end
 								        if #selectedList == 0 then
 								            SelectorCard.SelectedText.Text = "Select Option..."
+											SelectorCard.SelectedText.TextColor3 = Color3.fromRGB(140, 140, 140)
 								        else
 								            local text = table.concat(selectedList, ", ")
-								            SelectorCard.SelectedText.Text =
-								                (#text > 20) and string.sub(text, 1, 17) .. "..." or text
+								            SelectorCard.SelectedText.Text = (#text > 20) and string.sub(text, 1, 17) .. "..." or text
+											SelectorCard.SelectedText.TextColor3 = Color3.fromRGB(240, 240, 240)
 								        end
 								        return OrionLib:SafeScript(DropdownConfig.Callback, Dropdown.Value)
 								    else
@@ -4109,10 +4130,11 @@ end
 								        end
 								        if #Dropdown.Value == 0 then
 								            SelectorCard.SelectedText.Text = "Select Option..."
+											SelectorCard.SelectedText.TextColor3 = Color3.fromRGB(140, 140, 140)
 								        else
 								            local text = table.concat(Dropdown.Value, ", ")
-								            SelectorCard.SelectedText.Text =
-								                (#text > 20) and string.sub(text, 1, 17) .. "..." or text
+								            SelectorCard.SelectedText.Text = (#text > 20) and string.sub(text, 1, 17) .. "..." or text
+											SelectorCard.SelectedText.TextColor3 = Color3.fromRGB(240, 240, 240)
 								        end
 								        return OrionLib:SafeScript(DropdownConfig.Callback, Dropdown.Value)
 								    end
@@ -4123,6 +4145,7 @@ end
 								local titleShow = Value
 								if type(dataInfo) == "table" and dataInfo.Title then titleShow = dataInfo.Title end
 								SelectorCard.SelectedText.Text = titleShow
+								SelectorCard.SelectedText.TextColor3 = Color3.fromRGB(255, 255, 255)
 						
 								for opt, _ in pairs(Dropdown.Buttons) do
 									UpdateOptionVisuals(opt, opt == Value)
@@ -4130,7 +4153,7 @@ end
 								return OrionLib:SafeScript(DropdownConfig.Callback, Dropdown.Value)
 							end
 						
-							-- Sự kiện nhấn đóng/mở danh sách bằng Tween mượt mà
+							-- Sự kiện đóng / mở thả xuống bằng Tween mượt mà
 							AddConnection(SelectorCard.ClickButton.MouseButton1Click, function()
 								if Dropdown.Disabled then return end
 								Dropdown.Toggled = not Dropdown.Toggled
@@ -4139,11 +4162,11 @@ end
 									Rotation = Dropdown.Toggled and 180 or 0
 								}):Play()
 						
-								local currentContentSize = DropdownList.AbsoluteContentSize.Y + 8
+								local currentContentSize = DropdownList.AbsoluteContentSize.Y + 12
 								local expandSize = math.min(currentContentSize, MaxElementsHeight)
 								
 								local targetContainerHeight = Dropdown.Toggled and expandSize or 0
-								local targetFrameHeight = Dropdown.Toggled and (56 + expandSize + 4) or 56
+								local targetFrameHeight = Dropdown.Toggled and (38 + expandSize + 8) or 38
 						
 								TweenService:Create(DropdownContainer, TweenInfo.new(.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
 									Size = UDim2.new(1, 0, 0, targetContainerHeight)
