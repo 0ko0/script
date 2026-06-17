@@ -688,18 +688,45 @@ CreateElement("Button", function()
 end)
 
 CreateElement("ScrollFrame", function(Color, Width)
+        local idleThickness = tonumber(Width) or 3
+        local hoverThickness = idleThickness + 1.5
+
         local ScrollFrame = Create("ScrollingFrame", {
                 BackgroundTransparency = 1,
                 MidImage = "rbxassetid://7445543667",
                 BottomImage = "rbxassetid://7445543667",
                 TopImage = "rbxassetid://7445543667",
                 ScrollBarImageColor3 = Color,
-                ScrollBarImageTransparency = 0.35, 
+                ScrollBarImageTransparency = 0.75, 
                 BorderSizePixel = 0,
-                ScrollBarThickness = 2, 
+                ScrollBarThickness = idleThickness, 
                 CanvasSize = UDim2.new(0, 0, 0, 0),
-                VerticalScrollBarInset = Enum.ScrollBarInset.None 
+                VerticalScrollBarInset = Enum.ScrollBarInset.None,
+                Active = true
         })
+
+        local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+        
+        local enterTween = TweenService:Create(ScrollFrame, tweenInfo, {
+                ScrollBarImageTransparency = 0.25, 
+                ScrollBarThickness = hoverThickness 
+        })
+        
+        local leaveTween = TweenService:Create(ScrollFrame, tweenInfo, {
+                ScrollBarImageTransparency = 0.75,
+                ScrollBarThickness = idleThickness
+        })
+
+        ScrollFrame.MouseEnter:Connect(function()
+                leaveTween:Cancel()
+                enterTween:Play()
+        end)
+
+        ScrollFrame.MouseLeave:Connect(function()
+                enterTween:Cancel()
+                leaveTween:Play()
+        end)
+
         return ScrollFrame
 end)
 
