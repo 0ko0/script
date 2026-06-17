@@ -3473,184 +3473,277 @@ end)
     return Toggle
 end
 						function ElementFunction:AddSlider(SliderConfig)
-							SliderConfig = SliderConfig or {}
-							SliderConfig.Name = SliderConfig.Name or "Slider"
-							SliderConfig.Visible = SliderConfig.Visible or true
-							SliderConfig.Disabled = SliderConfig.Disabled or false
-							SliderConfig.Min = SliderConfig.Min or 0
-							SliderConfig.Max = SliderConfig.Max or 100
-							SliderConfig.Increment = SliderConfig.Increment or 1
-							SliderConfig.Default = SliderConfig.Default or 50
-							SliderConfig.Callback = SliderConfig.Callback or function() end
-							SliderConfig.ValueName = SliderConfig.ValueName or ""
-							SliderConfig.Color = SliderConfig.Color or Color3.fromRGB(9, 149, 98)
-							SliderConfig.Flag = SliderConfig.Flag or nil
-							SliderConfig.Save = SliderConfig.Save or false
-							
-							local Slider = {
-								Type = "Slider",
-								Value = SliderConfig.Default,
-								Save = SliderConfig.Save,
-								Disabled = SliderConfig.Disabled,
-								Visible = SliderConfig.Visible
-							}
-							local Dragging = false  
-						  
-							local SliderDrag = SetChildren(SetProps(MakeElement("RoundFrame", SliderConfig.Color, 0, 5), {  
-								Size = UDim2.new(0, 0, 1, 0),  
-								BackgroundTransparency = 0.3,  
-								ClipsDescendants = true  
-							}), {  
-								AddThemeObject(SetProps(MakeElement("Label", "value", 13), {  
-									Size = UDim2.new(1, -12, 0, 14),  
-									Position = UDim2.new(0, 12, 0, 6),  
-									Font = Enum.Font.GothamBold,  
-									Name = "Value",  
-									TextTransparency = 0  
-								}), "Text")  
-							})  
-						  
-							local SliderBar = SetChildren(SetProps(MakeElement("RoundFrame", SliderConfig.Color, 0, 5), {  
-								Size = UDim2.new(1, -24, 0, 26),  
-								Position = UDim2.new(0, 12, 0, 30),  
-								BackgroundTransparency = 0.9  
-							}), {  
-								SetProps(MakeElement("Stroke"), {Color = SliderConfig.Color}),  
-								AddThemeObject(SetProps(MakeElement("Label", "value", 13), {  
-									Size = UDim2.new(1, -12, 0, 14),  
-									Position = UDim2.new(0, 12, 0, 6),  
-									Font = Enum.Font.GothamBold,  
-									Name = "Value",  
-									TextTransparency = 0.8  
-								}), "Text"),  
-								SliderDrag  
-							})  
-						  
-							local SliderFrame = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 4), {  
-								Size = UDim2.new(1, 0, 0, 65),  
-								Visible = SliderConfig.Visible,
-								Parent = ItemParent  
-							}), {  
-								AddThemeObject(SetProps(MakeElement("Label", SliderConfig.Name, 15), {  
-									Size = UDim2.new(1, -12, 0, 14),  
-									Position = UDim2.new(0, 12, 0, 10),  
-									Font = Enum.Font.GothamBold,  
-									Name = "Content"  
-								}), "Text"),  
-								AddThemeObject(MakeElement("Stroke"), "Stroke"),  
-								SliderBar  
-							}), "Second")  
-							  
-							local function DraggingUi(parent)  
-								parent.InputBegan:Connect(function(Input)  
-									if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then  
-										Dragging = true  
-									end  
-								end)  
-							  
-								parent.InputEnded:Connect(function(Input)  
-									if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then  
-										Dragging = false  
-									end  
-								end)  
-							end  
-							  
-							DraggingUi(SliderBar)  
-							AddConnection(UserInputService.InputChanged, function(Input)
-								if Dragging and not Slider.Disabled then
-									local SizeScale = math.clamp((Input.Position.X - SliderBar.AbsolutePosition.X) / SliderBar.AbsoluteSize.X, 0, 1)
-									Slider:Set(SliderConfig.Min + ((SliderConfig.Max - SliderConfig.Min) * SizeScale))
-								end
-							end)
-						  
-							local function Update()  
-								if getgenv().Destroy then return end
-								TweenService:Create(SliderDrag, TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.fromScale((Slider.Value - SliderConfig.Min) / (SliderConfig.Max - SliderConfig.Min), 1)}):Play()  
-								SliderBar.Value.Text = tostring(Slider.Value) .. " " .. SliderConfig.ValueName  
-								SliderDrag.Value.Text = tostring(Slider.Value) .. " " .. SliderConfig.ValueName  
-								OrionLib:SafeScript(SliderConfig.Callback, Slider.Value)
-							end  
-						  
-							function Slider:Set(Value)  
-								if getgenv().Destroy then return end
-								Slider.Value = math.clamp(Round(Value, SliderConfig.Increment), SliderConfig.Min, SliderConfig.Max)  
-								Update()  
-							end  
-							
-							function Slider:SetDisabled(state)
-								if getgenv().Destroy then return end
-								Slider.Disabled = state
-								SliderConfig.Disabled = state
-								if SliderFrame then
-									TweenService:Create(SliderFrame, TweenInfo.new(0.2), {BackgroundTransparency = state and 0.5 or 0}):Play()
-								end
-								if SliderBar then
-									TweenService:Create(SliderBar, TweenInfo.new(0.2), {BackgroundTransparency = state and 0.95 or 0.9}):Play()
-								end
-								if SliderFrame:FindFirstChild("Content") then
-									SliderFrame.Content.TextTransparency = state and 0.5 or 0
-								end
-							end
-							
-							function Slider:SetVisible(state)
-								if getgenv().Destroy then return end
-								Slider.Visible = state
-								if SliderFrame then
-									SliderFrame.Visible = state
-								end
-							end
-							  
-							function Slider:SetMax(Value: number)  
-								if getgenv().Destroy then return end
-								local MaxToFix = tonumber(Value) or 5
-								SliderConfig.Max = (MaxToFix > 0 and MaxToFix or 5)  
-								Slider.Value = math.clamp(Round(Slider.Value, SliderConfig.Increment), SliderConfig.Min, SliderConfig.Max)  
-								Update()  
-							end  
-						  
-							function Slider:SetMin(Value: number)  
-								if getgenv().Destroy then return end
-								SliderConfig.Min = tonumber(Value) or 5
-								Slider.Value = math.clamp(Round(Slider.Value, SliderConfig.Increment), SliderConfig.Min, SliderConfig.Max)  
-								Update()  
-							end  
-						  
-							function Slider:SetText(ToChange)  
-								if getgenv().Destroy then return end
-								if SliderFrame and SliderFrame:FindFirstChild("Content") then  
-									SliderFrame.Content.Text = ToChange  
-								end  
-							end  
-							  
-							function Slider:SetTextValue(ToChange)  
-								if getgenv().Destroy then return end
-								SliderConfig.ValueName = ToChange  
-								SliderBar.Value.Text = tostring(Slider.Value) .. " " .. SliderConfig.ValueName  
-								SliderDrag.Value.Text = tostring(Slider.Value) .. " " .. SliderConfig.ValueName  
-							end  
-						  
-							function Slider:SetCallback(ToChange)  
-								if getgenv().Destroy then return end
-								SliderConfig.Callback = ToChange  
-							end  
-							
-							if SliderConfig.Disabled then
-								Slider:SetDisabled(true)
-							end
-							if SliderConfig.Visible == false then
-								Slider:SetVisible(false)
-							end
-						  
-							Slider.Value = math.clamp(Slider.Value, SliderConfig.Min, SliderConfig.Max)  
-							TweenService:Create(SliderDrag, TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.fromScale((Slider.Value - SliderConfig.Min) / (SliderConfig.Max - SliderConfig.Min), 1)}):Play()  
-							SliderBar.Value.Text = tostring(Slider.Value) .. " " .. SliderConfig.ValueName  
-							SliderDrag.Value.Text = tostring(Slider.Value) .. " " .. SliderConfig.ValueName  
-							
-							if SliderConfig.Flag then  
-								OrionLib.Flags[SliderConfig.Flag] = Slider  
-							end  
-							return Slider  
-						end
+                            SliderConfig = SliderConfig or {}
+                            SliderConfig.Name = SliderConfig.Name or "Slider"
+                            SliderConfig.Visible = SliderConfig.Visible or true
+                            SliderConfig.Disabled = SliderConfig.Disabled or false
+                            SliderConfig.Min = SliderConfig.Min or 0
+                            SliderConfig.Max = SliderConfig.Max or 100
+                            SliderConfig.Increment = SliderConfig.Increment or 1
+                            SliderConfig.Default = SliderConfig.Default or 50
+                            SliderConfig.Callback = SliderConfig.Callback or function() end
+                            SliderConfig.ValueName = SliderConfig.ValueName or ""
+                            SliderConfig.Color = SliderConfig.Color or Color3.fromRGB(9, 149, 98)
+                            SliderConfig.Flag = SliderConfig.Flag or nil
+                            SliderConfig.Save = SliderConfig.Save or false
+                            
+                            local Slider = {
+                                Type = "Slider",
+                                Value = SliderConfig.Default,
+                                Save = SliderConfig.Save,
+                                Disabled = SliderConfig.Disabled,
+                                Visible = SliderConfig.Visible
+                            }
+                            local Dragging = false  
+                          
+                            -- 1. Nhãn văn bản hiển thị tên của Slider
+                            local NameLabel = AddThemeObject(SetProps(MakeElement("Label", SliderConfig.Name, 14), {  
+                                Size = UDim2.new(0.5, -14, 0, 16),  
+                                Position = UDim2.new(0, 14, 0, 12),  
+                                Font = Enum.Font.GothamBold,  
+                                Name = "Content"  
+                            }), "Text")  
+                          
+                            -- 2. Nhãn hiển thị giá trị số (gồm cả ValueName nếu có)
+                            local ValueLabel = AddThemeObject(SetProps(MakeElement("Label", "value", 13), {  
+                                Size = UDim2.new(0.5, -14, 0, 16),  
+                                Position = UDim2.new(0.5, 0, 0, 12),  
+                                Font = Enum.Font.GothamSemibold,  
+                                TextXAlignment = Enum.TextXAlignment.Right,  
+                                TextTransparency = 0.3,
+                                Name = "Value"  
+                            }), "TextDark")  
+
+                            -- 3. Thanh nền trượt (Track Bar) dáng mỏng dẹt thanh thoát
+                            local SliderBar = AddThemeObject(SetProps(MakeElement("RoundFrame", nil, 0, 3), {  
+                                Size = UDim2.new(1, -28, 0, 6),  
+                                Position = UDim2.new(0, 14, 0, 38),
+                                BackgroundTransparency = 0.9,
+                                Name = "Track"
+                            }), "Divider")  
+                          
+                            -- 4. Phần chỉ thị mức độ đã lấp đầy (Fill Bar)
+                            local SliderFill = SetProps(MakeElement("RoundFrame", SliderConfig.Color, 0, 3), {  
+                                Size = UDim2.new(0, 0, 1, 0),  
+                                BorderSizePixel = 0,  
+                                Name = "Fill"  
+                            })  
+
+                            -- 5. Nút tròn để giữ kéo (Knob) với thiết kế hiện đại gồm 2 lớp vòng tròn lồng nhau
+                            local Knob = SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 1, 0), {
+                                Size = UDim2.new(0, 12, 0, 12),
+                                AnchorPoint = Vector2.new(0.5, 0.5),
+                                Position = UDim2.new(0, 0, 0.5, 0),
+                                Name = "Knob",
+                                ZIndex = 3
+                            }), {
+                                SetProps(MakeElement("RoundFrame", SliderConfig.Color, 1, 0), {
+                                    Size = UDim2.new(0, 6, 0, 6),
+                                    AnchorPoint = Vector2.new(0.5, 0.5),
+                                    Position = UDim2.new(0.5, 0, 0.5, 0),
+                                    BorderSizePixel = 0,
+                                    Name = "Core"
+                                }),
+                                Create("UIStroke", {
+                                    Color = SliderConfig.Color,
+                                    Thickness = 1.5,
+                                    Transparency = 0.5
+                                })
+                            })
+
+                            -- Ghép nối các lớp thành phần vào cấu trúc cây UI
+                            SliderFill.Parent = SliderBar
+                            Knob.Parent = SliderBar
+
+                            local SliderFrame = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 8), {  
+                                Size = UDim2.new(1, 0, 0, 60), -- Chiều cao vừa vặn cho diện mạo mỏng nhẹ mới
+                                Visible = SliderConfig.Visible,
+                                Parent = ItemParent  
+                            }), {  
+                                NameLabel,  
+                                ValueLabel,  
+                                SliderBar,
+                                AddThemeObject(MakeElement("Stroke"), "Stroke")  
+                            }), "Second")  
+                            
+                            -- Quản lý hoạt ảnh phóng to/thu nhỏ khi tương tác (Hover)
+                            local function PlayHoverAnim(isHovered)
+                                if Slider.Disabled then return end
+                                
+                                local knobSize = isHovered and UDim2.new(0, 15, 0, 15) or UDim2.new(0, 12, 0, 12)
+                                local coreSize = isHovered and UDim2.new(0, 7, 0, 7) or UDim2.new(0, 6, 0, 6)
+                                local barTransparency = isHovered and 0.8 or 0.9
+                                local textTransparency = isHovered and 0 or 0.3
+                                
+                                TweenService:Create(Knob, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                                    Size = knobSize
+                                }):Play()
+                                
+                                if Knob:FindFirstChild("Core") then
+                                    TweenService:Create(Knob.Core, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                                        Size = coreSize
+                                    }):Play()
+                                end
+                                
+                                TweenService:Create(SliderBar, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
+                                    BackgroundTransparency = barTransparency
+                                }):Play()
+                                
+                                TweenService:Create(ValueLabel, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
+                                    TextTransparency = textTransparency
+                                }):Play()
+                            end
+
+                            AddConnection(SliderFrame.MouseEnter, function() PlayHoverAnim(true) end)
+                            AddConnection(SliderFrame.MouseLeave, function() if not Dragging then PlayHoverAnim(false) end end)
+                              
+                            -- Bộ lắng nghe sự kiện kéo thả chuột/chạm tay màn hình
+                            local function DraggingUi(parent)  
+                                parent.InputBegan:Connect(function(Input)  
+                                    if Slider.Disabled then return end
+                                    if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then  
+                                        Dragging = true  
+                                        -- Cập nhật tức thời giá trị tại điểm click
+                                        local SizeScale = math.clamp((Input.Position.X - SliderBar.AbsolutePosition.X) / SliderBar.AbsoluteSize.X, 0, 1)  
+                                        Slider:Set(SliderConfig.Min + ((SliderConfig.Max - SliderConfig.Min) * SizeScale))
+                                        
+                                        -- Phóng to nút kéo tối đa khi đang tương tác chủ động
+                                        TweenService:Create(Knob, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                                            Size = UDim2.new(0, 17, 0, 17)
+                                        }):Play()
+                                    end  
+                                end)  
+                              
+                                parent.InputEnded:Connect(function(Input)  
+                                    if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then  
+                                        Dragging = false  
+                                        PlayHoverAnim(false)
+                                    end  
+                                end)  
+                            end  
+                              
+                            DraggingUi(SliderBar)  
+                            
+                            AddConnection(UserInputService.InputChanged, function(Input)
+                                if Dragging and not Slider.Disabled then
+                                    if Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch then
+                                        local SizeScale = math.clamp((Input.Position.X - SliderBar.AbsolutePosition.X) / SliderBar.AbsoluteSize.X, 0, 1)
+                                        Slider:Set(SliderConfig.Min + ((SliderConfig.Max - SliderConfig.Min) * SizeScale))
+                                    end
+                                end
+                            end)
+                          
+                            -- Hàm xử lý cập nhật trạng thái vị trí & chữ hiển thị của Slider
+                            local function Update()  
+                                if getgenv().Destroy then return end
+                                local range = SliderConfig.Max - SliderConfig.Min
+                                local progressScale = range > 0 and (Slider.Value - SliderConfig.Min) / range or 0
+                                
+                                TweenService:Create(SliderFill, TweenInfo.new(.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                                    Size = UDim2.fromScale(progressScale, 1)
+                                }):Play()  
+                                
+                                TweenService:Create(Knob, TweenInfo.new(.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                                    Position = UDim2.new(progressScale, 0, 0.5, 0)
+                                }):Play()
+                                
+                                ValueLabel.Text = tostring(Slider.Value) .. " " .. SliderConfig.ValueName  
+                                OrionLib:SafeScript(SliderConfig.Callback, Slider.Value)
+                            end  
+                          
+                            -- Các hàm API điều khiển ngoài
+                            function Slider:Set(Value)  
+                                if getgenv().Destroy then return end
+                                Slider.Value = math.clamp(Round(Value, SliderConfig.Increment), SliderConfig.Min, SliderConfig.Max)  
+                                Update()  
+                            end  
+                            
+                            function Slider:SetDisabled(state)
+                                if getgenv().Destroy then return end
+                                Slider.Disabled = state
+                                SliderConfig.Disabled = state
+                                if SliderFrame then
+                                    TweenService:Create(SliderFrame, TweenInfo.new(0.2), {BackgroundTransparency = state and 0.5 or 0}):Play()
+                                end
+                                if SliderBar then
+                                    TweenService:Create(SliderBar, TweenInfo.new(0.2), {BackgroundTransparency = state and 0.95 or 0.9}):Play()
+                                end
+                                if SliderFrame:FindFirstChild("Content") then
+                                    SliderFrame.Content.TextTransparency = state and 0.5 or 0
+                                end
+                                if ValueLabel then
+                                    ValueLabel.TextTransparency = state and 0.5 or 0.3
+                                end
+                                if Knob then
+                                    TweenService:Create(Knob, TweenInfo.new(0.2), {BackgroundTransparency = state and 0.5 or 0}):Play()
+                                    if Knob:FindFirstChild("Core") then
+                                        TweenService:Create(Knob.Core, TweenInfo.new(0.2), {BackgroundTransparency = state and 0.5 or 0}):Play()
+                                    end
+                                end
+                            end
+                            
+                            function Slider:SetVisible(state)
+                                if getgenv().Destroy then return end
+                                Slider.Visible = state
+                                if SliderFrame then
+                                    SliderFrame.Visible = state
+                                end
+                            end
+                              
+                            function Slider:SetMax(Value: number)  
+                                if getgenv().Destroy then return end
+                                local MaxToFix = tonumber(Value) or 5
+                                SliderConfig.Max = (MaxToFix > 0 and MaxToFix or 5)  
+                                Slider.Value = math.clamp(Round(Slider.Value, SliderConfig.Increment), SliderConfig.Min, SliderConfig.Max)  
+                                Update()  
+                            end  
+                          
+                            function Slider:SetMin(Value: number)  
+                                if getgenv().Destroy then return end
+                                SliderConfig.Min = tonumber(Value) or 5
+                                Slider.Value = math.clamp(Round(Slider.Value, SliderConfig.Increment), SliderConfig.Min, SliderConfig.Max)  
+                                Update()  
+                            end  
+                          
+                            function Slider:SetText(ToChange)  
+                                if getgenv().Destroy then return end
+                                if SliderFrame and SliderFrame:FindFirstChild("Content") then  
+                                    SliderFrame.Content.Text = ToChange  
+                                end  
+                            end  
+                              
+                            function Slider:SetTextValue(ToChange)  
+                                if getgenv().Destroy then return end
+                                SliderConfig.ValueName = ToChange  
+                                ValueLabel.Text = tostring(Slider.Value) .. " " .. SliderConfig.ValueName  
+                            end  
+                          
+                            function Slider:SetCallback(ToChange)  
+                                if getgenv().Destroy then return end
+                                SliderConfig.Callback = ToChange  
+                            end  
+                            
+                            if SliderConfig.Disabled then
+                                Slider:SetDisabled(true)
+                            end
+                            if SliderConfig.Visible == false then
+                                Slider:SetVisible(false)
+                            end
+                          
+                            -- Cập nhật trạng thái khởi tạo lần đầu
+                            Slider.Value = math.clamp(Slider.Value, SliderConfig.Min, SliderConfig.Max)  
+                            local range = SliderConfig.Max - SliderConfig.Min
+                            local progressScale = range > 0 and (Slider.Value - SliderConfig.Min) / range or 0
+                            
+                            SliderFill.Size = UDim2.fromScale(progressScale, 1)
+                            Knob.Position = UDim2.new(progressScale, 0, 0.5, 0)
+                            ValueLabel.Text = tostring(Slider.Value) .. " " .. SliderConfig.ValueName  
+                            
+                            if SliderConfig.Flag then  
+                                OrionLib.Flags[SliderConfig.Flag] = Slider  
+                            end  
+                            return Slider  
+                        end
                         function ElementFunction:AddDropdown(DropdownConfig)
 							DropdownConfig = DropdownConfig or {}
 							DropdownConfig.Name = DropdownConfig.Name or "Dropdown"
