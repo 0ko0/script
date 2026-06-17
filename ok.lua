@@ -2186,7 +2186,6 @@ end)
                             ButtonConfig.Callback = ButtonConfig.Callback or function() end
                             ButtonConfig.Flag = ButtonConfig.Flag or nil
                             ButtonConfig.Icon = ButtonConfig.Icon or "rbxassetid://3944703587"
-                            -- Hỗ trợ màu điểm nhấn tùy chỉnh cho nút (Mặc định là màu xanh dương sáng)
                             ButtonConfig.Color = ButtonConfig.Color or Color3.fromRGB(0, 170, 255)
                             
                             local Button = {
@@ -2200,116 +2199,166 @@ end)
                                     ZIndex = 10
                             })
                             
-                            -- Thanh điểm nhấn phát sáng ở góc trái (Accent Bar) - Mặc định ẩn
-                            local AccentBar = SetProps(MakeElement("RoundFrame", ButtonConfig.Color, 0, 4), {
-                                Size = UDim2.new(0, 3, 0, 0),
-                                Position = UDim2.new(0, 4, 0.5, 0),
-                                AnchorPoint = Vector2.new(0, 0.5),
-                                BackgroundTransparency = 1,
-                                ZIndex = 3
+                            -- Hiệu ứng vệt sáng quét chéo động (Dynamic diagonal glass shine sweep)
+                            local ShineBar = Create("Frame", {
+                                Size = UDim2.new(0, 50, 2, 0),
+                                Position = UDim2.new(-0.3, 0, -0.5, 0),
+                                BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+                                BackgroundTransparency = 0.85,
+                                Rotation = 25,
+                                ZIndex = 3,
+                                BorderSizePixel = 0
+                            }, {
+                                Create("UIGradient", {
+                                    Transparency = NumberSequence.new({
+                                        NumberSequenceKeypoint.new(0, 1),
+                                        NumberSequenceKeypoint.new(0.5, 0),
+                                        NumberSequenceKeypoint.new(1, 1)
+                                    })
+                                })
                             })
 
-                            -- Khung chứa chính (Button Frame) với thiết kế bo góc hiện đại hơn
+                            -- Mũi tên chỉ thị bên phải phản hồi trượt (Interactive Chevron)
+                            local RightIndicator = AddThemeObject(SetProps(MakeElement("Image", "rbxassetid://7072706796"), {
+                                Size = UDim2.new(0, 12, 0, 12),
+                                Position = UDim2.new(1, -24, 0.5, 0),
+                                AnchorPoint = Vector2.new(0, 0.5),
+                                ImageTransparency = 0.6,
+                                Rotation = -90, -- Hướng sang phải
+                                ZIndex = 2
+                            }), "TextDark")
+
+                            -- Hộp chứa nội dung bố cục chiều ngang tinh tế (Flex Left-aligned Content)
+                            local ContentContainer = Create("Frame", {
+                                Size = UDim2.new(1, -40, 1, 0),
+                                BackgroundTransparency = 1,
+                                ZIndex = 2
+                            }, {
+                                Create("UIListLayout", {
+                                    FillDirection = Enum.FillDirection.Horizontal,
+                                    VerticalAlignment = Enum.VerticalAlignment.Center,
+                                    HorizontalAlignment = Enum.HorizontalAlignment.Left,
+                                    Padding = UDim.new(0, 8),
+                                    SortOrder = Enum.SortOrder.LayoutOrder
+                                }),
+                                Create("UIPadding", {
+                                    PaddingLeft = UDim.new(0, 12),
+                                    PaddingRight = UDim.new(0, 12)
+                                })
+                            })
+
+                            -- Icon nút phía bên trái sát chữ
+                            local IconImage = AddThemeObject(SetProps(MakeElement("Image", ButtonConfig.Icon), {
+                                Size = UDim2.new(0, 16, 0, 16),
+                                BackgroundTransparency = 1,
+                                LayoutOrder = 1
+                            }), "TextDark")
+                            IconImage.Parent = ContentContainer
+
+                            -- Chữ hiển thị nhãn nút
+                            local TextLabel = AddThemeObject(SetProps(MakeElement("Label", ButtonConfig.Name, 13), {
+                                Size = UDim2.new(1, -20, 1, 0),
+                                Font = Enum.Font.GothamBold,
+                                LayoutOrder = 2,
+                                Name = "Content"
+                            }), "Text")
+                            TextLabel.Parent = ContentContainer
+
+                            -- Viền stroke phát sáng đổi màu theo điểm nhấn của nút khi di chuột
+                            local BorderStroke = Create("UIStroke", {
+                                Color = OrionLib.Themes[OrionLib.SelectedTheme].Stroke,
+                                Thickness = 1,
+                                ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+                                Name = "GlowStroke"
+                            })
+
+                            -- Lớp phủ gradient chéo tạo chiều sâu cho thân nút
+                            local BgGradient = Create("UIGradient", {
+                                Color = ColorSequence.new({
+                                    ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 30, 34)),
+                                    ColorSequenceKeypoint.new(1, Color3.fromRGB(18, 18, 22))
+                                }),
+                                Rotation = 45
+                            })
+
+                            -- Khung chứa chính (Button Frame) với chiều cao 40px thanh thoát hơn bản cũ
                             local ButtonFrame = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 8), {
-                                    Size = UDim2.new(1, 0, 0, 36), -- Chiều cao tăng lên một chút để thoáng mắt
+                                    Size = UDim2.new(1, 0, 0, 40), 
                                     Visible = ButtonConfig.Visible,
                                     Parent = ItemParent,
                                     ClipsDescendants = true
                             }), {
-                                    AccentBar,
-                                    AddThemeObject(SetProps(MakeElement("Label", ButtonConfig.Name, 14), {
-                                            Size = UDim2.new(1, -45, 1, 0),
-                                            Position = UDim2.new(0, 14, 0, 0), -- Vị trí ban đầu thụt lề 14px
-                                            Font = Enum.Font.GothamBold,
-                                            Name = "Content",
-                                            ZIndex = 2
-                                    }), "Text"),
-                                    AddThemeObject(SetProps(MakeElement("Image", ButtonConfig.Icon), {
-                                            Size = UDim2.new(0, 16, 0, 16),
-                                            Position = UDim2.new(1, -28, 0.5, -8),
-                                            ZIndex = 2
-                                    }), "TextDark"),
-                                    -- Viền đột phá có khả năng thay đổi màu khi tương tác
-                                    Create("UIStroke", {
-                                        Color = OrionLib.Themes[OrionLib.SelectedTheme].Stroke,
-                                        Thickness = 1,
-                                        ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-                                        Name = "GlowStroke"
-                                    }),
+                                    BgGradient,
+                                    ShineBar,
+                                    ContentContainer,
+                                    RightIndicator,
+                                    BorderStroke,
                                     Click
                             }), "Second")
 
-                            -- Các hiệu ứng chuyển động mượt mà (Animations)
+                            -- Các hoạt ảnh tương tác (Animations)
                             local function PlayHover()
                                 if ButtonConfig.Disabled then return end
                                 
-                                -- Thanh Accent xuất hiện và kéo dài ra
-                                TweenService:Create(AccentBar, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                                    Size = UDim2.new(0, 3, 0.6, 0),
-                                    BackgroundTransparency = 0
+                                -- Quét vệt sáng chéo từ trái qua phải
+                                ShineBar.Position = UDim2.new(-0.3, 0, -0.5, 0)
+                                TweenService:Create(ShineBar, TweenInfo.new(0.45, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                                    Position = UDim2.new(1.3, 0, -0.5, 0)
                                 }):Play()
 
-                                -- Chữ chuyển động tịnh tiến nhẹ sang phải tạo cảm giác phản hồi cao
-                                TweenService:Create(ButtonFrame.Content, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                                    Position = UDim2.new(0, 22, 0, 0)
+                                -- Làm dày và rực rỡ màu viền theo màu chủ đề Accent
+                                TweenService:Create(BorderStroke, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {
+                                    Color = ButtonConfig.Color,
+                                    Thickness = 1.4
                                 }):Play()
 
-                                -- Làm sáng màu nền nhẹ
+                                -- Đẩy mũi tên bên phải dịch chuyển nhẹ và sáng rõ hơn
+                                TweenService:Create(RightIndicator, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {
+                                    Position = UDim2.new(1, -20, 0.5, 0),
+                                    ImageTransparency = 0.1,
+                                    ImageColor3 = ButtonConfig.Color
+                                }):Play()
+
+                                -- Làm sáng màu nền nhẹ tạo cảm giác nút nổi lên
                                 local darkThemeColor = OrionLib.Themes[OrionLib.SelectedTheme].Second
-                                local targetColor = Color3.fromRGB(
-                                    math.clamp(darkThemeColor.R * 255 + 8, 0, 255),
-                                    math.clamp(darkThemeColor.G * 255 + 8, 0, 255),
-                                    math.clamp(darkThemeColor.B * 255 + 8, 0, 255)
+                                local hoverBgColor = Color3.fromRGB(
+                                    math.clamp(darkThemeColor.R * 255 + 10, 0, 255),
+                                    math.clamp(darkThemeColor.G * 255 + 10, 0, 255),
+                                    math.clamp(darkThemeColor.B * 255 + 10, 0, 255)
                                 )
                                 TweenService:Create(ButtonFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {
-                                    BackgroundColor3 = targetColor
+                                    BackgroundColor3 = hoverBgColor
                                 }):Play()
-
-                                -- Chuyển màu viền sang màu chủ đề của nút
-                                if ButtonFrame:FindFirstChild("GlowStroke") then
-                                    TweenService:Create(ButtonFrame.GlowStroke, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {
-                                        Color = ButtonConfig.Color
-                                    }):Play()
-                                end
                             end
 
                             local function PlayLeave()
                                 if ButtonConfig.Disabled then return end
                                 
-                                -- Trả thanh Accent về trạng thái ẩn
-                                TweenService:Create(AccentBar, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                                    Size = UDim2.new(0, 3, 0, 0),
-                                    BackgroundTransparency = 1
+                                -- Phục hồi viền mờ tối giản ban đầu
+                                TweenService:Create(BorderStroke, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {
+                                    Color = OrionLib.Themes[OrionLib.SelectedTheme].Stroke,
+                                    Thickness = 1
                                 }):Play()
 
-                                -- Chữ quay lại vị trí cũ
-                                TweenService:Create(ButtonFrame.Content, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                                    Position = UDim2.new(0, 14, 0, 0)
+                                -- Thu hồi mũi tên bên phải về vị trí mặc định
+                                TweenService:Create(RightIndicator, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {
+                                    Position = UDim2.new(1, -24, 0.5, 0),
+                                    ImageTransparency = 0.6,
+                                    ImageColor3 = OrionLib.Themes[OrionLib.SelectedTheme].TextDark
                                 }):Play()
 
-                                -- Khôi phục màu nền và viền mặc định
+                                -- Khôi phục màu nền cũ
                                 TweenService:Create(ButtonFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {
                                     BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Second
                                 }):Play()
-
-                                if ButtonFrame:FindFirstChild("GlowStroke") then
-                                    TweenService:Create(ButtonFrame.GlowStroke, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {
-                                        Color = OrionLib.Themes[OrionLib.SelectedTheme].Stroke
-                                    }):Play()
-                                end
                             end
 
                             local function PlayClick()
                                 if ButtonConfig.Disabled then return end
                                 
-                                local darkThemeColor = OrionLib.Themes[OrionLib.SelectedTheme].Second
-                                local clickColor = Color3.fromRGB(
-                                    math.clamp(darkThemeColor.R * 255 + 16, 0, 255),
-                                    math.clamp(darkThemeColor.G * 255 + 16, 0, 255),
-                                    math.clamp(darkThemeColor.B * 255 + 16, 0, 255)
-                                )
+                                -- Tạo phản hồi tối mờ tức thì khi nhấn giữ phím chuột xuống
                                 TweenService:Create(ButtonFrame, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-                                    BackgroundColor3 = clickColor
+                                    BackgroundColor3 = Color3.fromRGB(15, 15, 18)
                                 }):Play()
                                 
                                 task.delay(0.1, function()
@@ -2331,8 +2380,8 @@ end)
 
                             function Button:Set(ButtonText)
                                     if getgenv().Destroy or ButtonConfig.Disabled then return end
-                                    if ButtonFrame and ButtonFrame:FindFirstChild("Content") then
-                                            ButtonFrame.Content.Text = ButtonText
+                                    if TextLabel then
+                                            TextLabel.Text = ButtonText
                                     end
                             end
                             
@@ -2347,11 +2396,14 @@ end)
                                             Click.Active = not state
                                             Click.AutoButtonColor = not state
                                     end
-                                    if ButtonFrame and ButtonFrame:FindFirstChild("Content") then
-                                            ButtonFrame.Content.TextTransparency = state and 0.5 or 0
+                                    if TextLabel then
+                                            TextLabel.TextTransparency = state and 0.5 or 0
                                     end
-                                    if AccentBar then
-                                            AccentBar.Visible = not state
+                                    if IconImage then
+                                            IconImage.ImageTransparency = state and 0.5 or 0
+                                    end
+                                    if RightIndicator then
+                                            RightIndicator.ImageTransparency = state and 0.5 or 0.6
                                     end
                             end
                             
@@ -2374,7 +2426,7 @@ end)
                                 ButtonConfig.Callback = callback
                             end
                             
-                            -- Cải tiến hàm thêm nút nhân bản (Sub-button Clone) ăn khớp với giao diện mới
+                            -- Cải tiến hàm thêm nút nhân bản (Sub-button Clone) đồng điệu với cấu trúc mới
                             function Button:AddButton(ButtonConfigClone)
                                 ButtonConfigClone = ButtonConfigClone or {}
                                 ButtonConfigClone.Visible = ButtonConfigClone.Visible ~= false 
@@ -2387,79 +2439,160 @@ end)
                                 local ButtonClone = {Disabled = ButtonConfigClone.Disabled, Visible = ButtonConfigClone.Visible, Flag = ButtonConfigClone.Flag}
                                 
                                 if ButtonFrame then
-                                    ButtonFrame.Size = UDim2.new(0.493, 0, 0, 36)
-                                    local ButtonCloneFrame = Clone(ButtonFrame, {
-                                        Size = UDim2.new(1, 0, 0, 36),
-                                        Position = UDim2.new(1.03, 0, 0, 0),
-                                        Parent = ButtonFrame
+                                    -- Rút ngắn nút cũ về độ rộng ~50%
+                                    ButtonFrame.Size = UDim2.new(0.493, 0, 0, 40)
+                                    
+                                    -- Dựng mới nút nhân bản tương tự bản gốc để tránh lỗi cấu trúc của hệ thống clone cũ
+                                    local CloneClick = SetProps(MakeElement("Button"), {
+                                        Size = UDim2.new(1, 0, 1, 0),
+                                        ZIndex = 10
                                     })
                                     
-                                    local CloneClick = ButtonCloneFrame and ButtonCloneFrame:FindFirstChildOfClass("TextButton")
-                                    local CloneAccentBar = ButtonCloneFrame and ButtonCloneFrame:FindFirstChild("RoundFrame")
+                                    local CloneShine = Create("Frame", {
+                                        Size = UDim2.new(0, 50, 2, 0),
+                                        Position = UDim2.new(-0.3, 0, -0.5, 0),
+                                        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+                                        BackgroundTransparency = 0.85,
+                                        Rotation = 25,
+                                        ZIndex = 3,
+                                        BorderSizePixel = 0
+                                    }, {
+                                        Create("UIGradient", {
+                                            Transparency = NumberSequence.new({
+                                                NumberSequenceKeypoint.new(0, 1),
+                                                NumberSequenceKeypoint.new(0.5, 0),
+                                                NumberSequenceKeypoint.new(1, 1)
+                                            })
+                                        })
+                                    })
+
+                                    local CloneRightIndicator = AddThemeObject(SetProps(MakeElement("Image", "rbxassetid://7072706796"), {
+                                        Size = UDim2.new(0, 12, 0, 12),
+                                        Position = UDim2.new(1, -24, 0.5, 0),
+                                        AnchorPoint = Vector2.new(0, 0.5),
+                                        ImageTransparency = 0.6,
+                                        Rotation = -90,
+                                        ZIndex = 2
+                                    }), "TextDark")
+
+                                    local CloneContent = Create("Frame", {
+                                        Size = UDim2.new(1, -40, 1, 0),
+                                        BackgroundTransparency = 1,
+                                        ZIndex = 2
+                                    }, {
+                                        Create("UIListLayout", {
+                                            FillDirection = Enum.FillDirection.Horizontal,
+                                            VerticalAlignment = Enum.VerticalAlignment.Center,
+                                            HorizontalAlignment = Enum.HorizontalAlignment.Left,
+                                            Padding = UDim.new(0, 8),
+                                            SortOrder = Enum.SortOrder.LayoutOrder
+                                        }),
+                                        Create("UIPadding", {
+                                            PaddingLeft = UDim.new(0, 12),
+                                            PaddingRight = UDim.new(0, 12)
+                                        })
+                                    })
+
+                                    local CloneIcon = AddThemeObject(SetProps(MakeElement("Image", ButtonConfigClone.Icon), {
+                                        Size = UDim2.new(0, 16, 0, 16),
+                                        BackgroundTransparency = 1,
+                                        LayoutOrder = 1
+                                    }), "TextDark")
+                                    CloneIcon.Parent = CloneContent
+
+                                    local CloneText = AddThemeObject(SetProps(MakeElement("Label", ButtonConfigClone.Name, 13), {
+                                        Size = UDim2.new(1, -20, 1, 0),
+                                        Font = Enum.Font.GothamBold,
+                                        LayoutOrder = 2,
+                                        Name = "Content"
+                                    }), "Text")
+                                    CloneText.Parent = CloneContent
+
+                                    local CloneStroke = Create("UIStroke", {
+                                        Color = OrionLib.Themes[OrionLib.SelectedTheme].Stroke,
+                                        Thickness = 1,
+                                        ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+                                        Name = "GlowStroke"
+                                    })
+
+                                    local CloneBgGradient = Create("UIGradient", {
+                                        Color = ColorSequence.new({
+                                            ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 30, 34)),
+                                            ColorSequenceKeypoint.new(1, Color3.fromRGB(18, 18, 22))
+                                        }),
+                                        Rotation = 45
+                                    })
+
+                                    local ButtonCloneFrame = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 8), {
+                                        Size = UDim2.new(1, 0, 0, 40),
+                                        Position = UDim2.new(1.03, 0, 0, 0),
+                                        Parent = ButtonFrame,
+                                        ClipsDescendants = true
+                                    }), {
+                                        CloneBgGradient,
+                                        CloneShine,
+                                        CloneContent,
+                                        CloneRightIndicator,
+                                        CloneStroke,
+                                        CloneClick
+                                    }), "Second")
                                     
                                     local function PlayCloneHover()
                                         if ButtonConfigClone.Disabled then return end
-                                        if CloneAccentBar then
-                                            TweenService:Create(CloneAccentBar, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                                                Size = UDim2.new(0, 3, 0.6, 0),
-                                                BackgroundTransparency = 0
-                                            }):Play()
-                                        end
-                                        if ButtonCloneFrame:FindFirstChild("Content") then
-                                            TweenService:Create(ButtonCloneFrame.Content, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                                                Position = UDim2.new(0, 22, 0, 0)
-                                            }):Play()
-                                        end
+                                        
+                                        CloneShine.Position = UDim2.new(-0.3, 0, -0.5, 0)
+                                        TweenService:Create(CloneShine, TweenInfo.new(0.45, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                                            Position = UDim2.new(1.3, 0, -0.5, 0)
+                                        }):Play()
+
+                                        TweenService:Create(CloneStroke, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {
+                                            Color = ButtonConfigClone.Color,
+                                            Thickness = 1.4
+                                        }):Play()
+
+                                        TweenService:Create(CloneRightIndicator, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {
+                                            Position = UDim2.new(1, -20, 0.5, 0),
+                                            ImageTransparency = 0.1,
+                                            ImageColor3 = ButtonConfigClone.Color
+                                        }):Play()
+
                                         local darkThemeColor = OrionLib.Themes[OrionLib.SelectedTheme].Second
-                                        local targetColor = Color3.fromRGB(
-                                            math.clamp(darkThemeColor.R * 255 + 8, 0, 255),
-                                            math.clamp(darkThemeColor.G * 255 + 8, 0, 255),
-                                            math.clamp(darkThemeColor.B * 255 + 8, 0, 255)
+                                        local hoverColor = Color3.fromRGB(
+                                            math.clamp(darkThemeColor.R * 255 + 10, 0, 255),
+                                            math.clamp(darkThemeColor.G * 255 + 10, 0, 255),
+                                            math.clamp(darkThemeColor.B * 255 + 10, 0, 255)
                                         )
                                         TweenService:Create(ButtonCloneFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {
-                                            BackgroundColor3 = targetColor
+                                            BackgroundColor3 = hoverColor
                                         }):Play()
-                                        if ButtonCloneFrame:FindFirstChild("GlowStroke") then
-                                            TweenService:Create(ButtonCloneFrame.GlowStroke, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {
-                                                Color = ButtonConfigClone.Color
-                                            }):Play()
-                                        end
                                     end
 
                                     local function PlayCloneLeave()
                                         if ButtonConfigClone.Disabled then return end
-                                        if CloneAccentBar then
-                                            TweenService:Create(CloneAccentBar, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                                                Size = UDim2.new(0, 3, 0, 0),
-                                                BackgroundTransparency = 1
-                                            }):Play()
-                                        end
-                                        if ButtonCloneFrame:FindFirstChild("Content") then
-                                            TweenService:Create(ButtonCloneFrame.Content, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                                                Position = UDim2.new(0, 14, 0, 0)
-                                            }):Play()
-                                        end
+
+                                        TweenService:Create(CloneStroke, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {
+                                            Color = OrionLib.Themes[OrionLib.SelectedTheme].Stroke,
+                                            Thickness = 1
+                                        }):Play()
+
+                                        TweenService:Create(CloneRightIndicator, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {
+                                            Position = UDim2.new(1, -24, 0.5, 0),
+                                            ImageTransparency = 0.6,
+                                            ImageColor3 = OrionLib.Themes[OrionLib.SelectedTheme].TextDark
+                                        }):Play()
+
                                         TweenService:Create(ButtonCloneFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {
                                             BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Second
                                         }):Play()
-                                        if ButtonCloneFrame:FindFirstChild("GlowStroke") then
-                                            TweenService:Create(ButtonCloneFrame.GlowStroke, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {
-                                                Color = OrionLib.Themes[OrionLib.SelectedTheme].Stroke
-                                            }):Play()
-                                        end
                                     end
 
                                     local function PlayCloneClick()
                                         if ButtonConfigClone.Disabled then return end
-                                        local darkThemeColor = OrionLib.Themes[OrionLib.SelectedTheme].Second
-                                        local clickColor = Color3.fromRGB(
-                                            math.clamp(darkThemeColor.R * 255 + 16, 0, 255),
-                                            math.clamp(darkThemeColor.G * 255 + 16, 0, 255),
-                                            math.clamp(darkThemeColor.B * 255 + 16, 0, 255)
-                                        )
+
                                         TweenService:Create(ButtonCloneFrame, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-                                            BackgroundColor3 = clickColor
+                                            BackgroundColor3 = Color3.fromRGB(15, 15, 18)
                                         }):Play()
+                                        
                                         task.delay(0.1, function()
                                             if not ButtonConfigClone.Disabled then
                                                 PlayCloneHover()
@@ -2479,8 +2612,8 @@ end)
                                     
                                     function ButtonClone:Set(ButtonText)
                                         if getgenv().Destroy or ButtonConfigClone.Disabled then return end
-                                        if ButtonCloneFrame and ButtonCloneFrame:FindFirstChild("Content") then
-                                            ButtonCloneFrame.Content.Text = ButtonText
+                                        if CloneText then
+                                            CloneText.Text = ButtonText
                                         end
                                     end
                                     
@@ -2495,8 +2628,14 @@ end)
                                             CloneClick.Active = not state
                                             CloneClick.AutoButtonColor = not state
                                         end
-                                        if ButtonCloneFrame and ButtonCloneFrame:FindFirstChild("Content") then
-                                            ButtonCloneFrame.Content.TextTransparency = state and 0.5 or 0
+                                        if CloneText then
+                                            CloneText.TextTransparency = state and 0.5 or 0
+                                        end
+                                        if CloneIcon then
+                                            CloneIcon.ImageTransparency = state and 0.5 or 0
+                                        end
+                                        if CloneRightIndicator then
+                                            CloneRightIndicator.ImageTransparency = state and 0.5 or 0.6
                                         end
                                     end
                                     
@@ -2506,9 +2645,9 @@ end)
                                             ButtonCloneFrame.Visible = state
                                             ButtonClone.Visible = state
                                             if not state and ButtonConfig.Visible then
-                                                ButtonFrame.Size = UDim2.new(1, 0, 0, 36)
+                                                ButtonFrame.Size = UDim2.new(1, 0, 0, 40)
                                             else
-                                                ButtonFrame.Size = UDim2.new(0.493, 0, 0, 36)
+                                                ButtonFrame.Size = UDim2.new(0.493, 0, 0, 40)
                                             end
                                         end
                                     end
@@ -4556,160 +4695,327 @@ end
                                 return Bind
                         end  
                         function ElementFunction:AddTextbox(TextboxConfig)
-                                TextboxConfig = TextboxConfig or {}
-                                TextboxConfig.Name = TextboxConfig.Name or "Textbox"
-                                TextboxConfig.Finished = TextboxConfig.Finished or false
-                                TextboxConfig.Save = TextboxConfig.Save or false
-                                TextboxConfig.Numeric = TextboxConfig.Numeric or false
-                                TextboxConfig.Flag = TextboxConfig.Flag or nil
-                                TextboxConfig.Default = TextboxConfig.Default or ""
-                                TextboxConfig.TextDisappear = TextboxConfig.TextDisappear or false
-                                TextboxConfig.Callback = TextboxConfig.Callback or function() end
-                                TextboxConfig.Visible = TextboxConfig.Visible ~= false
-                                TextboxConfig.Disabled = TextboxConfig.Disabled or false
-                                
-                                local Textbox = {
-								    Value = TextboxConfig.Default,
-								    Type = "Input",
-								    Save = TextboxConfig.Save,
-								    Visible = TextboxConfig.Visible,
-								    Disabled = TextboxConfig.Disabled
-								}
+        TextboxConfig = TextboxConfig or {}
+        TextboxConfig.Name = TextboxConfig.Name or "Textbox"
+        TextboxConfig.Finished = TextboxConfig.Finished or false
+        TextboxConfig.Save = TextboxConfig.Save or false
+        TextboxConfig.Numeric = TextboxConfig.Numeric or false
+        TextboxConfig.Flag = TextboxConfig.Flag or nil
+        TextboxConfig.Default = TextboxConfig.Default or ""
+        TextboxConfig.TextDisappear = TextboxConfig.TextDisappear or false
+        TextboxConfig.Callback = TextboxConfig.Callback or function() end
+        TextboxConfig.Visible = TextboxConfig.Visible ~= false
+        TextboxConfig.Disabled = TextboxConfig.Disabled or false
+        TextboxConfig.Placeholder = TextboxConfig.Placeholder or "Type here..."
+        TextboxConfig.AccentColor = TextboxConfig.AccentColor or Color3.fromRGB(0, 170, 255)
 
-                                local Click = SetProps(MakeElement("Button"), {
-                                        Size = UDim2.new(1, 0, 1, 0)
-                                })
+        local Textbox = {
+            Value = TextboxConfig.Default,
+            Type = "Input",
+            Save = TextboxConfig.Save,
+            Visible = TextboxConfig.Visible,
+            Disabled = TextboxConfig.Disabled
+        }
 
-                                local TextboxActual = AddThemeObject(Create("TextBox", {
-                                        Size = UDim2.new(1, 0, 1, 0),
-                                        BackgroundTransparency = 1,
-                                        TextColor3 = Color3.fromRGB(255, 255, 255),
-                                        PlaceholderColor3 = Color3.fromRGB(210,210,210),
-                                        PlaceholderText = "Input",
-                                        Text = Textbox.Value or "",
-                                        ClearTextOnFocus = TextboxConfig.TextDisappear,
-                                        Font = Enum.Font.GothamSemibold,
-                                        ClipsDescendants = true,
-                                        TextXAlignment = Enum.TextXAlignment.Center,
-                                        TextSize = 14
-                                }), "Text")
+        -- Nút phủ hỗ trợ nhấp chuột lấy nét nhanh ở bất kỳ vị trí nào trên thẻ khung
+        local Click = SetProps(MakeElement("Button"), {
+            Size = UDim2.new(1, 0, 1, 0),
+            ZIndex = 3
+        })
 
-                                local TextContainer = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 4), {
-                                        Size = UDim2.new(0, 100, 0, 24),
-                                        Position = UDim2.new(1, -12, 0.5, 0),
-                                        AnchorPoint = Vector2.new(1, 0.5)
-                                }), {
-                                        AddThemeObject(MakeElement("Stroke"), "Stroke"),
-                                        TextboxActual
-                                }), "Main")
+        -- Dải Accent Bar ở cạnh trái tương tác mượt mà
+        local AccentBar = SetProps(MakeElement("RoundFrame", OrionLib.Themes.Default.Divider, 0, 1.5), {
+            Size = UDim2.new(0, 3, 0, 12),
+            Position = UDim2.new(0, 2, 0.5, 0),
+            AnchorPoint = Vector2.new(0, 0.5),
+            BackgroundTransparency = 1,
+            Name = "AccentBar"
+        })
 
+        -- Biểu tượng bút chì chỉ thị trạng thái nhập liệu bên trái
+        local EditIcon = AddThemeObject(SetProps(MakeElement("Image", "rbxassetid://6035057413"), {
+            Size = UDim2.new(0, 12, 0, 12),
+            Position = UDim2.new(0, 8, 0.5, 0),
+            AnchorPoint = Vector2.new(0, 0.5),
+            ImageTransparency = 0.5,
+            ImageColor3 = Color3.fromRGB(200, 200, 200),
+            ZIndex = 5,
+            Name = "EditIcon"
+        }), "TextDark")
 
-                                local TextboxFrame = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5), {
-                                        Size = UDim2.new(1, 0, 0, 38),
-                                        Parent = ItemParent
-                                }), {
-                                        AddThemeObject(SetProps(MakeElement("Label", TextboxConfig.Name, 15), {
-                                                Size = UDim2.new(1, -12, 1, 0),
-                                                Position = UDim2.new(0, 12, 0, 0),
-                                                Font = Enum.Font.GothamBold,
-                                                Visible = TextboxConfig.Visible,
-                                                Name = "Content"
-                                        }), "Text"),
-                                        AddThemeObject(MakeElement("Stroke"), "Stroke"),
-                                        TextContainer,
-                                        Click
-                                }), "Second")
-                                
-                                local function SetValue()
-	                                if Textbox.Disabled then return end
-		                            if TextboxConfig.Numeric then
-										if #TextboxActual.Text > 0 and not tonumber(TextboxActual.Text) then
-											TextboxActual.Text = TextboxActual.Text:match("%d+") or ""
-										end
-									end
-									Textbox.Value = TextboxActual.Text
-	                                OrionLib:SafeScript(TextboxConfig.Callback, TextboxActual.Text)
-                                end
-                                
-                                if TextboxConfig.Finished then
-	                                AddConnection(TextboxActual.FocusLost, function()
-		                                SetValue()
-	                                end)
-                                else
-	                                AddConnection(TextboxActual:GetPropertyChangedSignal("Text"), function()
-		                                SetValue()
-	                                end)
-                                end
-                                
-                                function Textbox:SetText(ToChange)
-	                                if getgenv().Destroy or Textbox.Disabled then return end
-	                                if TextboxActual then
-										TextboxActual.Text = ToChange
-										if TextboxConfig.Finished == false then
-											SetValue()
-										end
-									end
-                                end
-                                
-                                function Textbox:SetLabel(ToChange)
-	                                if getgenv().Destroy or Textbox.Disabled then return end
-	                                if TextboxFrame and TextboxFrame:FindFirstChild("Content") then
-										TextboxFrame.Content.Text = ToChange
-									end
-                                end
-                                
-                                function Textbox:SetCallback(ToChange)
-	                                if getgenv().Destroy or Textbox.Disabled then return end
-	                                TextboxConfig.Callback = ToChange
-                                end
-                                
-                                function Textbox:SetVisible(State)
-								    if getgenv().Destroy then return end
-								    Textbox.Visible = State
-								    if TextboxFrame then
-								        TextboxFrame.Visible = State
-								    end
-								end
-								
-								function Textbox:SetDisabled(State)
-								    if getgenv().Destroy then return end
-								    Textbox.Disabled = State
-								    if State then
-								        TweenService:Create(TextboxFrame, TweenInfo.new(.2), {
-								            BackgroundTransparency = 0.5
-								        }):Play()
-								    else
-								        TweenService:Create(TextboxFrame, TweenInfo.new(.2), {
-								            BackgroundTransparency = 0
-								        }):Play()
-								    end
-									if TextboxActual then
-										TextboxActual.TextEditable = not State
-									end
-								end
+        -- Nút xóa nhanh chữ đã nhập (X Button) bên phải
+        local ClearBtn = SetProps(MakeElement("ImageButton", "rbxassetid://9886659671"), {
+            Size = UDim2.new(0, 12, 0, 12),
+            Position = UDim2.new(1, -8, 0.5, 0),
+            AnchorPoint = Vector2.new(1, 0.5),
+            ImageTransparency = 1, -- Ẩn đi khi chưa có văn bản nhập vào
+            ImageColor3 = Color3.fromRGB(180, 180, 180),
+            ZIndex = 6,
+            Name = "ClearBtn"
+        })
 
-                                AddConnection(Click.MouseEnter, function()
-                                        TweenService:Create(TextboxFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(OrionLib.Themes[OrionLib.SelectedTheme].Second.R * 255 + 3, OrionLib.Themes[OrionLib.SelectedTheme].Second.G * 255 + 3, OrionLib.Themes[OrionLib.SelectedTheme].Second.B * 255 + 3)}):Play()
-                                end)
+        -- Đối tượng TextBox lõi thực hiện nhập liệu
+        local TextboxActual = AddThemeObject(Create("TextBox", {
+            Size = UDim2.new(1, -36, 1, 0), -- Khoảng trống căn chỉnh biểu tượng hai đầu
+            Position = UDim2.new(0, 24, 0, 0),
+            BackgroundTransparency = 1,
+            TextColor3 = Color3.fromRGB(255, 255, 255),
+            PlaceholderColor3 = Color3.fromRGB(150, 150, 150),
+            PlaceholderText = TextboxConfig.Placeholder,
+            Text = Textbox.Value or "",
+            ClearTextOnFocus = TextboxConfig.TextDisappear,
+            Font = Enum.Font.GothamSemibold,
+            ClipsDescendants = true,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            TextSize = 12,
+            ZIndex = 4
+        }), "Text")
 
-                                AddConnection(Click.MouseLeave, function()
-                                        TweenService:Create(TextboxFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Second}):Play()
-                                end)
+        -- Khung chứa khu vực nhập liệu phong cách Glassmorphic tinh xảo
+        local TextContainer = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 6), {
+            Size = UDim2.new(0, 160, 0, 26),
+            Position = UDim2.new(1, -12, 0.5, 0),
+            AnchorPoint = Vector2.new(1, 0.5),
+            BackgroundTransparency = 0.9,
+            ZIndex = 2,
+            Name = "InputContainer"
+        }), {
+            Create("UIStroke", {
+                Color = OrionLib.Themes[OrionLib.SelectedTheme].Stroke,
+                Thickness = 1,
+                ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+                Name = "GlowStroke"
+            }),
+            EditIcon,
+            TextboxActual,
+            ClearBtn
+        }), "Main")
 
-                                AddConnection(Click.MouseButton1Up, function()
-                                        TweenService:Create(TextboxFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(OrionLib.Themes[OrionLib.SelectedTheme].Second.R * 255 + 3, OrionLib.Themes[OrionLib.SelectedTheme].Second.G * 255 + 3, OrionLib.Themes[OrionLib.SelectedTheme].Second.B * 255 + 3)}):Play()
-                                        TextboxActual:CaptureFocus()
-                                end)
+        -- Nhãn tên hiển thị bên trái thẻ Textbox
+        local ContentLabel = AddThemeObject(SetProps(MakeElement("Label", TextboxConfig.Name, 15), {
+            Size = UDim2.new(1, -190, 1, 0),
+            Position = UDim2.new(0, 16, 0, 0),
+            Font = Enum.Font.GothamBold,
+            Visible = TextboxConfig.Visible,
+            Name = "Content"
+        }), "Text")
 
-                                AddConnection(Click.MouseButton1Down, function()
-                                        TweenService:Create(TextboxFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(OrionLib.Themes[OrionLib.SelectedTheme].Second.R * 255 + 6, OrionLib.Themes[OrionLib.SelectedTheme].Second.G * 255 + 6, OrionLib.Themes[OrionLib.SelectedTheme].Second.B * 255 + 6)}):Play()
-                                end)
-                                
-                                if TextboxConfig.Flag then
-	                                OrionLib.Flags[TextboxConfig.Flag] = Textbox
-		                        end
-							return Textbox
-						end
+        -- Khung chính của hàng chức năng (Độ rộng dòng được tinh chỉnh thành 42px)
+        local TextboxFrame = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 8), {
+            Size = UDim2.new(1, 0, 0, 42),
+            Parent = ItemParent,
+            ClipsDescendants = true
+        }), {
+            AccentBar,
+            ContentLabel,
+            AddThemeObject(MakeElement("Stroke"), "Stroke"),
+            TextContainer,
+            Click
+        }), "Second")
+        
+        local GlowStroke = TextContainer:FindFirstChild("GlowStroke")
+
+        -- Xử lý cập nhật giá trị dữ liệu và các thành phần đi kèm
+        local function SetValue()
+            if Textbox.Disabled then return end
+            if TextboxConfig.Numeric then
+                if #TextboxActual.Text > 0 and not tonumber(TextboxActual.Text) then
+                    TextboxActual.Text = TextboxActual.Text:match("%d+") or ""
+                end
+            end
+            Textbox.Value = TextboxActual.Text
+            
+            -- Hiển thị/Ẩn động nút Xóa dựa trên văn bản thực tế
+            if #TextboxActual.Text > 0 then
+                TweenService:Create(ClearBtn, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {ImageTransparency = 0}):Play()
+            else
+                TweenService:Create(ClearBtn, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {ImageTransparency = 1}):Play()
+            end
+            
+            OrionLib:SafeScript(TextboxConfig.Callback, TextboxActual.Text)
+        end
+
+        -- Kết nối sự kiện xử lý văn bản
+        if TextboxConfig.Finished then
+            AddConnection(TextboxActual.FocusLost, function()
+                SetValue()
+            end)
+        else
+            AddConnection(TextboxActual:GetPropertyChangedSignal("Text"), function()
+                SetValue()
+            end)
+        end
+
+        -- Sự kiện khi click nút Xóa nhanh (Clear Button)
+        AddConnection(ClearBtn.MouseButton1Click, function()
+            if Textbox.Disabled then return end
+            TextboxActual.Text = ""
+            SetValue()
+            TextboxActual:CaptureFocus()
+        end)
+
+        -- Hiệu ứng chuyển động (Animation) khi con trỏ Focus vào Textbox
+        AddConnection(TextboxActual.Focused, function()
+            if Textbox.Disabled then return end
+            if GlowStroke then
+                TweenService:Create(GlowStroke, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {
+                    Color = TextboxConfig.AccentColor,
+                    Thickness = 1.3
+                }):Play()
+            end
+            TweenService:Create(AccentBar, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {
+                BackgroundTransparency = 0,
+                BackgroundColor3 = TextboxConfig.AccentColor,
+                Size = UDim2.new(0, 3, 0, 24)
+            }):Play()
+            TweenService:Create(EditIcon, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {
+                ImageTransparency = 0.1,
+                ImageColor3 = TextboxConfig.AccentColor
+            }):Play()
+        end)
+
+        -- Trả về trạng thái cũ khi Textbox mất Focus
+        AddConnection(TextboxActual.FocusLost, function()
+            if GlowStroke then
+                TweenService:Create(GlowStroke, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {
+                    Color = OrionLib.Themes[OrionLib.SelectedTheme].Stroke,
+                    Thickness = 1
+                }):Play()
+            end
+            TweenService:Create(AccentBar, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {
+                BackgroundTransparency = 1,
+                Size = UDim2.new(0, 3, 0, 12)
+            }):Play()
+            TweenService:Create(EditIcon, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {
+                ImageTransparency = 0.5,
+                ImageColor3 = Color3.fromRGB(200, 200, 200)
+            }):Play()
+        end)
+
+        -- Hệ thống các API điều khiển ngoại vi (Tương thích hoàn toàn)
+        function Textbox:SetText(ToChange)
+            if getgenv().Destroy or Textbox.Disabled then return end
+            if TextboxActual then
+                TextboxActual.Text = ToChange
+                if TextboxConfig.Finished == false then
+                    SetValue()
+                else
+                    if #ToChange > 0 then
+                        ClearBtn.ImageTransparency = 0
+                    else
+                        ClearBtn.ImageTransparency = 1
+                    end
+                end
+            end
+        end
+
+        function Textbox:SetLabel(ToChange)
+            if getgenv().Destroy or Textbox.Disabled then return end
+            if ContentLabel then
+                ContentLabel.Text = ToChange
+            end
+        end
+
+        function Textbox:SetCallback(ToChange)
+            if getgenv().Destroy or Textbox.Disabled then return end
+            TextboxConfig.Callback = ToChange
+        end
+
+        function Textbox:SetVisible(State)
+            if getgenv().Destroy then return end
+            Textbox.Visible = State
+            if TextboxFrame then
+                TextboxFrame.Visible = State
+            end
+        end
+
+        function Textbox:SetDisabled(State)
+            if getgenv().Destroy then return end
+            Textbox.Disabled = State
+            
+            local targetTrans = State and 0.5 or 0
+            local targetBgTrans = State and 0.97 or 0.9
+            
+            TweenService:Create(TextboxFrame, TweenInfo.new(.2), {
+                BackgroundTransparency = targetTrans
+            }):Play()
+            TweenService:Create(TextContainer, TweenInfo.new(.2), {
+                BackgroundTransparency = targetBgTrans
+            }):Play()
+            
+            if ContentLabel then
+                ContentLabel.TextTransparency = State and 0.5 or 0
+            end
+            if TextboxActual then
+                TextboxActual.TextEditable = not State
+                TextboxActual.TextTransparency = State and 0.5 or 0
+            end
+            if EditIcon then
+                EditIcon.ImageTransparency = State and 0.8 or 0.5
+            end
+            if ClearBtn then
+                ClearBtn.Active = not State
+            end
+        end
+
+        -- Hoạt ảnh di chuột và nhấp giữ trên hàng chức năng (Hover & Click Tweens)
+        AddConnection(Click.MouseEnter, function()
+            if Textbox.Disabled then return end
+            local darkThemeColor = OrionLib.Themes[OrionLib.SelectedTheme].Second
+            local hoverBgColor = Color3.fromRGB(
+                math.clamp(darkThemeColor.R * 255 + 8, 0, 255),
+                math.clamp(darkThemeColor.G * 255 + 8, 0, 255),
+                math.clamp(darkThemeColor.B * 255 + 8, 0, 255)
+            )
+            TweenService:Create(TextboxFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
+                BackgroundColor3 = hoverBgColor
+            }):Play()
+        end)
+
+        AddConnection(Click.MouseLeave, function()
+            if Textbox.Disabled then return end
+            TweenService:Create(TextboxFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
+                BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Second
+            }):Play()
+        end)
+
+        AddConnection(Click.MouseButton1Up, function()
+            if Textbox.Disabled then return end
+            local darkThemeColor = OrionLib.Themes[OrionLib.SelectedTheme].Second
+            local hoverBgColor = Color3.fromRGB(
+                math.clamp(darkThemeColor.R * 255 + 8, 0, 255),
+                math.clamp(darkThemeColor.G * 255 + 8, 0, 255),
+                math.clamp(darkThemeColor.B * 255 + 8, 0, 255)
+            )
+            TweenService:Create(TextboxFrame, TweenInfo.new(0.15, Enum.EasingStyle.Quad), {
+                BackgroundColor3 = hoverBgColor
+            }):Play()
+            TextboxActual:CaptureFocus()
+        end)
+
+        AddConnection(Click.MouseButton1Down, function()
+            if Textbox.Disabled then return end
+            local darkThemeColor = OrionLib.Themes[OrionLib.SelectedTheme].Second
+            local clickBgColor = Color3.fromRGB(
+                math.clamp(darkThemeColor.R * 255 - 12, 0, 255),
+                math.clamp(darkThemeColor.G * 255 - 12, 0, 255),
+                math.clamp(darkThemeColor.B * 255 - 12, 0, 255)
+            )
+            TweenService:Create(TextboxFrame, TweenInfo.new(0.1, Enum.EasingStyle.Quad), {
+                BackgroundColor3 = clickBgColor
+            }):Play()
+        end)
+
+        -- Kích hoạt kiểm tra trạng thái ban đầu của nút Xóa
+        if #TextboxActual.Text > 0 then
+            ClearBtn.ImageTransparency = 0
+        end
+
+        if TextboxConfig.Flag then
+            OrionLib.Flags[TextboxConfig.Flag] = Textbox
+        end
+        return Textbox
+end
                         function ElementFunction:AddColorpicker(ColorpickerConfig)
 							ColorpickerConfig = ColorpickerConfig or {}
 							ColorpickerConfig.Name = ColorpickerConfig.Name or "Colorpicker"
