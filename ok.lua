@@ -3704,7 +3704,7 @@ end
 							    if DropdownConfig.MultiTrue then
 							        for _, v in ipairs(Dropdown.Options) do
 							            if Dropdown.Value[v] == nil then
-							                Dropdown.Value[v] = false
+								            Dropdown.Value[v] = false
 							            end
 							        end
 							    end
@@ -3757,55 +3757,56 @@ end
 								AddThemeObject(MakeElement("Stroke"), "Stroke")
 							}), "Stroke")
 						
+							-- Đã cấu trúc lại thứ tự gọi SetChildren và SetProps chính xác
 							local DropdownFrame = AddThemeObject(SetChildren(SetProps(
 								MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 8),
 								{
-									DropdownContainer,
-									SetProps(SetChildren(MakeElement("TFrame"), {
-										AddThemeObject(SetProps(MakeElement("Label", DropdownConfig.Name, 14), {
-											Size = UDim2.new(1, -170, 1, 0),
-											Position = UDim2.new(0, 14, 0, 0),
-											Font = Enum.Font.GothamBold,
-											Name = "Content"
-										}), "Text"),
-							
-										SelectedBadge,
-							
-										AddThemeObject(SetProps(MakeElement("Image", "rbxassetid://7072706796"), {
-											Size = UDim2.new(0, 16, 0, 16),
-											AnchorPoint = Vector2.new(0.5, 0.5),
-											Position = UDim2.new(1, -24, 0.5, 0),
-											ImageColor3 = Color3.fromRGB(240, 240, 240),
-											Name = "Ico"
-										}), "TextDark"),
-							
-										AddThemeObject(SetProps(MakeElement("Frame"), {
-											Size = UDim2.new(1, -20, 0, 1),
-											Position = UDim2.new(0.5, 0, 1, -1),
-											AnchorPoint = Vector2.new(0.5, 0),
-											Name = "Line",
-											Visible = false,
-											BackgroundTransparency = 0.5
-										}), "Divider"),
-							
-										Click
-									}), {
-										Size = UDim2.new(1, 0, 0, 38),
-										ClipsDescendants = true,
-										Name = "F"
-									}),
-									Create("UIStroke", {
-										Color = OrionLib.Themes[OrionLib.SelectedTheme].Stroke,
-										Thickness = 1,
-										ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-										Name = "BorderStroke"
-									}),
-									MakeElement("Corner", 0, 8)
+									Size = UDim2.new(1, 0, 0, 38),
+									Parent = ItemParent,
+									ClipsDescendants = true
 								}
 							), {
-								Size = UDim2.new(1, 0, 0, 38),
-								Parent = ItemParent,
-								ClipsDescendants = true
+								DropdownContainer,
+								SetProps(SetChildren(MakeElement("TFrame"), {
+									AddThemeObject(SetProps(MakeElement("Label", DropdownConfig.Name, 14), {
+										Size = UDim2.new(1, -170, 1, 0),
+										Position = UDim2.new(0, 14, 0, 0),
+										Font = Enum.Font.GothamBold,
+										Name = "Content"
+									}), "Text"),
+						
+									SelectedBadge,
+						
+									AddThemeObject(SetProps(MakeElement("Image", "rbxassetid://7072706796"), {
+										Size = UDim2.new(0, 16, 0, 16),
+										AnchorPoint = Vector2.new(0.5, 0.5),
+										Position = UDim2.new(1, -24, 0.5, 0),
+										ImageColor3 = Color3.fromRGB(240, 240, 240),
+										Name = "Ico"
+									}), "TextDark"),
+						
+									AddThemeObject(SetProps(MakeElement("Frame"), {
+										Size = UDim2.new(1, -20, 0, 1),
+										Position = UDim2.new(0.5, 0, 1, -1),
+										AnchorPoint = Vector2.new(0.5, 0),
+										Name = "Line",
+										Visible = false,
+										BackgroundTransparency = 0.5
+									}), "Divider"),
+						
+									Click
+								}), {
+									Size = UDim2.new(1, 0, 0, 38),
+									ClipsDescendants = true,
+									Name = "F"
+								}),
+								Create("UIStroke", {
+									Color = OrionLib.Themes[OrionLib.SelectedTheme].Stroke,
+									Thickness = 1,
+									ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+									Name = "BorderStroke"
+								}),
+								MakeElement("Corner", 0, 8)
 							}), "Second")
 						
 							AddConnection(DropdownList:GetPropertyChangedSignal("AbsoluteContentSize"), function()
