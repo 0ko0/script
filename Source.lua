@@ -2179,206 +2179,365 @@ end)
                                 return ParagraphFunction
                         end    
                         function ElementFunction:AddButton(ButtonConfig)
-        ButtonConfig = ButtonConfig or {}
-        ButtonConfig.Visible = ButtonConfig.Visible ~= false
-        ButtonConfig.Disabled = ButtonConfig.Disabled == true
-                                ButtonConfig.Name = ButtonConfig.Name or "Button"
-                                ButtonConfig.Callback = ButtonConfig.Callback or function() end
-                                ButtonConfig.Flag = ButtonConfig.Flag or nil
-                                ButtonConfig.Icon = ButtonConfig.Icon or "rbxassetid://3944703587"
-                                local Button = {Disabled = ButtonConfig.Disabled, Visible = ButtonConfig.Visible, Flag = ButtonConfig.Flag}
+                            ButtonConfig = ButtonConfig or {}
+                            ButtonConfig.Visible = ButtonConfig.Visible ~= false
+                            ButtonConfig.Disabled = ButtonConfig.Disabled == true
+                            ButtonConfig.Name = ButtonConfig.Name or "Button"
+                            ButtonConfig.Callback = ButtonConfig.Callback or function() end
+                            ButtonConfig.Flag = ButtonConfig.Flag or nil
+                            ButtonConfig.Icon = ButtonConfig.Icon or "rbxassetid://3944703587"
+                            -- Hỗ trợ màu điểm nhấn tùy chỉnh cho nút (Mặc định là màu xanh dương sáng)
+                            ButtonConfig.Color = ButtonConfig.Color or Color3.fromRGB(0, 170, 255)
+                            
+                            local Button = {
+                                Disabled = ButtonConfig.Disabled, 
+                                Visible = ButtonConfig.Visible, 
+                                Flag = ButtonConfig.Flag
+                            }
 
-                                local Click = SetProps(MakeElement("Button"), {
-                                        Size = UDim2.new(1, 0, 1, 0)
-                                })
+                            local Click = SetProps(MakeElement("Button"), {
+                                    Size = UDim2.new(1, 0, 1, 0),
+                                    ZIndex = 10
+                            })
+                            
+                            -- Thanh điểm nhấn phát sáng ở góc trái (Accent Bar) - Mặc định ẩn
+                            local AccentBar = SetProps(MakeElement("RoundFrame", ButtonConfig.Color, 0, 4), {
+                                Size = UDim2.new(0, 3, 0, 0),
+                                Position = UDim2.new(0, 4, 0.5, 0),
+                                AnchorPoint = Vector2.new(0, 0.5),
+                                BackgroundTransparency = 1,
+                                ZIndex = 3
+                            })
+
+                            -- Khung chứa chính (Button Frame) với thiết kế bo góc hiện đại hơn
+                            local ButtonFrame = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 8), {
+                                    Size = UDim2.new(1, 0, 0, 36), -- Chiều cao tăng lên một chút để thoáng mắt
+                                    Visible = ButtonConfig.Visible,
+                                    Parent = ItemParent,
+                                    ClipsDescendants = true
+                            }), {
+                                    AccentBar,
+                                    AddThemeObject(SetProps(MakeElement("Label", ButtonConfig.Name, 14), {
+                                            Size = UDim2.new(1, -45, 1, 0),
+                                            Position = UDim2.new(0, 14, 0, 0), -- Vị trí ban đầu thụt lề 14px
+                                            Font = Enum.Font.GothamBold,
+                                            Name = "Content",
+                                            ZIndex = 2
+                                    }), "Text"),
+                                    AddThemeObject(SetProps(MakeElement("Image", ButtonConfig.Icon), {
+                                            Size = UDim2.new(0, 16, 0, 16),
+                                            Position = UDim2.new(1, -28, 0.5, -8),
+                                            ZIndex = 2
+                                    }), "TextDark"),
+                                    -- Viền đột phá có khả năng thay đổi màu khi tương tác
+                                    Create("UIStroke", {
+                                        Color = OrionLib.Themes[OrionLib.SelectedTheme].Stroke,
+                                        Thickness = 1,
+                                        ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+                                        Name = "GlowStroke"
+                                    }),
+                                    Click
+                            }), "Second")
+
+                            -- Các hiệu ứng chuyển động mượt mà (Animations)
+                            local function PlayHover()
+                                if ButtonConfig.Disabled then return end
                                 
-                                local ButtonFrame = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5), {
-                                        Size = UDim2.new(1, 0, 0, 33),
-                                        Visible = ButtonConfig.Visible,
-                                        Parent = ItemParent
-                                }), {
-                                        AddThemeObject(SetProps(MakeElement("Label", ButtonConfig.Name, 15), {
-                                                Size = UDim2.new(1, -12, 1, 0),
-                                                Position = UDim2.new(0, 12, 0, 0),
-                                                Font = Enum.Font.GothamBold,
-                                                Name = "Content"
-                                        }), "Text"),
-                                        AddThemeObject(SetProps(MakeElement("Image", ButtonConfig.Icon), {
-                                                Size = UDim2.new(0, 20, 0, 20),
-                                                Position = UDim2.new(1, -30, 0, 7),
-                                        }), "TextDark"),
-                                        AddThemeObject(MakeElement("Stroke"), "Stroke"),
-                                        Click
-                                }), "Second")
+                                -- Thanh Accent xuất hiện và kéo dài ra
+                                TweenService:Create(AccentBar, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                                    Size = UDim2.new(0, 3, 0.6, 0),
+                                    BackgroundTransparency = 0
+                                }):Play()
 
-                                AddConnection(Click.MouseEnter, function()
-		                                if ButtonConfig.Disabled then return end
-                                        TweenService:Create(ButtonFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(OrionLib.Themes[OrionLib.SelectedTheme].Second.R * 255 + 3, OrionLib.Themes[OrionLib.SelectedTheme].Second.G * 255 + 3, OrionLib.Themes[OrionLib.SelectedTheme].Second.B * 255 + 3)}):Play()
+                                -- Chữ chuyển động tịnh tiến nhẹ sang phải tạo cảm giác phản hồi cao
+                                TweenService:Create(ButtonFrame.Content, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                                    Position = UDim2.new(0, 22, 0, 0)
+                                }):Play()
+
+                                -- Làm sáng màu nền nhẹ
+                                local darkThemeColor = OrionLib.Themes[OrionLib.SelectedTheme].Second
+                                local targetColor = Color3.fromRGB(
+                                    math.clamp(darkThemeColor.R * 255 + 8, 0, 255),
+                                    math.clamp(darkThemeColor.G * 255 + 8, 0, 255),
+                                    math.clamp(darkThemeColor.B * 255 + 8, 0, 255)
+                                )
+                                TweenService:Create(ButtonFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {
+                                    BackgroundColor3 = targetColor
+                                }):Play()
+
+                                -- Chuyển màu viền sang màu chủ đề của nút
+                                if ButtonFrame:FindFirstChild("GlowStroke") then
+                                    TweenService:Create(ButtonFrame.GlowStroke, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {
+                                        Color = ButtonConfig.Color
+                                    }):Play()
+                                end
+                            end
+
+                            local function PlayLeave()
+                                if ButtonConfig.Disabled then return end
+                                
+                                -- Trả thanh Accent về trạng thái ẩn
+                                TweenService:Create(AccentBar, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                                    Size = UDim2.new(0, 3, 0, 0),
+                                    BackgroundTransparency = 1
+                                }):Play()
+
+                                -- Chữ quay lại vị trí cũ
+                                TweenService:Create(ButtonFrame.Content, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                                    Position = UDim2.new(0, 14, 0, 0)
+                                }):Play()
+
+                                -- Khôi phục màu nền và viền mặc định
+                                TweenService:Create(ButtonFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {
+                                    BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Second
+                                }):Play()
+
+                                if ButtonFrame:FindFirstChild("GlowStroke") then
+                                    TweenService:Create(ButtonFrame.GlowStroke, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {
+                                        Color = OrionLib.Themes[OrionLib.SelectedTheme].Stroke
+                                    }):Play()
+                                end
+                            end
+
+                            local function PlayClick()
+                                if ButtonConfig.Disabled then return end
+                                
+                                local darkThemeColor = OrionLib.Themes[OrionLib.SelectedTheme].Second
+                                local clickColor = Color3.fromRGB(
+                                    math.clamp(darkThemeColor.R * 255 + 16, 0, 255),
+                                    math.clamp(darkThemeColor.G * 255 + 16, 0, 255),
+                                    math.clamp(darkThemeColor.B * 255 + 16, 0, 255)
+                                )
+                                TweenService:Create(ButtonFrame, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                                    BackgroundColor3 = clickColor
+                                }):Play()
+                                
+                                task.delay(0.1, function()
+                                    if not ButtonConfig.Disabled then
+                                        PlayHover()
+                                    end
                                 end)
+                            end
 
-                                AddConnection(Click.MouseLeave, function()
-		                                if ButtonConfig.Disabled then return end
-                                        TweenService:Create(ButtonFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Second}):Play()
-                                end)
+                            AddConnection(Click.MouseEnter, PlayHover)
+                            AddConnection(Click.MouseLeave, PlayLeave)
+                            AddConnection(Click.MouseButton1Down, PlayClick)
+                            AddConnection(Click.MouseButton1Up, function()
+                                    if ButtonConfig.Disabled then return end
+                                    task.spawn(function()
+                                            Button:Click()
+                                    end)
+                            end)
 
-                                AddConnection(Click.MouseButton1Up, function()
-		                                if ButtonConfig.Disabled then return end
-                                        TweenService:Create(ButtonFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(OrionLib.Themes[OrionLib.SelectedTheme].Second.R * 255 + 3, OrionLib.Themes[OrionLib.SelectedTheme].Second.G * 255 + 3, OrionLib.Themes[OrionLib.SelectedTheme].Second.B * 255 + 3)}):Play()
-                                        task.spawn(function()
-                                                Button:Click()
+                            function Button:Set(ButtonText)
+                                    if getgenv().Destroy or ButtonConfig.Disabled then return end
+                                    if ButtonFrame and ButtonFrame:FindFirstChild("Content") then
+                                            ButtonFrame.Content.Text = ButtonText
+                                    end
+                            end
+                            
+                            function Button:SetDisabled(state)
+                                    if getgenv().Destroy then return end
+                                    Button.Disabled = state
+                                    ButtonConfig.Disabled = state
+                                    if ButtonFrame then
+                                            TweenService:Create(ButtonFrame, TweenInfo.new(0.2), {BackgroundTransparency = state and 0.5 or 0}):Play()
+                                    end
+                                    if Click then
+                                            Click.Active = not state
+                                            Click.AutoButtonColor = not state
+                                    end
+                                    if ButtonFrame and ButtonFrame:FindFirstChild("Content") then
+                                            ButtonFrame.Content.TextTransparency = state and 0.5 or 0
+                                    end
+                                    if AccentBar then
+                                            AccentBar.Visible = not state
+                                    end
+                            end
+                            
+                            function Button:SetVisible(state)
+                                    if getgenv().Destroy then return end
+                                    if ButtonFrame then
+                                            ButtonFrame.Visible = state
+                                            Button.Visible = state
+                                    end
+                            end
+                            
+                            function Button:Click()
+                                if ButtonConfig.Callback and not ButtonConfig.Disabled then
+                                    OrionLib:SafeScript(ButtonConfig.Callback)
+                                end
+                            end
+                            
+                            function Button:SetCallback(callback)
+                                if getgenv().Destroy or ButtonConfig.Disabled then return end
+                                ButtonConfig.Callback = callback
+                            end
+                            
+                            -- Cải tiến hàm thêm nút nhân bản (Sub-button Clone) ăn khớp với giao diện mới
+                            function Button:AddButton(ButtonConfigClone)
+                                ButtonConfigClone = ButtonConfigClone or {}
+                                ButtonConfigClone.Visible = ButtonConfigClone.Visible ~= false 
+                                ButtonConfigClone.Disabled = ButtonConfigClone.Disabled == true 
+                                ButtonConfigClone.Name = ButtonConfigClone.Name or "Button"
+                                ButtonConfigClone.Callback = ButtonConfigClone.Callback or function() end
+                                ButtonConfigClone.Flag = ButtonConfigClone.Flag or nil
+                                ButtonConfigClone.Icon = ButtonConfigClone.Icon or "rbxassetid://3944703587"
+                                ButtonConfigClone.Color = ButtonConfigClone.Color or Color3.fromRGB(0, 170, 255)
+                                local ButtonClone = {Disabled = ButtonConfigClone.Disabled, Visible = ButtonConfigClone.Visible, Flag = ButtonConfigClone.Flag}
+                                
+                                if ButtonFrame then
+                                    ButtonFrame.Size = UDim2.new(0.493, 0, 0, 36)
+                                    local ButtonCloneFrame = Clone(ButtonFrame, {
+                                        Size = UDim2.new(1, 0, 0, 36),
+                                        Position = UDim2.new(1.03, 0, 0, 0),
+                                        Parent = ButtonFrame
+                                    })
+                                    
+                                    local CloneClick = ButtonCloneFrame and ButtonCloneFrame:FindFirstChildOfClass("TextButton")
+                                    local CloneAccentBar = ButtonCloneFrame and ButtonCloneFrame:FindFirstChild("RoundFrame")
+                                    
+                                    local function PlayCloneHover()
+                                        if ButtonConfigClone.Disabled then return end
+                                        if CloneAccentBar then
+                                            TweenService:Create(CloneAccentBar, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                                                Size = UDim2.new(0, 3, 0.6, 0),
+                                                BackgroundTransparency = 0
+                                            }):Play()
+                                        end
+                                        if ButtonCloneFrame:FindFirstChild("Content") then
+                                            TweenService:Create(ButtonCloneFrame.Content, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                                                Position = UDim2.new(0, 22, 0, 0)
+                                            }):Play()
+                                        end
+                                        local darkThemeColor = OrionLib.Themes[OrionLib.SelectedTheme].Second
+                                        local targetColor = Color3.fromRGB(
+                                            math.clamp(darkThemeColor.R * 255 + 8, 0, 255),
+                                            math.clamp(darkThemeColor.G * 255 + 8, 0, 255),
+                                            math.clamp(darkThemeColor.B * 255 + 8, 0, 255)
+                                        )
+                                        TweenService:Create(ButtonCloneFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {
+                                            BackgroundColor3 = targetColor
+                                        }):Play()
+                                        if ButtonCloneFrame:FindFirstChild("GlowStroke") then
+                                            TweenService:Create(ButtonCloneFrame.GlowStroke, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {
+                                                Color = ButtonConfigClone.Color
+                                            }):Play()
+                                        end
+                                    end
+
+                                    local function PlayCloneLeave()
+                                        if ButtonConfigClone.Disabled then return end
+                                        if CloneAccentBar then
+                                            TweenService:Create(CloneAccentBar, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                                                Size = UDim2.new(0, 3, 0, 0),
+                                                BackgroundTransparency = 1
+                                            }):Play()
+                                        end
+                                        if ButtonCloneFrame:FindFirstChild("Content") then
+                                            TweenService:Create(ButtonCloneFrame.Content, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                                                Position = UDim2.new(0, 14, 0, 0)
+                                            }):Play()
+                                        end
+                                        TweenService:Create(ButtonCloneFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {
+                                            BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Second
+                                        }):Play()
+                                        if ButtonCloneFrame:FindFirstChild("GlowStroke") then
+                                            TweenService:Create(ButtonCloneFrame.GlowStroke, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {
+                                                Color = OrionLib.Themes[OrionLib.SelectedTheme].Stroke
+                                            }):Play()
+                                        end
+                                    end
+
+                                    local function PlayCloneClick()
+                                        if ButtonConfigClone.Disabled then return end
+                                        local darkThemeColor = OrionLib.Themes[OrionLib.SelectedTheme].Second
+                                        local clickColor = Color3.fromRGB(
+                                            math.clamp(darkThemeColor.R * 255 + 16, 0, 255),
+                                            math.clamp(darkThemeColor.G * 255 + 16, 0, 255),
+                                            math.clamp(darkThemeColor.B * 255 + 16, 0, 255)
+                                        )
+                                        TweenService:Create(ButtonCloneFrame, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                                            BackgroundColor3 = clickColor
+                                        }):Play()
+                                        task.delay(0.1, function()
+                                            if not ButtonConfigClone.Disabled then
+                                                PlayCloneHover()
+                                            end
                                         end)
-                                end)
+                                    end
 
-                                AddConnection(Click.MouseButton1Down, function()
-		                                if ButtonConfig.Disabled then return end
-                                        TweenService:Create(ButtonFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(OrionLib.Themes[OrionLib.SelectedTheme].Second.R * 255 + 6, OrionLib.Themes[OrionLib.SelectedTheme].Second.G * 255 + 6, OrionLib.Themes[OrionLib.SelectedTheme].Second.B * 255 + 6)}):Play()
-                                end)
-
-                                function Button:Set(ButtonText)
-	                                if getgenv().Destroy or ButtonConfig.Disabled then return end
-	                                if ButtonFrame and ButtonFrame:FindFirstChild("Content") then
-                                        ButtonFrame.Content.Text = ButtonText
+                                    AddConnection(CloneClick.MouseEnter, PlayCloneHover)
+                                    AddConnection(CloneClick.MouseLeave, PlayCloneLeave)
+                                    AddConnection(CloneClick.MouseButton1Down, PlayCloneClick)
+                                    AddConnection(CloneClick.MouseButton1Up, function()
+                                        if ButtonConfigClone.Disabled then return end
+                                        task.spawn(function()
+                                            ButtonClone:Click()
+                                        end)
+                                    end)
+                                    
+                                    function ButtonClone:Set(ButtonText)
+                                        if getgenv().Destroy or ButtonConfigClone.Disabled then return end
+                                        if ButtonCloneFrame and ButtonCloneFrame:FindFirstChild("Content") then
+                                            ButtonCloneFrame.Content.Text = ButtonText
+                                        end
+                                    end
+                                    
+                                    function ButtonClone:SetDisabled(state)
+                                        if getgenv().Destroy then return end
+                                        ButtonClone.Disabled = state
+                                        ButtonConfigClone.Disabled = state
+                                        if ButtonCloneFrame then
+                                            TweenService:Create(ButtonCloneFrame, TweenInfo.new(0.2), {BackgroundTransparency = state and 0.5 or 0}):Play()
+                                        end
+                                        if CloneClick then
+                                            CloneClick.Active = not state
+                                            CloneClick.AutoButtonColor = not state
+                                        end
+                                        if ButtonCloneFrame and ButtonCloneFrame:FindFirstChild("Content") then
+                                            ButtonCloneFrame.Content.TextTransparency = state and 0.5 or 0
+                                        end
+                                    end
+                                    
+                                    function ButtonClone:SetVisible(state)
+                                        if getgenv().Destroy then return end
+                                        if ButtonCloneFrame then
+                                            ButtonCloneFrame.Visible = state
+                                            ButtonClone.Visible = state
+                                            if not state and ButtonConfig.Visible then
+                                                ButtonFrame.Size = UDim2.new(1, 0, 0, 36)
+                                            else
+                                                ButtonFrame.Size = UDim2.new(0.493, 0, 0, 36)
+                                            end
+                                        end
+                                    end
+                                    
+                                    function ButtonClone:Click()
+                                        if ButtonConfigClone.Callback and not ButtonConfigClone.Disabled then
+                                            OrionLib:SafeScript(ButtonConfigClone.Callback)
+                                        end
+                                    end
+                                    
+                                    function ButtonClone:SetCallback(callback)
+                                        if getgenv().Destroy or ButtonConfig.Disabled then return end
+                                        ButtonConfigClone.Callback = callback
                                     end
                                 end
                                 
-                                function Button:SetDisabled(state)
-									if getgenv().Destroy then return end
-									Button.Disabled = state
-									ButtonConfig.Disabled = state
-									if ButtonFrame then
-										TweenService:Create(ButtonFrame, TweenInfo.new(0.2), {BackgroundTransparency = state and 0.5 or 0}):Play()
-									end
-									if Click then
-										Click.Active = not state
-										Click.AutoButtonColor = not state
-									end
-									if ButtonFrame and ButtonFrame:FindFirstChild("Content") then
-										ButtonFrame.Content.TextTransparency = state and 0.5 or 0
-									end
-								end
-                                
-                                function Button:SetVisible(state)
-									if getgenv().Destroy then return end
-									if ButtonFrame then
-										ButtonFrame.Visible = state
-										Button.Visible = state
-									end
-								end
-                                
-                                function Button:Click()
-								    if ButtonConfig.Callback and not ButtonConfig.Disabled then
-								        OrionLib:SafeScript(ButtonConfig.Callback)
-								    end
-								end
-                                
-                                function Button:SetCallback(callback)
-	                                if getgenv().Destroy or ButtonConfig.Disabled then return end
-								    ButtonConfig.Callback = callback
-								end
-								
-								function Button:AddButton(ButtonConfigClone)
-	ButtonConfigClone = ButtonConfigClone or {}
-	ButtonConfigClone.Visible = ButtonConfigClone.Visible ~= false 
-	ButtonConfigClone.Disabled = ButtonConfigClone.Disabled == true 
-	                                ButtonConfigClone.Name = ButtonConfigClone.Name or "Button"
-	                                ButtonConfigClone.Callback = ButtonConfigClone.Callback or function() end
-									ButtonConfigClone.Flag = ButtonConfigClone.Flag or nil
-	                                ButtonConfigClone.Icon = ButtonConfigClone.Icon or "rbxassetid://3944703587"
-									local ButtonClone = {Disabled = ButtonConfigClone.Disabled, Visible = ButtonConfigClone.Visible, Flag = ButtonConfigClone.Flag}
-	
-									if ButtonFrame then
-										ButtonFrame.Size = UDim2.new(0.493, 0, 0, 33)
-										local ButtonCloneFrame = Clone(ButtonFrame, {
-											Size = UDim2.new(1, 0, 0, 33),
-											Position = UDim2.new(1.03, 0, 0, 0),
-											Parent = ButtonFrame
-										})
-										
-										local Click = ButtonCloneFrame and ButtonCloneFrame:FindFirstChildOfClass("TextButton")
-										AddConnection(Click.MouseEnter, function()
-				                                if ButtonConfigClone.Disabled then return end
-		                                        TweenService:Create(ButtonCloneFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(OrionLib.Themes[OrionLib.SelectedTheme].Second.R * 255 + 3, OrionLib.Themes[OrionLib.SelectedTheme].Second.G * 255 + 3, OrionLib.Themes[OrionLib.SelectedTheme].Second.B * 255 + 3)}):Play()
-		                                end)
-		
-		                                AddConnection(Click.MouseLeave, function()
-				                                if ButtonConfigClone.Disabled then return end
-		                                        TweenService:Create(ButtonCloneFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Second}):Play()
-		                                end)
-		
-		                                AddConnection(Click.MouseButton1Up, function()
-				                                if ButtonConfigClone.Disabled then return end
-		                                        TweenService:Create(ButtonCloneFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(OrionLib.Themes[OrionLib.SelectedTheme].Second.R * 255 + 3, OrionLib.Themes[OrionLib.SelectedTheme].Second.G * 255 + 3, OrionLib.Themes[OrionLib.SelectedTheme].Second.B * 255 + 3)}):Play()
-		                                        task.spawn(function()
-		                                                ButtonClone:Click()
-		                                        end)
-		                                end)
-		
-		                                AddConnection(Click.MouseButton1Down, function()
-				                                if ButtonConfigClone.Disabled then return end
-		                                        TweenService:Create(ButtonCloneFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(OrionLib.Themes[OrionLib.SelectedTheme].Second.R * 255 + 6, OrionLib.Themes[OrionLib.SelectedTheme].Second.G * 255 + 6, OrionLib.Themes[OrionLib.SelectedTheme].Second.B * 255 + 6)}):Play()
-		                                end)
-										
-										function ButtonClone:Set(ButtonText)
-			                                if getgenv().Destroy or ButtonConfigClone.Disabled then return end
-			                                if ButtonCloneFrame and ButtonCloneFrame:FindFirstChild("Content") then
-		                                        ButtonCloneFrame.Content.Text = ButtonText
-		                                    end
-		                                end
-		                                
-		                                function ButtonClone:SetDisabled(state)
-											if getgenv().Destroy then return end
-											ButtonClone.Disabled = state
-											ButtonConfigClone.Disabled = state
-											if ButtonCloneFrame then
-												TweenService:Create(ButtonCloneFrame, TweenInfo.new(0.2), {BackgroundTransparency = state and 0.5 or 0}):Play()
-											end
-											if Click then
-												Click.Active = not state
-												Click.AutoButtonColor = not state
-											end
-											if ButtonCloneFrame and ButtonCloneFrame:FindFirstChild("Content") then
-												ButtonCloneFrame.Content.TextTransparency = state and 0.5 or 0
-											end
-										end
-		                                
-		                                function ButtonClone:SetVisible(state)
-											if getgenv().Destroy then return end
-											if ButtonCloneFrame then
-												ButtonCloneFrame.Visible = state
-												ButtonClone.Visible = state
-												if not state and ButtonConfig.Visible then
-													ButtonFrame.Size = UDim2.new(1, 0, 0, 33)
-												else
-													ButtonFrame.Size = UDim2.new(0.493, 0, 0, 33)
-												end
-											end
-										end
-		                                
-		                                function ButtonClone:Click()
-										    if ButtonConfigClone.Callback and not ButtonConfigClone.Disabled then
-										        OrionLib:SafeScript(ButtonConfigClone.Callback)
-										    end
-										end
-		                                
-		                                function ButtonClone:SetCallback(callback)
-			                                if getgenv().Destroy or ButtonConfig.Disabled then return end
-										    ButtonConfigClone.Callback = callback
-										end
-									end
-									
-									if ButtonConfigClone.Visible == false then
-										ButtonClone:SetVisible(ButtonConfigClone.Visible)
-									end
-									if ButtonConfigClone.Flag then
-										OrionLib.Flags[ButtonConfig.Flag][ButtonConfigClone.Flag] = ButtonClone
-									end
-									return ButtonClone
-								end
-								if ButtonConfig.Flag then
-									OrionLib.Flags[ButtonConfig.Flag] = Button
-								end
-                                return Button
-                        end    
+                                if ButtonConfigClone.Visible == false then
+                                    ButtonClone:SetVisible(ButtonConfigClone.Visible)
+                                end
+                                if ButtonConfigClone.Flag then
+                                    OrionLib.Flags[ButtonConfig.Flag][ButtonConfigClone.Flag] = ButtonClone
+                                end
+                                return ButtonClone
+                            end
+                            if ButtonConfig.Flag then
+                                OrionLib.Flags[ButtonConfig.Flag] = Button
+                            end
+                            return Button
+                        end
                         function ElementFunction:AddViewport(ViewportConfig)
 	                        ViewportConfig = ViewportConfig or {}
 							ViewportConfig.Object = ViewportConfig.Object or Instance.new("Part")
@@ -2840,407 +2999,479 @@ end)
 							return Video
 						end
                         function ElementFunction:AddToggle(ToggleConfig)
-							ToggleConfig = ToggleConfig or {}
-							ToggleConfig.Name = ToggleConfig.Name or "Toggle"
-							ToggleConfig.Default = ToggleConfig.Default or false
-							ToggleConfig.Callback = ToggleConfig.Callback or function() end
-							ToggleConfig.Color = ToggleConfig.Color or Color3.fromRGB(9, 99, 195)
-							ToggleConfig.Visible = ToggleConfig.Visible or true
-							ToggleConfig.Disabled = ToggleConfig.Disabled or false
-							ToggleConfig.Type = ToggleConfig.Type or "CheckBox"
-							ToggleConfig.Flag = ToggleConfig.Flag or nil
-							ToggleConfig.Save = ToggleConfig.Save or false
-						
-							local Toggle = {
-								Type = "Toggle",
-								Value = ToggleConfig.Default,
-								Save = ToggleConfig.Save,
-								Mode = ToggleConfig.Type,
-								Visible = ToggleConfig.Visible,
-								Disabled = ToggleConfig.Disabled,
-								["__DisplayName"] = {}
-							}
-						
-							local Click = SetProps(MakeElement("Button"), {
-								Size = UDim2.new(1, 0, 1, 0)
-							})
-							local ToggleBox
-							if ToggleConfig.Type == "Switch" then
-								ToggleBox = SetChildren(SetProps(MakeElement("RoundFrame", OrionLib.Themes.Default.Divider, 0, 12), {
-									Size = UDim2.new(0, 40, 0, 20),
-									Position = UDim2.new(1, -10, 0.5, 0),
-									AnchorPoint = Vector2.new(1, 0.5),
-									BackgroundColor3 = OrionLib.Themes.Default.Divider,
-									Name = "Switch"
-								}), {
-									AddThemeObject(MakeElement("Stroke"), "Stroke"),
-									SetProps(MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 10), {
-										Size = UDim2.new(0, 18, 0, 18),
-										Position = UDim2.new(0, 1, 0.48, 0),
-										AnchorPoint = Vector2.new(0, 0.5),
-										Name = "Knob"
-									})
-								})
-							else
-								ToggleBox = SetChildren(SetProps(MakeElement("RoundFrame", ToggleConfig.Color, 0, 4), {
-									Size = UDim2.new(0, 24, 0, 24),
-									Position = UDim2.new(1, -30, 0.5, 0),
-									AnchorPoint = Vector2.new(0.5, 0.5),
-									BackgroundColor3 = OrionLib.Themes.Default.Divider,
-									Name = "Check"
-								}), {
-									SetProps(MakeElement("Stroke"), {
-										Color = OrionLib.Themes.Default.Stroke,
-										Name = "Stroke",
-										Transparency = 0.5
-									}),
-									SetProps(MakeElement("Image", "rbxassetid://3944680095"), {
-										Size = UDim2.new(0, 8, 0, 8),
-										AnchorPoint = Vector2.new(0.5, 0.5),
-										Position = UDim2.new(0.5, 0, 0.5, 0),
-										ImageColor3 = Color3.fromRGB(255, 255, 255),
-										ImageTransparency = 1,
-										Name = "Ico"
-									})
-								})
-							end
-							local ToggleFrame = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5), {
-									Size = UDim2.new(1, 0, 0, 38),
-									Parent = ItemParent
-								}), {
-									AddThemeObject(SetProps(MakeElement("Label", ToggleConfig.Name, 15), {
-										Size = UDim2.new(1, -12, 1, 0),
-										Position = UDim2.new(0, 12, 0, 0),
-										Font = Enum.Font.GothamBold,
-										Name = "Content",
-									}), "Text"),
-									AddThemeObject(MakeElement("Stroke"), "Stroke"), ToggleBox, Click,
-							}), "Second")
-							
-							function Toggle:UpdateTweenKeyBindToggles(Object, bool)
-								if Object:FindFirstChild("Switch") and Object.Switch:FindFirstChild("Knob") then
-									TweenService:Create(Object.Switch, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {
-										BackgroundColor3 = bool and ToggleConfig.Color or OrionLib.Themes.Default.Divider
-									}):Play()
-									TweenService:Create(Object.Switch.Knob, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {
-										Position = bool and UDim2.new(1, -19, 0.48, 0) or UDim2.new(0, 1, 0.48, 0)
-									}):Play()
-								end
-								if Object:FindFirstChild("Check") then
-									TweenService:Create(Object.Check, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {
-										BackgroundColor3 = bool and ToggleConfig.Color or OrionLib.Themes.Default.Divider
-									}):Play()
-									TweenService:Create(Object.Check.Stroke, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {
-										Color = bool and ToggleConfig.Color or OrionLib.Themes.Default.Stroke
-									}):Play()
-									TweenService:Create(Object.Check.Ico, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {
-										ImageTransparency = bool and 0 or 1,
-										Size = bool and UDim2.new(0, 20, 0, 20) or UDim2.new(0, 8, 0, 8)
-									}):Play()
-								end
-							end
-							
-							local function GetUniqueToggleName(baseName: string)
-								getgenv().ToggleNameCount = getgenv().ToggleNameCount or {}
-								if not getgenv().ToggleNameCount[baseName] then
-									getgenv().ToggleNameCount[baseName] = 1
-									return baseName
-								else
-									getgenv().ToggleNameCount[baseName] += 1
-									return string.format("%s (%d)", baseName, getgenv().ToggleNameCount[baseName])
-								end
-							end
-							
-							local function UpdateLayout()
-								local hasBind = ToggleFrame:FindFirstChild("ButtonKey")
-								if hasBind then
-									if ToggleFrame:FindFirstChild("Switch") then
-										ToggleFrame.Switch.Position = UDim2.new(1, -60, 0.5, 0)
-									end
-									if ToggleFrame:FindFirstChild("Check") then
-										ToggleFrame.Check.Position = UDim2.new(1, -50, 0.5, 0)
-									end
-								end
-							end
-						
-							local function AddTogglesKeyBind(name: string)
-								local KeyBindAdd = ToggleFrame:Clone()
-								KeyBindAdd.Parent = Orion.KeyBind.ItemContainer
-								local displayName = GetUniqueToggleName(name)
-								getgenv().TogglesSaveTable[displayName] = KeyBindAdd
-								Toggle.__DisplayName = displayName
-								if KeyBindAdd then
-									if KeyBindAdd:FindFirstChild("ButtonKey") then
-										KeyBindAdd:FindFirstChild("ButtonKey"):Destroy()
-									end
-									if KeyBindAdd:FindFirstChild("TextButton") then
-										AddConnection(KeyBindAdd:FindFirstChild("TextButton").MouseButton1Up, function()
-											Toggle:Set(not Toggle.Value)
-										end)
-									end
-									if KeyBindAdd:FindFirstChild("Frame") and KeyBindAdd.Frame:FindFirstChild("Value") then
-										AddConnection(KeyBindAdd.Frame.Value:GetPropertyChangedSignal("Text"), function()
-											local width = KeyBindAdd.Frame.Value.TextBounds.X + 20
-											TweenService:Create(KeyBindAdd.Frame, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {Size = UDim2.new(0, width, 0, 24)}):Play()
-										end)
-									end
-								end
-							end
-							
-							function Toggle:Set(Value)
-								if getgenv().Destroy or ToggleConfig.Disabled then return end
-								Toggle.Value = Value
-								Toggle:UpdateTweenKeyBindToggles(ToggleFrame, Toggle.Value)
-								if Toggle.__DisplayName then
-									local data = getgenv().TogglesSaveTable[Toggle.__DisplayName]
-									if data then
-										Toggle:UpdateTweenKeyBindToggles(data, Toggle.Value)
-									end
-								end
-								OrionLib:SafeScript(ToggleConfig.Callback, Toggle.Value)
-							end
-							
-							function Toggle:SetMode(newMode)
-								if getgenv().Destroy then return end
-								if not newMode then return end
-								
-								Toggle.Mode = newMode
-								ToggleConfig.Type = newMode
-								
-								if ToggleFrame:FindFirstChild("Switch") then
-									ToggleFrame.Switch:Destroy()
-								end
-								if ToggleFrame:FindFirstChild("Check") then
-									ToggleFrame.Check:Destroy()
-								end
-								
-								if newMode == "Switch" then
-									local newSwitch = SetChildren(SetProps(MakeElement("RoundFrame", OrionLib.Themes.Default.Divider, 0, 12), {
-										Size = UDim2.new(0, 40, 0, 20),
-										Position = UDim2.new(1, -8, 0.5, 0),
-										AnchorPoint = Vector2.new(1, 0.5),
-										Name = "Switch",
-										Parent = ToggleFrame
-									}), {
-										SetProps(MakeElement("RoundFrame", Color3.new(1,1,1), 0, 10), {
-											Size = UDim2.new(0, 18, 0, 18),
-											Position = UDim2.new(0, 1, 0.5, 0),
-											AnchorPoint = Vector2.new(0, 0.5),
-											Name = "Knob"
-										})
-									})
-								else
-									local newCheck = SetChildren(SetProps(MakeElement("RoundFrame", ToggleConfig.Color, 0, 4), {
-										Size = UDim2.new(0, 24, 0, 24),
-										Position = UDim2.new(1, -24, 0.5, 0),
-										AnchorPoint = Vector2.new(0.5, 0.5),
-										Name = "Check",
-										Parent = ToggleFrame
-									}), {
-										SetProps(MakeElement("Image", "rbxassetid://3944680095"), {
-											Size = UDim2.new(0, 8, 0, 8),
-											AnchorPoint = Vector2.new(0.5, 0.5),
-											Position = UDim2.new(0.5, 0, 0.5, 0),
-											ImageTransparency = Toggle.Value and 0 or 1,
-											Name = "Ico"
-										})
-									})
-								end
-								Toggle:UpdateTweenKeyBindToggles(ToggleFrame, Toggle.Value)
-								UpdateLayout()
-							end
-							
-							function Toggle:SetDisabled(state)
-								if getgenv().Destroy then return end
-								ToggleConfig.Disabled = state
-								Toggle.Disabled = state
-								if ToggleFrame then
-									ToggleFrame.BackgroundTransparency = state and 0.6 or 0
-									if ToggleFrame:FindFirstChild("Content") then
-										ToggleFrame.Content.TextTransparency = state and 0.5 or 0
-									end
-								end
-								if Click then
-									Click.Active = not state
-									Click.AutoButtonColor = not state
-								end
-								if ToggleBox then
-									if ToggleConfig.Type == "Switch" and ToggleBox:FindFirstChild("Knob") then
-										TweenService:Create(ToggleBox, TweenInfo.new(0.2), {
-											BackgroundColor3 = state and Color3.fromRGB(120,120,120)
-												or (Toggle.Value and ToggleConfig.Color or OrionLib.Themes.Default.Divider)
-										}):Play()
-									elseif ToggleBox:FindFirstChild("Stroke") then
-										TweenService:Create(ToggleBox.Stroke, TweenInfo.new(0.2), {
-											Color = state and Color3.fromRGB(120,120,120) or (Toggle.Value and ToggleConfig.Color or OrionLib.Themes.Default.Stroke)
-										}):Play()
-									end
-								end
-								if Toggle.__DisplayName and getgenv().TogglesSaveTable[Toggle.__DisplayName] then
-									local data = getgenv().TogglesSaveTable[Toggle.__DisplayName]
-									if data then
-										if data:FindFirstChild("TextButton", true) then
-											data:FindFirstChild("TextButton", true).Active = not state
-											data:FindFirstChild("TextButton", true).AutoButtonColor = not state
-										end
-										data.BackgroundTransparency = state and 0.6 or 0
-										if data:FindFirstChild("Content", true) then
-											data:FindFirstChild("Content", true).TextTransparency = state and 0.5 or 0
-										end
-									end
-								end
-							end
-							
-							function Toggle:SetVisible(state)
-								if getgenv().Destroy then return end
-								Toggle.Visible = state
-								if ToggleFrame then
-									ToggleFrame.Visible = state
-								end
-								if Toggle.__DisplayName and getgenv().TogglesSaveTable[Toggle.__DisplayName] then
-									local data = getgenv().TogglesSaveTable[Toggle.__DisplayName]
-									if data then
-										data.Visible = state
-									end
-								end
-							end
-							
-							function Toggle:SetCallback(ToChange)
-								if getgenv().Destroy or ToggleConfig.Disabled then return end
-								ToggleConfig.Callback = ToChange
-							end
-							
-							function Toggle:SetText(ToChange)
-								if getgenv().Destroy or ToggleConfig.Disabled then return end
-								if ToggleFrame and ToggleFrame:FindFirstChild("Content") then
-									ToggleFrame.Content.Text = ToChange
-								end
-								if Toggle.__DisplayName then
-									if getgenv().TogglesSaveTable[Toggle.__DisplayName] then
-										local FrameToHere = getgenv().TogglesSaveTable[Toggle.__DisplayName]
-										if FrameToHere and FrameToHere:FindFirstChild("Content", true) then
-											FrameToHere:FindFirstChild("Content", true).Text = ToChange
-										end
-									end
-								end
-							end
-							
-							if ToggleConfig.Default == true then
-								Toggle:Set(true)
-							end
-							
-							AddConnection(Click.MouseButton1Up, function()
-								if ToggleConfig.Disabled then return end
-								Toggle:Set(not Toggle.Value)
-							end)
-						
-							function Toggle:AddBind(BindConfig)
-								BindConfig = BindConfig or {}
-								BindConfig.Default = BindConfig.Default or Enum.KeyCode.Unknown
-								BindConfig.Hold = BindConfig.Hold or false
-								BindConfig.Flag = BindConfig.Flag or nil
-								BindConfig.Save = BindConfig.Save or false
-						
-								local Bind = {
-									Value = BindConfig.Default.Name or BindConfig.Default,
-									Type = "Bind",
-									Save = BindConfig.Save,
-									Binding = false
-								}
-						
-								local Click = SetProps(MakeElement("Button"), {
-									Size = UDim2.new(0, 30, 0, 24),
-									Position = (ToggleConfig.Type == "Switch" and UDim2.new(1, -55, 0.5, 0) or UDim2.new(1, -48, 0.5, 0)),
-									AnchorPoint = Vector2.new(1, 0.5),
-									Parent = ToggleFrame,
-									Name = "ButtonKey",
-									ZIndex = 4
-								})
-						
-								local BindBox = AddThemeObject(SetChildren(SetProps(
-									MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 4), {
-										Size = UDim2.new(0, 30, 0, 24),
-										Position = Click.Position,
-										AnchorPoint = Vector2.new(1, 0.5),
-										Parent = ToggleFrame,
-										ZIndex = 1
-									}), {
-										AddThemeObject(MakeElement("Stroke"), "Stroke"),
-										AddThemeObject(SetProps(MakeElement("Label", Bind.Value, 14), {
-											Size = UDim2.new(1, 0, 1, 0),
-											Font = Enum.Font.GothamBold,
-											TextXAlignment = Enum.TextXAlignment.Center,
-											Name = "Value",
-											ZIndex = 1
-										}), "Text")
-									}), "Main")
-						
-								AddConnection(BindBox.Value:GetPropertyChangedSignal("Text"), function()
-									local width = BindBox.Value.TextBounds.X + 20
-									TweenService:Create(BindBox, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {Size = UDim2.new(0, width, 0, 24)}):Play()
-									TweenService:Create(Click, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {Size = UDim2.new(0, width, 0, 24)}):Play()
-								end)
-						
-								AddConnection(Click.InputEnded, function(Input)
-									if ToggleConfig.Disabled then return end
-									if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
-										if Bind.Binding then return end
-										Bind.Binding = true
-										BindBox.Value.Text = "..."
-									end
-								end)
-						
-								AddConnection(UserInputService.InputBegan, function(Input, gp)
-									if ToggleConfig.Disabled then return end
-									if gp then return end
-									if UserInputService:GetFocusedTextBox() then return end
-									if Bind.Binding then
-										if Input.KeyCode ~= Enum.KeyCode.Unknown then
-											Bind.Value = Input.KeyCode.Name
-											BindBox.Value.Text = Bind.Value
-											Bind.Binding = false
-											if Toggle.__DisplayName then
-												if getgenv().TogglesSaveTable[Toggle.__DisplayName] then
-													local FrameToHere = getgenv().TogglesSaveTable[Toggle.__DisplayName]
-													if FrameToHere and FrameToHere:FindFirstChild("Frame") and FrameToHere.Frame:FindFirstChild("Value") then
-														FrameToHere.Frame:FindFirstChild("Value").Text = Input.KeyCode.Name
-													end
-												end
-											end
-										end
-										return
-									end
-									if Input.KeyCode.Name == Bind.Value then
-										Toggle:Set(not Toggle.Value)
-									end
-								end)
-						
-								function Bind:Set(Key)
-									if ToggleConfig.Disabled then return end
-									Bind.Value = Key.Name or Key
-									BindBox.Value.Text = Bind.Value
-									if Toggle.__DisplayName then
-										if getgenv().TogglesSaveTable[Toggle.__DisplayName] then
-											local FrameToHere = getgenv().TogglesSaveTable[Toggle.__DisplayName]
-											if FrameToHere and FrameToHere:FindFirstChild("Frame") and FrameToHere.Frame:FindFirstChild("Value") then
-												FrameToHere.Frame:FindFirstChild("Value").Text = Key
-											end
-										end
-									end
-								end
-								
-								AddTogglesKeyBind(ToggleConfig.Name)
-						
-								if BindConfig.Flag then
-									OrionLib.Flags[Toggle][BindConfig.Flag] = Bind
-								end
-								return Bind
-							end
-							if ToggleConfig.Flag then
-								OrionLib.Flags[ToggleConfig.Flag] = Toggle
-							end
-							return Toggle
-						end
+    ToggleConfig = ToggleConfig or {}
+    ToggleConfig.Name = ToggleConfig.Name or "Toggle"
+    ToggleConfig.Default = ToggleConfig.Default or false
+    ToggleConfig.Callback = ToggleConfig.Callback or function() end
+    ToggleConfig.Color = ToggleConfig.Color or Color3.fromRGB(9, 99, 195)
+    ToggleConfig.Visible = ToggleConfig.Visible or true
+    ToggleConfig.Disabled = ToggleConfig.Disabled or false
+    ToggleConfig.Type = ToggleConfig.Type or "CheckBox"
+    ToggleConfig.Flag = ToggleConfig.Flag or nil
+    ToggleConfig.Save = ToggleConfig.Save or false
+
+    local Toggle = {
+        Type = "Toggle",
+        Value = ToggleConfig.Default,
+        Save = ToggleConfig.Save,
+        Mode = ToggleConfig.Type,
+        Visible = ToggleConfig.Visible,
+        Disabled = ToggleConfig.Disabled,
+        ["__DisplayName"] = {}
+    }
+
+    local Click = SetProps(MakeElement("Button"), {
+        Size = UDim2.new(1, 0, 1, 0)
+    })
+
+    -- Bộ dựng giao diện Switch kiểu mới
+    local function CreateSwitch()
+        return SetChildren(SetProps(MakeElement("RoundFrame", OrionLib.Themes.Default.Divider, 0, 12), {
+            Size = UDim2.new(0, 44, 0, 22),
+            Position = UDim2.new(1, -10, 0.5, 0),
+            AnchorPoint = Vector2.new(1, 0.5),
+            BackgroundColor3 = OrionLib.Themes.Default.Divider,
+            Name = "Switch"
+        }), {
+            AddThemeObject(MakeElement("Stroke"), "Stroke"),
+            SetProps(MakeElement("Label", "OFF", 8), {
+                Size = UDim2.new(1, -6, 1, 0),
+                Position = UDim2.new(0, -6, 0, 0),
+                Font = Enum.Font.GothamBold,
+                TextColor3 = Color3.fromRGB(140, 140, 140),
+                TextXAlignment = Enum.TextXAlignment.Right,
+                Name = "StatusText",
+            }),
+            SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 10), {
+                Size = UDim2.new(0, 18, 0, 18),
+                Position = UDim2.new(0, 2, 0.5, 0),
+                AnchorPoint = Vector2.new(0, 0.5),
+                Name = "Knob"
+            }), {
+                SetProps(MakeElement("RoundFrame", Color3.fromRGB(150, 150, 150), 0, 5), {
+                    Size = UDim2.new(0, 6, 0, 6),
+                    Position = UDim2.new(0.5, 0, 0.5, 0),
+                    AnchorPoint = Vector2.new(0.5, 0.5),
+                    Name = "GlowCore"
+                })
+            })
+        })
+    end
+
+    -- Bộ dựng giao diện CheckBox dạng Radial kiểu mới
+    local function CreateCheck()
+        return SetChildren(SetProps(MakeElement("RoundFrame", OrionLib.Themes.Default.Divider, 0, 12), {
+            Size = UDim2.new(0, 22, 0, 22),
+            Position = UDim2.new(1, -30, 0.5, 0),
+            AnchorPoint = Vector2.new(0.5, 0.5),
+            BackgroundColor3 = OrionLib.Themes.Default.Divider,
+            Name = "Check"
+        }), {
+            SetProps(MakeElement("Stroke"), {
+                Color = OrionLib.Themes.Default.Stroke,
+                Name = "Stroke",
+                Transparency = 0.5
+            }),
+            SetChildren(SetProps(MakeElement("RoundFrame", ToggleConfig.Color, 0, 11), {
+                Size = UDim2.new(0, 0, 0, 0),
+                AnchorPoint = Vector2.new(0.5, 0.5),
+                Position = UDim2.new(0.5, 0, 0.5, 0),
+                Name = "FillCircle",
+                BackgroundTransparency = 1
+            }), {
+                SetProps(MakeElement("Image", "rbxassetid://3944680095"), {
+                    Size = UDim2.new(0, 12, 0, 12),
+                    AnchorPoint = Vector2.new(0.5, 0.5),
+                    Position = UDim2.new(0.5, 0, 0.5, 0),
+                    ImageColor3 = Color3.fromRGB(255, 255, 255),
+                    ImageTransparency = 1,
+                    Name = "Ico"
+                })
+            })
+        })
+    end
+
+    local ToggleBox
+    if ToggleConfig.Type == "Switch" then
+        ToggleBox = CreateSwitch()
+    else
+        ToggleBox = CreateCheck()
+    end
+
+    -- AccentBar hiển thị tương tác bên trái
+    local AccentBar = SetProps(MakeElement("RoundFrame", OrionLib.Themes.Default.Divider, 0, 1.5), {
+        Size = UDim2.new(0, 3, 0.3, 0),
+        Position = UDim2.new(0, 2, 0.5, 0),
+        AnchorPoint = Vector2.new(0, 0.5),
+        BackgroundTransparency = 1,
+        Name = "AccentBar"
+    })
+
+    local ToggleFrame = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5), {
+            Size = UDim2.new(1, 0, 0, 38),
+            Parent = ItemParent
+        }), {
+            AccentBar,
+            AddThemeObject(SetProps(MakeElement("Label", ToggleConfig.Name, 15), {
+                Size = UDim2.new(1, -24, 1, 0),
+                Position = UDim2.new(0, 16, 0, 0),
+                Font = Enum.Font.GothamBold,
+                Name = "Content",
+            }), "Text"),
+            AddThemeObject(MakeElement("Stroke"), "Stroke"), ToggleBox, Click,
+    }), "Second")
+    
+    function Toggle:UpdateTweenKeyBindToggles(Object, bool)
+        -- Hiệu ứng dải sáng rìa trái
+        if Object:FindFirstChild("AccentBar") then
+            TweenService:Create(Object.AccentBar, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {
+                BackgroundTransparency = bool and 0 or 1,
+                BackgroundColor3 = bool and ToggleConfig.Color or OrionLib.Themes.Default.Divider,
+                Size = bool and UDim2.new(0, 3, 0.6, 0) or UDim2.new(0, 3, 0.3, 0)
+            }):Play()
+        end
+
+        -- Hiệu ứng Switch mới
+        if Object:FindFirstChild("Switch") and Object.Switch:FindFirstChild("Knob") then
+            local SwitchFrame = Object.Switch
+            local Knob = SwitchFrame.Knob
+            local GlowCore = Knob:FindFirstChild("GlowCore")
+            local StatusText = SwitchFrame:FindFirstChild("StatusText")
+
+            TweenService:Create(SwitchFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {
+                BackgroundColor3 = bool and ToggleConfig.Color or OrionLib.Themes.Default.Divider
+            }):Play()
+
+            TweenService:Create(Knob, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {
+                Position = bool and UDim2.new(1, -20, 0.5, 0) or UDim2.new(0, 2, 0.5, 0)
+            }):Play()
+
+            if GlowCore then
+                TweenService:Create(GlowCore, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {
+                    BackgroundColor3 = bool and ToggleConfig.Color or Color3.fromRGB(150, 150, 150),
+                    Size = bool and UDim2.new(0, 8, 0, 8) or UDim2.new(0, 6, 0, 6)
+                }):Play()
+            end
+
+            if StatusText then
+                StatusText.Text = bool and "ON" or "OFF"
+                StatusText.TextXAlignment = bool and Enum.TextXAlignment.Left or Enum.TextXAlignment.Right
+                StatusText.Position = bool and UDim2.new(0, 6, 0, 0) or UDim2.new(0, -6, 0, 0)
+                TweenService:Create(StatusText, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {
+                    TextColor3 = bool and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(140, 140, 140)
+                }):Play()
+            end
+        end
+
+        -- Hiệu ứng CheckBox hình tròn tỏa ra
+        if Object:FindFirstChild("Check") and Object.Check:FindFirstChild("FillCircle") then
+            local CheckFrame = Object.Check
+            local FillCircle = CheckFrame.FillCircle
+            local Ico = FillCircle:FindFirstChild("Ico")
+            local Stroke = CheckFrame:FindFirstChild("Stroke")
+
+            TweenService:Create(CheckFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {
+                BackgroundColor3 = bool and Color3.fromRGB(30, 30, 30) or OrionLib.Themes.Default.Divider
+            }):Play()
+
+            if Stroke then
+                TweenService:Create(Stroke, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {
+                    Color = bool and ToggleConfig.Color or OrionLib.Themes.Default.Stroke
+                }):Play()
+            end
+
+            TweenService:Create(FillCircle, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                Size = bool and UDim2.new(1, 0, 1, 0) or UDim2.new(0, 0, 0, 0),
+                BackgroundTransparency = bool and 0 or 1
+            }):Play()
+
+            if Ico then
+                TweenService:Create(Ico, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {
+                    ImageTransparency = bool and 0 or 1,
+                    Size = bool and UDim2.new(0, 12, 0, 12) or UDim2.new(0, 0, 0, 0)
+                }):Play()
+            end
+        end
+    end
+    
+    local function GetUniqueToggleName(baseName: string)
+        getgenv().ToggleNameCount = getgenv().ToggleNameCount or {}
+        if not getgenv().ToggleNameCount[baseName] then
+            getgenv().ToggleNameCount[baseName] = 1
+            return baseName
+        else
+            getgenv().ToggleNameCount[baseName] += 1
+            return string.format("%s (%d)", baseName, getgenv().ToggleNameCount[baseName])
+        end
+    end
+    
+    local function UpdateLayout()
+        local hasBind = ToggleFrame:FindFirstChild("ButtonKey")
+        if hasBind then
+            if ToggleFrame:FindFirstChild("Switch") then
+                ToggleFrame.Switch.Position = UDim2.new(1, -60, 0.5, 0)
+            end
+            if ToggleFrame:FindFirstChild("Check") then
+                ToggleFrame.Check.Position = UDim2.new(1, -50, 0.5, 0)
+            end
+        end
+    end
+
+    local function AddTogglesKeyBind(name: string)
+        local KeyBindAdd = ToggleFrame:Clone()
+        KeyBindAdd.Parent = Orion.KeyBind.ItemContainer
+        local displayName = GetUniqueToggleName(name)
+        getgenv().TogglesSaveTable[displayName] = KeyBindAdd
+        Toggle.__DisplayName = displayName
+        if KeyBindAdd then
+            if KeyBindAdd:FindFirstChild("ButtonKey") then
+                KeyBindAdd:FindFirstChild("ButtonKey"):Destroy()
+            end
+            if KeyBindAdd:FindFirstChild("TextButton") then
+                AddConnection(KeyBindAdd:FindFirstChild("TextButton").MouseButton1Up, function()
+                    Toggle:Set(not Toggle.Value)
+                end)
+            end
+            if KeyBindAdd:FindFirstChild("Frame") and KeyBindAdd.Frame:FindFirstChild("Value") then
+                AddConnection(KeyBindAdd.Frame.Value:GetPropertyChangedSignal("Text"), function()
+                    local width = KeyBindAdd.Frame.Value.TextBounds.X + 20
+                    TweenService:Create(KeyBindAdd.Frame, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {Size = UDim2.new(0, width, 0, 24)}):Play()
+                end)
+            end
+        end
+    end
+    
+    function Toggle:Set(Value)
+        if getgenv().Destroy or ToggleConfig.Disabled then return end
+        Toggle.Value = Value
+        Toggle:UpdateTweenKeyBindToggles(ToggleFrame, Toggle.Value)
+        if Toggle.__DisplayName then
+            local data = getgenv().TogglesSaveTable[Toggle.__DisplayName]
+            if data then
+                Toggle:UpdateTweenKeyBindToggles(data, Toggle.Value)
+            end
+        end
+        OrionLib:SafeScript(ToggleConfig.Callback, Toggle.Value)
+    end
+    
+    function Toggle:SetMode(newMode)
+        if getgenv().Destroy then return end
+        if not newMode then return end
+        
+        Toggle.Mode = newMode
+        ToggleConfig.Type = newMode
+        
+        if ToggleFrame:FindFirstChild("Switch") then
+            ToggleFrame.Switch:Destroy()
+        end
+        if ToggleFrame:FindFirstChild("Check") then
+            ToggleFrame.Check:Destroy()
+        end
+        
+        if newMode == "Switch" then
+            local newSwitch = CreateSwitch()
+            newSwitch.Parent = ToggleFrame
+            ToggleBox = newSwitch
+        else
+            local newCheck = CreateCheck()
+            newCheck.Parent = ToggleFrame
+            ToggleBox = newCheck
+        end
+        Toggle:UpdateTweenKeyBindToggles(ToggleFrame, Toggle.Value)
+        UpdateLayout()
+    end
+    
+    function Toggle:SetDisabled(state)
+        if getgenv().Destroy then return end
+        ToggleConfig.Disabled = state
+        Toggle.Disabled = state
+        if ToggleFrame then
+            ToggleFrame.BackgroundTransparency = state and 0.6 or 0
+            if ToggleFrame:FindFirstChild("Content") then
+                ToggleFrame.Content.TextTransparency = state and 0.5 or 0
+            end
+        end
+        if Click then
+            Click.Active = not state
+            Click.AutoButtonColor = not state
+        end
+        if ToggleBox then
+            if ToggleConfig.Type == "Switch" and ToggleBox:FindFirstChild("Knob") then
+                TweenService:Create(ToggleBox, TweenInfo.new(0.2), {
+                    BackgroundColor3 = state and Color3.fromRGB(120,120,120)
+                        or (Toggle.Value and ToggleConfig.Color or OrionLib.Themes.Default.Divider)
+                }):Play()
+            elseif ToggleBox:FindFirstChild("Stroke") then
+                TweenService:Create(ToggleBox.Stroke, TweenInfo.new(0.2), {
+                    Color = state and Color3.fromRGB(120,120,120) or (Toggle.Value and ToggleConfig.Color or OrionLib.Themes.Default.Stroke)
+                }):Play()
+            end
+        end
+        if Toggle.__DisplayName and getgenv().TogglesSaveTable[Toggle.__DisplayName] then
+            local data = getgenv().TogglesSaveTable[Toggle.__DisplayName]
+            if data then
+                if data:FindFirstChild("TextButton", true) then
+                    data:FindFirstChild("TextButton", true).Active = not state
+                    data:FindFirstChild("TextButton", true).AutoButtonColor = not state
+                end
+                data.BackgroundTransparency = state and 0.6 or 0
+                if data:FindFirstChild("Content", true) then
+                    data:FindFirstChild("Content", true).TextTransparency = state and 0.5 or 0
+                end
+            end
+        end
+    end
+    
+    function Toggle:SetVisible(state)
+        if getgenv().Destroy then return end
+        Toggle.Visible = state
+        if ToggleFrame then
+            ToggleFrame.Visible = state
+        end
+        if Toggle.__DisplayName and getgenv().TogglesSaveTable[Toggle.__DisplayName] then
+            local data = getgenv().TogglesSaveTable[Toggle.__DisplayName]
+            if data then
+                data.Visible = state
+            end
+        end
+    end
+    
+    function Toggle:SetCallback(ToChange)
+        if getgenv().Destroy or ToggleConfig.Disabled then return end
+        ToggleConfig.Callback = ToChange
+    end
+    
+    function Toggle:SetText(ToChange)
+        if getgenv().Destroy or ToggleConfig.Disabled then return end
+        if ToggleFrame and ToggleFrame:FindFirstChild("Content") then
+            ToggleFrame.Content.Text = ToChange
+        end
+        if Toggle.__DisplayName then
+            if getgenv().TogglesSaveTable[Toggle.__DisplayName] then
+                local FrameToHere = getgenv().TogglesSaveTable[Toggle.__DisplayName]
+                if FrameToHere and FrameToHere:FindFirstChild("Content", true) then
+                    FrameToHere:FindFirstChild("Content", true).Text = ToChange
+                end
+            end
+        end
+    end
+    
+    if ToggleConfig.Default == true then
+        Toggle:Set(true)
+    end
+    
+    AddConnection(Click.MouseButton1Up, function()
+        if ToggleConfig.Disabled then return end
+        Toggle:Set(not Toggle.Value)
+    end)
+
+    function Toggle:AddBind(BindConfig)
+        BindConfig = BindConfig or {}
+        BindConfig.Default = BindConfig.Default or Enum.KeyCode.Unknown
+        BindConfig.Hold = BindConfig.Hold or false
+        BindConfig.Flag = BindConfig.Flag or nil
+        BindConfig.Save = BindConfig.Save or false
+
+        local Bind = {
+            Value = BindConfig.Default.Name or BindConfig.Default,
+            Type = "Bind",
+            Save = BindConfig.Save,
+            Binding = false
+        }
+
+        local Click = SetProps(MakeElement("Button"), {
+            Size = UDim2.new(0, 30, 0, 24),
+            Position = (ToggleConfig.Type == "Switch" and UDim2.new(1, -55, 0.5, 0) or UDim2.new(1, -48, 0.5, 0)),
+            AnchorPoint = Vector2.new(1, 0.5),
+            Parent = ToggleFrame,
+            Name = "ButtonKey",
+            ZIndex = 4
+        })
+
+        local BindBox = AddThemeObject(SetChildren(SetProps(
+            MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 4), {
+                Size = UDim2.new(0, 30, 0, 24),
+                Position = Click.Position,
+                AnchorPoint = Vector2.new(1, 0.5),
+                Parent = ToggleFrame,
+                ZIndex = 1
+            }), {
+                AddThemeObject(MakeElement("Stroke"), "Stroke"),
+                AddThemeObject(SetProps(MakeElement("Label", Bind.Value, 14), {
+                    Size = UDim2.new(1, 0, 1, 0),
+                    Font = Enum.Font.GothamBold,
+                    TextXAlignment = Enum.TextXAlignment.Center,
+                    Name = "Value",
+                    ZIndex = 1
+                }), "Text")
+            }), "Main")
+
+        AddConnection(BindBox.Value:GetPropertyChangedSignal("Text"), function()
+            local width = BindBox.Value.TextBounds.X + 20
+            TweenService:Create(BindBox, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {Size = UDim2.new(0, width, 0, 24)}):Play()
+            TweenService:Create(Click, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {Size = UDim2.new(0, width, 0, 24)}):Play()
+        end)
+
+        AddConnection(Click.InputEnded, function(Input)
+            if ToggleConfig.Disabled then return end
+            if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+                if Bind.Binding then return end
+                Bind.Binding = true
+                BindBox.Value.Text = "..."
+            end
+        end)
+
+        AddConnection(UserInputService.InputBegan, function(Input, gp)
+            if ToggleConfig.Disabled then return end
+            if gp then return end
+            if UserInputService:GetFocusedTextBox() then return end
+            if Bind.Binding then
+                if Input.KeyCode ~= Enum.KeyCode.Unknown then
+                    Bind.Value = Input.KeyCode.Name
+                    BindBox.Value.Text = Bind.Value
+                    Bind.Binding = false
+                    if Toggle.__DisplayName then
+                        if getgenv().TogglesSaveTable[Toggle.__DisplayName] then
+                            local FrameToHere = getgenv().TogglesSaveTable[Toggle.__DisplayName]
+                            if FrameToHere and FrameToHere:FindFirstChild("Frame") and FrameToHere.Frame:FindFirstChild("Value") then
+                                FrameToHere.Frame:FindFirstChild("Value").Text = Input.KeyCode.Name
+                            end
+                        end
+                    end
+                end
+                return
+            end
+            if Input.KeyCode.Name == Bind.Value then
+                Toggle:Set(not Toggle.Value)
+            end
+        end)
+
+        function Bind:Set(Key)
+            if ToggleConfig.Disabled then return end
+            Bind.Value = Key.Name or Key
+            BindBox.Value.Text = Bind.Value
+            if Toggle.__DisplayName then
+                if getgenv().TogglesSaveTable[Toggle.__DisplayName] then
+                    local FrameToHere = getgenv().TogglesSaveTable[Toggle.__DisplayName]
+                    if FrameToHere and FrameToHere:FindFirstChild("Frame") and FrameToHere.Frame:FindFirstChild("Value") then
+                        FrameToHere.Frame:FindFirstChild("Value").Text = Key
+                    end
+                end
+            end
+        end
+        
+        AddTogglesKeyBind(ToggleConfig.Name)
+
+        if BindConfig.Flag then
+            OrionLib.Flags[Toggle][BindConfig.Flag] = Bind
+        end
+        return Bind
+    end
+    if ToggleConfig.Flag then
+        OrionLib.Flags[ToggleConfig.Flag] = Toggle
+    end
+    return Toggle
+end
 						function ElementFunction:AddSlider(SliderConfig)
 							SliderConfig = SliderConfig or {}
 							SliderConfig.Name = SliderConfig.Name or "Slider"
