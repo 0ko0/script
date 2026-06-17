@@ -2186,7 +2186,7 @@ end)
                             ButtonConfig.Callback = ButtonConfig.Callback or function() end
                             ButtonConfig.Flag = ButtonConfig.Flag or nil
                             ButtonConfig.Icon = ButtonConfig.Icon or "rbxassetid://3944703587"
-                            
+                            -- Hỗ trợ màu điểm nhấn tùy chỉnh cho nút (Mặc định là màu xanh dương sáng)
                             ButtonConfig.Color = ButtonConfig.Color or Color3.fromRGB(0, 170, 255)
                             
                             local Button = {
@@ -2200,7 +2200,7 @@ end)
                                     ZIndex = 10
                             })
                             
-                            
+                            -- Thanh điểm nhấn phát sáng ở góc trái (Accent Bar) - Mặc định ẩn
                             local AccentBar = SetProps(MakeElement("RoundFrame", ButtonConfig.Color, 0, 4), {
                                 Size = UDim2.new(0, 3, 0, 0),
                                 Position = UDim2.new(0, 4, 0.5, 0),
@@ -2209,9 +2209,9 @@ end)
                                 ZIndex = 3
                             })
 
-                            
+                            -- Khung chứa chính (Button Frame) với thiết kế bo góc hiện đại hơn
                             local ButtonFrame = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 8), {
-                                    Size = UDim2.new(1, 0, 0, 36), 
+                                    Size = UDim2.new(1, 0, 0, 36), -- Chiều cao tăng lên một chút để thoáng mắt
                                     Visible = ButtonConfig.Visible,
                                     Parent = ItemParent,
                                     ClipsDescendants = true
@@ -2219,7 +2219,7 @@ end)
                                     AccentBar,
                                     AddThemeObject(SetProps(MakeElement("Label", ButtonConfig.Name, 14), {
                                             Size = UDim2.new(1, -45, 1, 0),
-                                            Position = UDim2.new(0, 14, 0, 0), 
+                                            Position = UDim2.new(0, 14, 0, 0), -- Vị trí ban đầu thụt lề 14px
                                             Font = Enum.Font.GothamBold,
                                             Name = "Content",
                                             ZIndex = 2
@@ -2229,7 +2229,7 @@ end)
                                             Position = UDim2.new(1, -28, 0.5, -8),
                                             ZIndex = 2
                                     }), "TextDark"),
-                                    
+                                    -- Viền đột phá có khả năng thay đổi màu khi tương tác
                                     Create("UIStroke", {
                                         Color = OrionLib.Themes[OrionLib.SelectedTheme].Stroke,
                                         Thickness = 1,
@@ -2239,22 +2239,22 @@ end)
                                     Click
                             }), "Second")
 
-                            
+                            -- Các hiệu ứng chuyển động mượt mà (Animations)
                             local function PlayHover()
                                 if ButtonConfig.Disabled then return end
                                 
-                                
+                                -- Thanh Accent xuất hiện và kéo dài ra
                                 TweenService:Create(AccentBar, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
                                     Size = UDim2.new(0, 3, 0.6, 0),
                                     BackgroundTransparency = 0
                                 }):Play()
 
-                                
+                                -- Chữ chuyển động tịnh tiến nhẹ sang phải tạo cảm giác phản hồi cao
                                 TweenService:Create(ButtonFrame.Content, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
                                     Position = UDim2.new(0, 22, 0, 0)
                                 }):Play()
 
-              
+                                -- Làm sáng màu nền nhẹ
                                 local darkThemeColor = OrionLib.Themes[OrionLib.SelectedTheme].Second
                                 local targetColor = Color3.fromRGB(
                                     math.clamp(darkThemeColor.R * 255 + 8, 0, 255),
@@ -2265,7 +2265,7 @@ end)
                                     BackgroundColor3 = targetColor
                                 }):Play()
 
-                                
+                                -- Chuyển màu viền sang màu chủ đề của nút
                                 if ButtonFrame:FindFirstChild("GlowStroke") then
                                     TweenService:Create(ButtonFrame.GlowStroke, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {
                                         Color = ButtonConfig.Color
@@ -2276,18 +2276,18 @@ end)
                             local function PlayLeave()
                                 if ButtonConfig.Disabled then return end
                                 
-                                
+                                -- Trả thanh Accent về trạng thái ẩn
                                 TweenService:Create(AccentBar, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
                                     Size = UDim2.new(0, 3, 0, 0),
                                     BackgroundTransparency = 1
                                 }):Play()
 
-                                
+                                -- Chữ quay lại vị trí cũ
                                 TweenService:Create(ButtonFrame.Content, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
                                     Position = UDim2.new(0, 14, 0, 0)
                                 }):Play()
 
-                                
+                                -- Khôi phục màu nền và viền mặc định
                                 TweenService:Create(ButtonFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {
                                     BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Second
                                 }):Play()
@@ -2374,7 +2374,7 @@ end)
                                 ButtonConfig.Callback = callback
                             end
                             
-                            
+                            -- Cải tiến hàm thêm nút nhân bản (Sub-button Clone) ăn khớp với giao diện mới
                             function Button:AddButton(ButtonConfigClone)
                                 ButtonConfigClone = ButtonConfigClone or {}
                                 ButtonConfigClone.Visible = ButtonConfigClone.Visible ~= false 
@@ -3024,7 +3024,7 @@ end)
         Size = UDim2.new(1, 0, 1, 0)
     })
 
-    
+    -- Bộ dựng giao diện Switch kiểu mới
     local function CreateSwitch()
         return SetChildren(SetProps(MakeElement("RoundFrame", OrionLib.Themes.Default.Divider, 0, 12), {
             Size = UDim2.new(0, 44, 0, 22),
@@ -3058,7 +3058,7 @@ end)
         })
     end
 
-    
+    -- Bộ dựng giao diện CheckBox dạng Radial kiểu mới
     local function CreateCheck()
         return SetChildren(SetProps(MakeElement("RoundFrame", OrionLib.Themes.Default.Divider, 0, 12), {
             Size = UDim2.new(0, 22, 0, 22),
@@ -3098,7 +3098,7 @@ end)
         ToggleBox = CreateCheck()
     end
 
-    
+    -- AccentBar hiển thị tương tác bên trái
     local AccentBar = SetProps(MakeElement("RoundFrame", OrionLib.Themes.Default.Divider, 0, 1.5), {
         Size = UDim2.new(0, 3, 0.3, 0),
         Position = UDim2.new(0, 2, 0.5, 0),
@@ -3122,7 +3122,7 @@ end)
     }), "Second")
     
     function Toggle:UpdateTweenKeyBindToggles(Object, bool)
-        
+        -- Hiệu ứng dải sáng rìa trái
         if Object:FindFirstChild("AccentBar") then
             TweenService:Create(Object.AccentBar, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {
                 BackgroundTransparency = bool and 0 or 1,
@@ -3131,7 +3131,7 @@ end)
             }):Play()
         end
 
-        
+        -- Hiệu ứng Switch mới
         if Object:FindFirstChild("Switch") and Object.Switch:FindFirstChild("Knob") then
             local SwitchFrame = Object.Switch
             local Knob = SwitchFrame.Knob
@@ -3163,7 +3163,7 @@ end)
             end
         end
 
-        
+        -- Hiệu ứng CheckBox hình tròn tỏa ra
         if Object:FindFirstChild("Check") and Object.Check:FindFirstChild("FillCircle") then
             local CheckFrame = Object.Check
             local FillCircle = CheckFrame.FillCircle
@@ -3714,157 +3714,119 @@ end
 								end
 							end
 						
-							-- Khung chứa chính (Chiều cao mặc định 38px chuẩn Orion, không có chữ thừa bên ngoài)
-							local DropdownFrame = SetProps(MakeElement("TFrame"), {
-								Size = UDim2.new(1, 0, 0, 38), 
-								Parent = ItemParent,
-								ClipsDescendants = true,
-								Visible = DropdownConfig.Visible
-							})
-
-							-- Hộp chọn chính (Selector Card)
-							local SelectorCard = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 6), {
-								Parent = DropdownFrame,
-								Size = UDim2.new(1, 0, 0, 38),
-								Position = UDim2.new(0, 0, 0, 0),
-								Name = "SelectorCard"
-							}), {
-								AddThemeObject(MakeElement("Stroke"), "Stroke"),
-								
-								-- [MỚI] Tên Dropdown được tích hợp vào phía bên trái hộp chọn
-								AddThemeObject(SetProps(MakeElement("Label", DropdownConfig.Name, 13), {
-									Size = UDim2.new(0.5, -12, 1, 0),
-									Position = UDim2.new(0, 12, 0, 0),
-									Font = Enum.Font.GothamBold,
-									Name = "DropdownName"
-								}), "Text"),
-								
-								-- [MỚI] Giá trị được lựa chọn hiển thị lệch phải, tinh tế
-								AddThemeObject(SetProps(MakeElement("Label", "Select Option...", 12), {
-									Size = UDim2.new(0.5, -34, 1, 0),
-									Position = UDim2.new(0.5, 0, 0, 0),
-									Font = Enum.Font.GothamSemibold,
-									TextXAlignment = Enum.TextXAlignment.Right,
-									Name = "SelectedText"
-								}), "TextDark"),
-								
-								-- Mũi tên chỉ hướng thả xuống
-								AddThemeObject(SetProps(MakeElement("Image", "rbxassetid://7072706796"), {
-									Size = UDim2.new(0, 16, 0, 16),
-									AnchorPoint = Vector2.new(1, 0.5),
-									Position = UDim2.new(1, -12, 0.5, 0),
-									Name = "Chevron",
-									ImageTransparency = 0.4
-								}), "TextDark"),
-								
-								-- Nút ấn tương tác mở danh sách
-								SetProps(MakeElement("Button"), {
-									Size = UDim2.new(1, 0, 1, 0),
-									Name = "ClickButton"
-								})
-							}), "Second")
-
-							-- [CẢI TIẾN] Thiết kế lại nền Panel danh sách tối sẫm màu, bo góc, tạo khối đổ bóng
-							local DropdownList = MakeElement("List", 0, 4)
+							local DropdownList = MakeElement("List")
+							DropdownList.Padding = UDim.new(0, 4)
+						
 							local DropdownContainer = AddThemeObject(SetProps(SetChildren(
-								MakeElement("ScrollFrame", Color3.fromRGB(255, 255, 255), 3),
+								MakeElement("ScrollFrame", Color3.fromRGB(50, 50, 50), 3),
 								{
 									DropdownList,
-									MakeElement("Padding", 6, 6, 6, 6),
-									Create("UICorner", {CornerRadius = UDim.new(0, 6)}) -- Bo tròn danh sách thả xuống
+									MakeElement("Padding", 6, 6, 6, 6)
 								}
 							), {
-								Parent = DropdownFrame,
-								Position = UDim2.new(0, 0, 0, 42), -- Khoảng cách nhỏ tinh tế so với hộp chọn chính
-								Size = UDim2.new(1, 0, 0, 0), 
+								Parent = ItemParent,
+								Position = UDim2.new(0, 0, 0, 38),
+								Size = UDim2.new(1, 0, 1, -38),
 								ClipsDescendants = true,
-								BackgroundTransparency = 0, -- Làm nền đặc sang trọng
-								BackgroundColor3 = Color3.fromRGB(16, 16, 16) -- Nền tối tương phản sắc nét với giao diện chính
+								BackgroundTransparency = 1
 							}), "Divider")
+						
+							local Click = SetProps(MakeElement("Button"), {
+								Size = UDim2.new(1, 0, 1, 0),
+								ZIndex = 10
+							})
+							
+							-- Pill Badge hiển thị giá trị được chọn cực kỳ hiện đại
+							local SelectedBadgeText = AddThemeObject(SetProps(MakeElement("Label", "...", 12), {
+								Size = UDim2.new(1, -16, 1, 0),
+								Position = UDim2.new(0, 8, 0, 0),
+								Font = Enum.Font.GothamMedium,
+								Name = "SelectedText",
+								TextXAlignment = Enum.TextXAlignment.Center,
+								TextTruncate = Enum.TextTruncate.AtEnd
+							}), "Text")
 
-							-- Viền bao ngoài tinh xảo cho danh sách tùy chọn
-							local ContainerStroke = AddThemeObject(Create("UIStroke", {
-								Color = Color3.fromRGB(45, 45, 45),
-								Thickness = 1.2,
-								ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+							local SelectedBadge = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 6), {
+								Size = UDim2.new(0, 100, 0, 22),
+								Position = UDim2.new(1, -54, 0.5, 0),
+								AnchorPoint = Vector2.new(1, 0.5),
+								BackgroundTransparency = 0.9,
+								Name = "Badge"
+							}), {
+								SelectedBadgeText,
+								AddThemeObject(MakeElement("Stroke"), "Stroke")
 							}), "Stroke")
-							ContainerStroke.Parent = DropdownContainer
-
-							-- Cập nhật trạng thái hiển thị của các Option khi được chọn
-							local function UpdateOptionVisuals(OptionVal, isSelected)
-								local btn = Dropdown.Buttons[OptionVal]
-								if not btn then return end
+						
+							local DropdownFrame = AddThemeObject(SetChildren(SetProps(
+								MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 8),
+								{
+									DropdownContainer,
+									SetProps(SetChildren(MakeElement("TFrame"), {
+										AddThemeObject(SetProps(MakeElement("Label", DropdownConfig.Name, 14), {
+											Size = UDim2.new(1, -170, 1, 0),
+											Position = UDim2.new(0, 14, 0, 0),
+											Font = Enum.Font.GothamBold,
+											Name = "Content"
+										}), "Text"),
+							
+										SelectedBadge,
+							
+										AddThemeObject(SetProps(MakeElement("Image", "rbxassetid://7072706796"), {
+											Size = UDim2.new(0, 16, 0, 16),
+											AnchorPoint = Vector2.new(0.5, 0.5),
+											Position = UDim2.new(1, -24, 0.5, 0),
+											ImageColor3 = Color3.fromRGB(240, 240, 240),
+											Name = "Ico"
+										}), "TextDark"),
+							
+										AddThemeObject(SetProps(MakeElement("Frame"), {
+											Size = UDim2.new(1, -20, 0, 1),
+											Position = UDim2.new(0.5, 0, 1, -1),
+											AnchorPoint = Vector2.new(0.5, 0),
+											Name = "Line",
+											Visible = false,
+											BackgroundTransparency = 0.5
+										}), "Divider"),
+							
+										Click
+									}), {
+										Size = UDim2.new(1, 0, 0, 38),
+										ClipsDescendants = true,
+										Name = "F"
+									}),
+									Create("UIStroke", {
+										Color = OrionLib.Themes[OrionLib.SelectedTheme].Stroke,
+										Thickness = 1,
+										ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+										Name = "BorderStroke"
+									}),
+									MakeElement("Corner", 0, 8)
+								}
+							), {
+								Size = UDim2.new(1, 0, 0, 38),
+								Parent = ItemParent,
+								ClipsDescendants = true
+							}), "Second")
+						
+							AddConnection(DropdownList:GetPropertyChangedSignal("AbsoluteContentSize"), function()
+								DropdownContainer.CanvasSize = UDim2.new(0, 0, 0, DropdownList.AbsoluteContentSize.Y + 12)
+							end)
+							
+							-- Tự động co giãn kích thước Pill Badge dựa trên nội dung văn bản chọn
+							AddConnection(SelectedBadgeText:GetPropertyChangedSignal("Text"), function()
+								local textWidth = SelectedBadgeText.TextBounds.X
+								local targetWidth = math.clamp(textWidth + 18, 50, 140)
 								
-								local activeColor = Color3.fromRGB(0, 170, 255) -- Màu xanh Neon sang trọng
+								TweenService:Create(SelectedBadge, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+									Size = UDim2.new(0, targetWidth, 0, 22)
+								}):Play()
 								
-								if isSelected then
-									-- Khi được chọn: Nền sáng nhẹ màu xanh
-									TweenService:Create(btn, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {
-										BackgroundTransparency = 0.94,
-										BackgroundColor3 = activeColor
+								if DropdownFrame.F:FindFirstChild("Content") then
+									TweenService:Create(DropdownFrame.F.Content, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+										Size = UDim2.new(1, -(targetWidth + 70), 1, 0)
 									}):Play()
-									
-									if btn:FindFirstChild("ActivePill") then
-										TweenService:Create(btn.ActivePill, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {
-											Size = UDim2.new(0, 3, 0.5, 0),
-											BackgroundTransparency = 0,
-											BackgroundColor3 = activeColor
-										}):Play()
-									end
-									
-									if btn:FindFirstChild("CheckIndicator") and btn.CheckIndicator:FindFirstChild("Fill") then
-										TweenService:Create(btn.CheckIndicator.Fill, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-											Size = UDim2.new(1, -4, 1, -4),
-											BackgroundColor3 = activeColor,
-											BackgroundTransparency = 0
-										}):Play()
-										if btn.CheckIndicator:FindFirstChild("CheckStroke") then
-											TweenService:Create(btn.CheckIndicator.CheckStroke, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {
-												Color = activeColor
-											}):Play()
-										end
-									end
-									
-									if btn:FindFirstChild("Title") then
-										TweenService:Create(btn.Title, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {
-											TextTransparency = 0,
-											TextColor3 = Color3.fromRGB(255, 255, 255)
-										}):Play()
-									end
-								else
-									-- Khi không được chọn: Đưa về trong suốt mặc định
-									TweenService:Create(btn, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {
-										BackgroundTransparency = 1,
-										BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-									}):Play()
-									
-									if btn:FindFirstChild("ActivePill") then
-										TweenService:Create(btn.ActivePill, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {
-											Size = UDim2.new(0, 3, 0, 0),
-											BackgroundTransparency = 1
-										}):Play()
-									end
-									
-									if btn:FindFirstChild("CheckIndicator") and btn.CheckIndicator:FindFirstChild("Fill") then
-										TweenService:Create(btn.CheckIndicator.Fill, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {
-											Size = UDim2.new(0, 0, 0, 0),
-											BackgroundTransparency = 1
-										}):Play()
-										if btn.CheckIndicator:FindFirstChild("CheckStroke") then
-											TweenService:Create(btn.CheckIndicator.CheckStroke, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {
-												Color = Color3.fromRGB(70, 70, 70)
-											}):Play()
-										end
-									end
-									
-									if btn:FindFirstChild("Title") then
-										TweenService:Create(btn.Title, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {
-											TextTransparency = 0.35,
-											TextColor3 = Color3.fromRGB(230, 230, 230)
-										}):Play()
-									end
 								end
-							end
+							end)
 						
 							local function AddOptions(Options)
 								for k, v in pairs(Options) do
@@ -3877,49 +3839,27 @@ end
 									local IconStr = HasData and (Data.Icon or Data.icon or nil) or nil
 									local ThumbStr = HasData and (Data.Thumbnail or Data.thumbnail or nil) or nil
 									
-									local ButtonHeight = (ThumbStr and 60) or ((DescStr or IconStr) and 42) or 32
+									local ButtonHeight = (ThumbStr and 65) or ((DescStr or IconStr) and 45) or 32
 						
-									-- Thanh chỉ báo trạng thái bên trái
-									local ActivePill = SetProps(MakeElement("RoundFrame", Color3.fromRGB(0, 170, 255), 0, 4), {
+									local Elements = {
+										MakeElement("Corner", 0, 6)
+									}
+									
+									-- Dải AccentLine hiển thị bên lề trái khi Hover/Select
+									local AccentLine = SetProps(MakeElement("RoundFrame", Color3.fromRGB(0, 170, 255), 0, 3), {
 										Size = UDim2.new(0, 3, 0, 0),
 										Position = UDim2.new(0, 4, 0.5, 0),
 										AnchorPoint = Vector2.new(0, 0.5),
 										BackgroundTransparency = 1,
-										Name = "ActivePill"
+										Name = "AccentLine"
 									})
-
-									-- Điểm đánh dấu chọn bên phải mỏng nhẹ, tối giản
-									local CheckIndicator = SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(24, 24, 24), 0, 10), {
-										Size = UDim2.new(0, 16, 0, 16),
-										AnchorPoint = Vector2.new(1, 0.5),
-										Position = UDim2.new(1, -12, 0.5, 0),
-										Name = "CheckIndicator",
-										BackgroundTransparency = 0.4
-									}), {
-										SetProps(MakeElement("Stroke"), {
-											Color = Color3.fromRGB(70, 70, 70),
-											Thickness = 1,
-											Name = "CheckStroke"
-										}),
-										SetProps(MakeElement("RoundFrame", Color3.fromRGB(0, 170, 255), 0, 8), {
-											Size = UDim2.new(0, 0, 0, 0),
-											AnchorPoint = Vector2.new(0.5, 0.5),
-											Position = UDim2.new(0.5, 0, 0.5, 0),
-											Name = "Fill"
-										})
-									})
-
-									local Elements = {
-										MakeElement("Corner", 0, 5),
-										ActivePill,
-										CheckIndicator
-									}
-									
+									table.insert(Elements, AccentLine)
+						
 									local TextLeftPadding = 12
 						
 									if ThumbStr then
 										local strokeProps = {
-											Color = Color3.fromRGB(60, 60, 60),
+											Color = Color3.fromRGB(80, 80, 80),
 											Thickness = 1,
 											Transparency = 0.5
 										}
@@ -3928,7 +3868,7 @@ end
 											MakeElement("Corner", 0, 4),
 											SetProps(MakeElement("Stroke"), strokeProps)
 										}), {
-											Size = UDim2.new(0, 48, 0, 48),
+											Size = UDim2.new(0, 50, 0, 50),
 											AnchorPoint = Vector2.new(0, 0.5),
 											Position = UDim2.new(0, 10, 0.5, 0),
 											ImageTransparency = 0,
@@ -3936,82 +3876,131 @@ end
 											ScaleType = Enum.ScaleType.Crop,
 											BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 										}))
-										TextLeftPadding = 66
+										TextLeftPadding = 70
 									elseif IconStr then
 										table.insert(Elements, SetProps(MakeElement("Image", IconStr), {
 											Size = UDim2.new(0, 20, 0, 20),
-											Position = UDim2.new(0, 10, 0.5, -10),
-											ImageTransparency = 0.4,
+											Position = UDim2.new(0, 12, 0.5, -10),
+											ImageTransparency = 0.3,
 											Name = "Icon"
 										}))
-										TextLeftPadding = 38
+										TextLeftPadding = 42
 									end
 						
-									local TitleY = DescStr and 4 or 0
-									if ThumbStr and DescStr then TitleY = 10 end
+									local TitleY = DescStr and 6 or 0
+									if ThumbStr and DescStr then TitleY = 12 end
 						
-									table.insert(Elements, AddThemeObject(SetProps(MakeElement("Label", TitleStr, 12, 0.35), {
+									table.insert(Elements, AddThemeObject(SetProps(MakeElement("Label", TitleStr, 13, 0.4), {
 										Position = UDim2.new(0, TextLeftPadding, 0, TitleY),
-										Size = UDim2.new(1, -(TextLeftPadding + 36), (DescStr and 0 or 1), (DescStr and 14 or 0)),
+										Size = UDim2.new(1, -(TextLeftPadding + 45), (DescStr and 0 or 1), (DescStr and 16 or 0)),
 										TextXAlignment = Enum.TextXAlignment.Left,
 										Name = "Title",
-										Font = Enum.Font.GothamBold,
+										Font = Enum.Font.GothamSemibold,
 										ClipsDescendants = true
 									}), "Text"))
 						
 									if DescStr then
-										local DescY = ThumbStr and 28 or 20
-										table.insert(Elements, AddThemeObject(SetProps(MakeElement("Label", DescStr, 10, 0.4), {
+										local DescY = ThumbStr and 30 or 22
+										table.insert(Elements, AddThemeObject(SetProps(MakeElement("Label", DescStr, 11, 0.5), {
 											Position = UDim2.new(0, TextLeftPadding, 0, DescY),
-											Size = UDim2.new(1, -(TextLeftPadding + 36), 0, 12),
+											Size = UDim2.new(1, -(TextLeftPadding + 45), 0, 14),
 											TextXAlignment = Enum.TextXAlignment.Left,
 											Name = "Desc",
 											Font = Enum.Font.Gotham,
 											TextColor3 = Color3.fromRGB(150, 150, 150),
 											ClipsDescendants = true
-										}), "TextDark"))
+										}), "Text"))
 									end
+									
+									-- Xây dựng hệ thống Checkbox cho Multi-Select hoặc Dot Indicator cho Single-Select
+									local SelectIndicator
+									if DropdownConfig.Multi then
+										SelectIndicator = SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(50, 50, 50), 0, 6), {
+											Size = UDim2.new(0, 18, 0, 18),
+											Position = UDim2.new(1, -12, 0.5, 0),
+											AnchorPoint = Vector2.new(1, 0.5),
+											BackgroundTransparency = 0.2,
+											Name = "Indicator"
+										}), {
+											Create("UIStroke", {
+												Color = Color3.fromRGB(80, 80, 80),
+												Thickness = 1,
+												ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+												Name = "IndicatorStroke"
+											}),
+											SetProps(MakeElement("Image", "rbxassetid://3944680095"), {
+												Size = UDim2.new(0, 12, 0, 12),
+												AnchorPoint = Vector2.new(0.5, 0.5),
+												Position = UDim2.new(0.5, 0, 0.5, 0),
+												ImageTransparency = 1,
+												ImageColor3 = Color3.fromRGB(255, 255, 255),
+												Name = "CheckIcon"
+											})
+										})
+									else
+										SelectIndicator = SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(0, 170, 255), 0, 10), {
+											Size = UDim2.new(0, 8, 0, 8),
+											Position = UDim2.new(1, -16, 0.5, 0),
+											AnchorPoint = Vector2.new(1, 0.5),
+											BackgroundTransparency = 1,
+											Name = "Indicator"
+										}), {
+											Create("UIStroke", {
+												Color = Color3.fromRGB(0, 170, 255),
+												Thickness = 1.5,
+												ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+												Transparency = 1,
+												Name = "IndicatorStroke"
+											})
+										})
+									end
+									table.insert(Elements, SelectIndicator)
 						
 									local OptionBtn = AddThemeObject(SetProps(SetChildren(
-										MakeElement("Button", Color3.fromRGB(45, 45, 45)),
+										MakeElement("Button", Color3.fromRGB(35, 35, 35)),
 										Elements
 									), {
 										Parent = DropdownContainer,
 										Size = UDim2.new(1, 0, 0, ButtonHeight),
-										BackgroundTransparency = 1,
-										ClipsDescendants = true
+										BackgroundTransparency = 0.95,
+										ClipsDescendants = true,
+										BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 									}), "Divider")
 						
-									-- Hiệu ứng Hover chuyển động nhẹ
 									AddConnection(OptionBtn.MouseEnter, function()
 										if Dropdown.Disabled then return end
-										TweenService:Create(OptionBtn, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {BackgroundTransparency = 0.8}):Play()
-										if OptionBtn:FindFirstChild("Title") then
-											TweenService:Create(OptionBtn.Title, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {TextTransparency = 0}):Play()
-										end
+										TweenService:Create(OptionBtn, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+											BackgroundTransparency = 0.88,
+											BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+										}):Play()
+										TweenService:Create(AccentLine, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+											Size = UDim2.new(0, 3, 0.6, 0),
+											BackgroundTransparency = 0
+										}):Play()
 									end)
-
+						
 									AddConnection(OptionBtn.MouseLeave, function()
 										if Dropdown.Disabled then return end
 										local isSelected = false
 										if DropdownConfig.Multi then
-											if DropdownConfig.MultiTrue then
-												isSelected = Dropdown.Value[OptionVal] == true
-											else
-												isSelected = table.find(Dropdown.Value, OptionVal) ~= nil
-											end
+											isSelected = (Dropdown.Value[OptionVal] == true)
 										else
-											isSelected = Dropdown.Value == OptionVal
+											isSelected = (Dropdown.Value == OptionVal)
 										end
 										
+										TweenService:Create(OptionBtn, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+											BackgroundTransparency = isSelected and 0.92 or 0.95,
+											BackgroundColor3 = isSelected and Color3.fromRGB(45, 45, 45) or Color3.fromRGB(35, 35, 35)
+										}):Play()
+										
 										if not isSelected then
-											TweenService:Create(OptionBtn, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {BackgroundTransparency = 1}):Play()
-											if OptionBtn:FindFirstChild("Title") then
-												TweenService:Create(OptionBtn.Title, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {TextTransparency = 0.35}):Play()
-											end
+											TweenService:Create(AccentLine, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+												Size = UDim2.new(0, 3, 0, 0),
+												BackgroundTransparency = 1
+											}):Play()
 										end
 									end)
-
+						
 									AddConnection(OptionBtn.MouseButton1Click, function()
 										if Dropdown.Disabled then return end
 										Dropdown:Set(OptionVal)
@@ -4021,37 +4010,34 @@ end
 								end
 							end
 							
-							AddConnection(DropdownList:GetPropertyChangedSignal("AbsoluteContentSize"), function()
-								DropdownContainer.CanvasSize = UDim2.new(0, 0, 0, DropdownList.AbsoluteContentSize.Y + 12)
-								if Dropdown.Toggled then
-									local currentContentSize = DropdownList.AbsoluteContentSize.Y + 12
-									local expandSize = math.min(currentContentSize, MaxElementsHeight)
-									
-									DropdownContainer.Size = UDim2.new(1, 0, 0, expandSize)
-									DropdownFrame.Size = UDim2.new(1, 0, 0, 38 + expandSize + 8)
-								end
-							end)
-
 							function Dropdown:SetDisabled(state)
 								if getgenv().Destroy then return end
 								Dropdown.Disabled = state
 								DropdownConfig.Disabled = state
 								if state and Dropdown.Toggled then
 									Dropdown.Toggled = false
-									TweenService:Create(SelectorCard.Chevron, TweenInfo.new(.15), {Rotation = 0}):Play()
-									TweenService:Create(DropdownContainer, TweenInfo.new(.15), {Size = UDim2.new(1, 0, 0, 0)}):Play()
-									TweenService:Create(DropdownFrame, TweenInfo.new(.15), {Size = UDim2.new(1, 0, 0, 38)}):Play()
+									TweenService:Create(DropdownFrame.F.Ico, TweenInfo.new(.15), {Rotation = 0}):Play()
+									TweenService:Create(DropdownFrame, TweenInfo.new(.15), {
+										Size = UDim2.new(1, 0, 0, 38)
+									}):Play()
+									if DropdownFrame:FindFirstChild("BorderStroke") then
+										TweenService:Create(DropdownFrame.BorderStroke, TweenInfo.new(.15), {
+											Color = OrionLib.Themes[OrionLib.SelectedTheme].Stroke
+										}):Play()
+									end
 								end
-								if SelectorCard then
-									TweenService:Create(SelectorCard, TweenInfo.new(0.2), {
+								if DropdownFrame then
+									TweenService:Create(DropdownFrame, TweenInfo.new(0.2), {
 										BackgroundTransparency = state and 0.5 or 0
 									}):Play()
 								end
-								if SelectorCard:FindFirstChild("SelectedText") then
-									SelectorCard.SelectedText.TextTransparency = state and 0.5 or 0
-								end
-								if SelectorCard:FindFirstChild("Chevron") then
-									SelectorCard.Chevron.ImageTransparency = state and 0.5 or 0.4
+								if DropdownFrame:FindFirstChild("F") then
+									if DropdownFrame.F:FindFirstChild("Content") then
+										DropdownFrame.F.Content.TextTransparency = state and 0.5 or 0
+									end
+									if DropdownFrame.F:FindFirstChild("Badge") and DropdownFrame.F.Badge:FindFirstChild("SelectedText") then
+										DropdownFrame.F.Badge.SelectedText.TextTransparency = state and 0.5 or 0
+									end
 								end
 							end
 							
@@ -4088,10 +4074,26 @@ end
 								if getgenv().Destroy or Dropdown.Disabled then return end
 								if not table.find(Dropdown.Options, Value) then
 									Dropdown.Value = DropdownConfig.Multi and {} or nil
-									SelectorCard.SelectedText.Text = "Select Option..."
-									SelectorCard.SelectedText.TextColor3 = Color3.fromRGB(140, 140, 140)
-									for opt, _ in pairs(Dropdown.Buttons) do
-										UpdateOptionVisuals(opt, false)
+									SelectedBadgeText.Text = "..."
+									for _, v in pairs(Dropdown.Buttons) do
+										TweenService:Create(v, TweenInfo.new(.15), {BackgroundTransparency = 0.95, BackgroundColor3 = Color3.fromRGB(35, 35, 35)}):Play()
+										TweenService:Create(v.Title, TweenInfo.new(.15), {TextTransparency = 0.4}):Play()
+										if v:FindFirstChild("Desc") then TweenService:Create(v.Desc, TweenInfo.new(.15), {TextTransparency = 0.5}):Play() end
+										if v:FindFirstChild("Icon") then TweenService:Create(v.Icon, TweenInfo.new(.15), {ImageTransparency = 0.4}):Play() end
+										if v:FindFirstChild("AccentLine") then
+											TweenService:Create(v.AccentLine, TweenInfo.new(.15), {Size = UDim2.new(0, 3, 0, 0), BackgroundTransparency = 1}):Play()
+										end
+										local ind = v:FindFirstChild("Indicator")
+										if ind then
+											if DropdownConfig.Multi then
+												if ind:FindFirstChild("CheckIcon") then TweenService:Create(ind.CheckIcon, TweenInfo.new(.15), {ImageTransparency = 1}):Play() end
+												if ind:FindFirstChild("IndicatorStroke") then TweenService:Create(ind.IndicatorStroke, TweenInfo.new(.15), {Color = Color3.fromRGB(80, 80, 80)}):Play() end
+												TweenService:Create(ind, TweenInfo.new(.15), {BackgroundColor3 = Color3.fromRGB(50, 50, 50)}):Play()
+											else
+												TweenService:Create(ind, TweenInfo.new(.15), {BackgroundTransparency = 1}):Play()
+												if ind:FindFirstChild("IndicatorStroke") then TweenService:Create(ind.IndicatorStroke, TweenInfo.new(.15), {Transparency = 1}):Play() end
+											end
+										end
 									end
 									return
 								end
@@ -4102,8 +4104,42 @@ end
 								    if DropdownConfig.MultiTrue then
 								        Dropdown.Value[Value] = not Dropdown.Value[Value]
 								        local state = Dropdown.Value[Value]
-								        UpdateOptionVisuals(Value, state)
-								        
+										local ind = btn:FindFirstChild("Indicator")
+								        if state then
+								            TweenService:Create(btn, TweenInfo.new(.15), {BackgroundTransparency = 0.9, BackgroundColor3 = Color3.fromRGB(45, 45, 45)}):Play()
+								            TweenService:Create(btn.Title, TweenInfo.new(.15), {TextTransparency = 0}):Play()
+								            if btn:FindFirstChild("Desc") then
+								                TweenService:Create(btn.Desc, TweenInfo.new(.15), {TextTransparency = 0.2}):Play()
+								            end
+								            if btn:FindFirstChild("Icon") then
+								                TweenService:Create(btn.Icon, TweenInfo.new(.15), {ImageTransparency = 0}):Play()
+								            end
+											if btn:FindFirstChild("AccentLine") then
+												TweenService:Create(btn.AccentLine, TweenInfo.new(.15), {Size = UDim2.new(0, 3, 0.6, 0), BackgroundTransparency = 0}):Play()
+											end
+											if ind then
+												if ind:FindFirstChild("CheckIcon") then TweenService:Create(ind.CheckIcon, TweenInfo.new(.15), {ImageTransparency = 0}):Play() end
+												if ind:FindFirstChild("IndicatorStroke") then TweenService:Create(ind.IndicatorStroke, TweenInfo.new(.15), {Color = Color3.fromRGB(0, 170, 255)}):Play() end
+												TweenService:Create(ind, TweenInfo.new(.15), {BackgroundColor3 = Color3.fromRGB(0, 170, 255)}):Play()
+											end
+								        else
+								            TweenService:Create(btn, TweenInfo.new(.15), {BackgroundTransparency = 0.95, BackgroundColor3 = Color3.fromRGB(35, 35, 35)}):Play()
+								            TweenService:Create(btn.Title, TweenInfo.new(.15), {TextTransparency = 0.4}):Play()
+								            if btn:FindFirstChild("Desc") then
+								                TweenService:Create(btn.Desc, TweenInfo.new(.15), {TextTransparency = 0.5}):Play()
+								            end
+								            if btn:FindFirstChild("Icon") then
+								                TweenService:Create(btn.Icon, TweenInfo.new(.15), {ImageTransparency = 0.4}):Play()
+								            end
+											if btn:FindFirstChild("AccentLine") then
+												TweenService:Create(btn.AccentLine, TweenInfo.new(.15), {Size = UDim2.new(0, 3, 0, 0), BackgroundTransparency = 1}):Play()
+											end
+											if ind then
+												if ind:FindFirstChild("CheckIcon") then TweenService:Create(ind.CheckIcon, TweenInfo.new(.15), {ImageTransparency = 1}):Play() end
+												if ind:FindFirstChild("IndicatorStroke") then TweenService:Create(ind.IndicatorStroke, TweenInfo.new(.15), {Color = Color3.fromRGB(80, 80, 80)}):Play() end
+												TweenService:Create(ind, TweenInfo.new(.15), {BackgroundColor3 = Color3.fromRGB(50, 50, 50)}):Play()
+											end
+								        end
 								        local selectedList = {}
 								        for k, v in pairs(Dropdown.Value) do
 								            if v == true then
@@ -4111,30 +4147,57 @@ end
 								            end
 								        end
 								        if #selectedList == 0 then
-								            SelectorCard.SelectedText.Text = "Select Option..."
-											SelectorCard.SelectedText.TextColor3 = Color3.fromRGB(140, 140, 140)
+								            SelectedBadgeText.Text = "..."
 								        else
 								            local text = table.concat(selectedList, ", ")
-								            SelectorCard.SelectedText.Text = (#text > 20) and string.sub(text, 1, 17) .. "..." or text
-											SelectorCard.SelectedText.TextColor3 = Color3.fromRGB(240, 240, 240)
+								            SelectedBadgeText.Text = text
 								        end
 								        return OrionLib:SafeScript(DropdownConfig.Callback, Dropdown.Value)
 								    else
 								        local index = table.find(Dropdown.Value, Value)
+										local ind = btn:FindFirstChild("Indicator")
 								        if index then
 								            table.remove(Dropdown.Value, index)
-								            UpdateOptionVisuals(Value, false)
+								            TweenService:Create(btn, TweenInfo.new(.15), {BackgroundTransparency = 0.95, BackgroundColor3 = Color3.fromRGB(35, 35, 35)}):Play()
+								            TweenService:Create(btn.Title, TweenInfo.new(.15), {TextTransparency = 0.4}):Play()
+								            if btn:FindFirstChild("Desc") then
+								                TweenService:Create(btn.Desc, TweenInfo.new(.15), {TextTransparency = 0.5}):Play()
+								            end
+								            if btn:FindFirstChild("Icon") then
+								                TweenService:Create(btn.Icon, TweenInfo.new(.15), {ImageTransparency = 0.4}):Play()
+								            end
+											if btn:FindFirstChild("AccentLine") then
+												TweenService:Create(btn.AccentLine, TweenInfo.new(.15), {Size = UDim2.new(0, 3, 0, 0), BackgroundTransparency = 1}):Play()
+											end
+											if ind then
+												if ind:FindFirstChild("CheckIcon") then TweenService:Create(ind.CheckIcon, TweenInfo.new(.15), {ImageTransparency = 1}):Play() end
+												if ind:FindFirstChild("IndicatorStroke") then TweenService:Create(ind.IndicatorStroke, TweenInfo.new(.15), {Color = Color3.fromRGB(80, 80, 80)}):Play() end
+												TweenService:Create(ind, TweenInfo.new(.15), {BackgroundColor3 = Color3.fromRGB(50, 50, 50)}):Play()
+											end
 								        else
 								            table.insert(Dropdown.Value, Value)
-								            UpdateOptionVisuals(Value, true)
+								            TweenService:Create(btn, TweenInfo.new(.15), {BackgroundTransparency = 0.9, BackgroundColor3 = Color3.fromRGB(45, 45, 45)}):Play()
+								            TweenService:Create(btn.Title, TweenInfo.new(.15), {TextTransparency = 0}):Play()
+								            if btn:FindFirstChild("Desc") then
+								                TweenService:Create(btn.Desc, TweenInfo.new(.15), {TextTransparency = 0.2}):Play()
+								            end
+								            if btn:FindFirstChild("Icon") then
+								                TweenService:Create(btn.Icon, TweenInfo.new(.15), {ImageTransparency = 0}):Play()
+								            end
+											if btn:FindFirstChild("AccentLine") then
+												TweenService:Create(btn.AccentLine, TweenInfo.new(.15), {Size = UDim2.new(0, 3, 0.6, 0), BackgroundTransparency = 0}):Play()
+											end
+											if ind then
+												if ind:FindFirstChild("CheckIcon") then TweenService:Create(ind.CheckIcon, TweenInfo.new(.15), {ImageTransparency = 0}):Play() end
+												if ind:FindFirstChild("IndicatorStroke") then TweenService:Create(ind.IndicatorStroke, TweenInfo.new(.15), {Color = Color3.fromRGB(0, 170, 255)}):Play() end
+												TweenService:Create(ind, TweenInfo.new(.15), {BackgroundColor3 = Color3.fromRGB(0, 170, 255)}):Play()
+											end
 								        end
 								        if #Dropdown.Value == 0 then
-								            SelectorCard.SelectedText.Text = "Select Option..."
-											SelectorCard.SelectedText.TextColor3 = Color3.fromRGB(140, 140, 140)
+								            SelectedBadgeText.Text = "..."
 								        else
 								            local text = table.concat(Dropdown.Value, ", ")
-								            SelectorCard.SelectedText.Text = (#text > 20) and string.sub(text, 1, 17) .. "..." or text
-											SelectorCard.SelectedText.TextColor3 = Color3.fromRGB(240, 240, 240)
+								            SelectedBadgeText.Text = text
 								        end
 								        return OrionLib:SafeScript(DropdownConfig.Callback, Dropdown.Value)
 								    end
@@ -4144,36 +4207,64 @@ end
 								local dataInfo = Dropdown.RawOptions[Value]
 								local titleShow = Value
 								if type(dataInfo) == "table" and dataInfo.Title then titleShow = dataInfo.Title end
-								SelectorCard.SelectedText.Text = titleShow
-								SelectorCard.SelectedText.TextColor3 = Color3.fromRGB(255, 255, 255)
+								SelectedBadgeText.Text = titleShow
 						
-								for opt, _ in pairs(Dropdown.Buttons) do
-									UpdateOptionVisuals(opt, opt == Value)
+								for k, v in pairs(Dropdown.Buttons) do
+									local ind = v:FindFirstChild("Indicator")
+									if k == Value then
+										TweenService:Create(v, TweenInfo.new(.15), {BackgroundTransparency = 0.9, BackgroundColor3 = Color3.fromRGB(45, 45, 45)}):Play()
+										TweenService:Create(v.Title, TweenInfo.new(.15), {TextTransparency = 0}):Play()
+										if v:FindFirstChild("Desc") then TweenService:Create(v.Desc, TweenInfo.new(.15), {TextTransparency = 0.2}):Play() end
+										if v:FindFirstChild("Icon") then TweenService:Create(v.Icon, TweenInfo.new(.15), {ImageTransparency = 0}):Play() end
+										if v:FindFirstChild("AccentLine") then
+											TweenService:Create(v.AccentLine, TweenInfo.new(.15), {Size = UDim2.new(0, 3, 0.6, 0), BackgroundTransparency = 0}):Play()
+										end
+										if ind then
+											TweenService:Create(ind, TweenInfo.new(.15), {BackgroundTransparency = 0}):Play()
+											if ind:FindFirstChild("IndicatorStroke") then TweenService:Create(ind.IndicatorStroke, TweenInfo.new(.15), {Transparency = 0}):Play() end
+										end
+									else
+										TweenService:Create(v, TweenInfo.new(.15), {BackgroundTransparency = 0.95, BackgroundColor3 = Color3.fromRGB(35, 35, 35)}):Play()
+										TweenService:Create(v.Title, TweenInfo.new(.15), {TextTransparency = 0.4}):Play()
+										if v:FindFirstChild("Desc") then TweenService:Create(v.Desc, TweenInfo.new(.15), {TextTransparency = 0.5}):Play() end
+										if v:FindFirstChild("Icon") then TweenService:Create(v.Icon, TweenInfo.new(.15), {ImageTransparency = 0.4}):Play() end
+										if v:FindFirstChild("AccentLine") then
+											TweenService:Create(v.AccentLine, TweenInfo.new(.15), {Size = UDim2.new(0, 3, 0, 0), BackgroundTransparency = 1}):Play()
+										end
+										if ind then
+											TweenService:Create(ind, TweenInfo.new(.15), {BackgroundTransparency = 1}):Play()
+											if ind:FindFirstChild("IndicatorStroke") then TweenService:Create(ind.IndicatorStroke, TweenInfo.new(.15), {Transparency = 1}):Play() end
+										end
+									end
 								end
 								return OrionLib:SafeScript(DropdownConfig.Callback, Dropdown.Value)
 							end
 						
-							-- Sự kiện đóng / mở thả xuống bằng Tween mượt mà
-							AddConnection(SelectorCard.ClickButton.MouseButton1Click, function()
+							AddConnection(Click.MouseButton1Click, function()
 								if Dropdown.Disabled then return end
 								Dropdown.Toggled = not Dropdown.Toggled
+								DropdownFrame.F.Line.Visible = Dropdown.Toggled
 								
-								TweenService:Create(SelectorCard.Chevron, TweenInfo.new(.25, Enum.EasingStyle.Quint), {
-									Rotation = Dropdown.Toggled and 180 or 0
+								-- Hoạt họa xoay Chevron và chuyển màu viền tinh tế khi mở
+								TweenService:Create(DropdownFrame.F.Ico, TweenInfo.new(.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+									Rotation = Dropdown.Toggled and 180 or 0,
+									ImageColor3 = Dropdown.Toggled and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(240, 240, 240)
 								}):Play()
+								
+								if DropdownFrame:FindFirstChild("BorderStroke") then
+									TweenService:Create(DropdownFrame.BorderStroke, TweenInfo.new(.25, Enum.EasingStyle.Quint), {
+										Color = Dropdown.Toggled and Color3.fromRGB(0, 170, 255) or OrionLib.Themes[OrionLib.SelectedTheme].Stroke
+									}):Play()
+								end
 						
-								local currentContentSize = DropdownList.AbsoluteContentSize.Y + 12
+								local currentContentSize = DropdownList.AbsoluteContentSize.Y
 								local expandSize = math.min(currentContentSize, MaxElementsHeight)
-								
-								local targetContainerHeight = Dropdown.Toggled and expandSize or 0
-								local targetFrameHeight = Dropdown.Toggled and (38 + expandSize + 8) or 38
+								local sizeY = (currentContentSize > 0)
+									and (38 + expandSize)
+									or 38
 						
-								TweenService:Create(DropdownContainer, TweenInfo.new(.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-									Size = UDim2.new(1, 0, 0, targetContainerHeight)
-								}):Play()
-
 								TweenService:Create(DropdownFrame, TweenInfo.new(.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-									Size = UDim2.new(1, 0, 0, targetFrameHeight)
+									Size = Dropdown.Toggled and UDim2.new(1, 0, 0, sizeY) or UDim2.new(1, 0, 0, 38)
 								}):Play()
 							end)
 						
