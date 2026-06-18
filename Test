@@ -1,0 +1,3605 @@
+local Players = game:GetService("Players")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+local function hideChangelog(gui)
+    if gui and gui.Name == "Changelogs" then
+        gui.Enabled = false
+    end
+end
+
+local existingChangelog = playerGui:FindFirstChild("Changelogs")
+if existingChangelog then
+    hideChangelog(existingChangelog)
+end
+
+playerGui.ChildAdded:Connect(function(child)
+    if child.Name == "Changelogs" then
+        task.wait()
+        hideChangelog(child)
+    end
+end)
+
+local function isGuiVisible(guiObject)
+    if not guiObject then return false end
+    
+    if guiObject.AbsoluteSize.X <= 0 or guiObject.AbsoluteSize.Y <= 0 then
+        return false
+    end
+    
+    local current = guiObject
+    while current do
+        if current:IsA("GuiObject") and not current.Visible then
+            return false
+        elseif current:IsA("ScreenGui") and not current.Enabled then
+            return false
+        end
+        current = current.Parent
+        if current == playerGui then break end
+    end
+    
+    return true
+end
+
+local function clickButton(guiObject)
+    if typeof(firesignal) == "function" then
+        if guiObject:IsA("GuiButton") then
+            firesignal(guiObject.MouseButton1Click)
+            firesignal(guiObject.Activated)
+            return true
+        end
+    end
+    
+    local absPos = guiObject.AbsolutePosition
+    local absSize = guiObject.AbsoluteSize
+    
+    local clickX = absPos.X + (absSize.X / 2)
+    local clickY = absPos.Y + (absSize.Y / 2) + 36 
+    
+    VirtualInputManager:SendMouseButtonEvent(clickX, clickY, 0, true, game, 1)
+    task.wait(0.05)
+    VirtualInputManager:SendMouseButtonEvent(clickX, clickY, 0, false, game, 1) 
+    return true
+end
+
+task.spawn(function()
+    local menuGui = playerGui:WaitForChild("MenuGUI", 15)
+    local playButton = menuGui and menuGui:WaitForChild("Play", 15)
+
+    if playButton then
+        task.wait(0.2)
+        if isGuiVisible(playButton) then
+            clickButton(playButton)
+        end
+    end
+end)
+
+local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/0ko0/script/refs/heads/main/ok.lua')))()
+
+local function TestExecutorCompatibility()
+    local apiList = {
+        
+        { name = "readfile", func = function() return readfile ~= nil end, category = "FileSystem", critical = true },
+        { name = "writefile", func = function() return writefile ~= nil end, category = "FileSystem", critical = true },
+        { name = "makefolder", func = function() return makefolder ~= nil end, category = "FileSystem", critical = false },
+        { name = "isfolder", func = function() return isfolder ~= nil end, category = "FileSystem", critical = false },
+        { name = "isfile", func = function() return isfile ~= nil end, category = "FileSystem", critical = false },
+        { name = "listfiles", func = function() return listfiles ~= nil end, category = "FileSystem", critical = false },
+        
+        { name = "request", func = function() return (http_request or request or (syn and syn.request) or (fluxus and fluxus.request)) ~= nil end, category = "Http", critical = true },
+        { name = "getcustomasset", func = function() return (getcustomasset or getsynasset) ~= nil end, category = "Http", critical = false },
+        
+        { name = "getgenv", func = function() return getgenv ~= nil end, category = "Environment", critical = true },
+        { name = "getgc", func = function() return getgc ~= nil end, category = "Environment", critical = false },
+        { name = "getconstants", func = function() return (debug and debug.getconstants) or getconstants ~= nil end, category = "Environment", critical = false },
+        { name = "setconstant", func = function() return (debug and debug.setconstant) or setconstant ~= nil end, category = "Environment", critical = false },
+        
+        { name = "fireproximityprompt", func = function() return fireproximityprompt ~= nil end, category = "Instance", critical = false },
+        { name = "firetouchinterest", func = function() return firetouchinterest ~= nil end, category = "Instance", critical = false },
+        
+        { name = "queue_on_teleport", func = function() return (queue_on_teleport or (syn and syn.queue_on_teleport) or (fluxus and fluxus.queue_on_teleport) or queueonteleport) ~= nil end, category = "Utils", critical = false },
+        { name = "setclipboard", func = function() return setclipboard ~= nil end, category = "Utils", critical = false },
+        { name = "identifyexecutor", func = function() return identifyexecutor ~= nil end, category = "Utils", critical = false }
+    }
+
+    local totalApis = #apiList
+    local passedCount = 0
+    local missingFeatures = {}
+    local criticalMissing = false
+
+    print("\n[ LURIX HUB - EXECUTOR UNC COMPATIBILITY TEST ]")
+    
+    for _, api in ipairs(apiList) do
+        local success, result = pcall(api.func)
+        local isSupported = success and result
+        
+        if isSupported then
+            passedCount = passedCount + 1
+            print(string.format("[+] %-12s [%s] -> PASSED", "[" .. api.category .. "]", api.name))
+        else
+            print(string.format("[-] %-12s [%s] -> FAILED", "[" .. api.category .. "]", api.name))
+            table.insert(missingFeatures, api.name)
+            if api.critical then
+                criticalMissing = true
+            end
+        end
+    end
+
+    local rate = math.floor((passedCount / totalApis) * 100)
+    print(string.format("\nCompatibility Rate: %d%% (%d/%d)", rate, passedCount, totalApis))
+
+    local isSupported = true
+    local statusMsg = ""
+    local statusTitle = "Executor Compatible"
+
+    if criticalMissing then
+        isSupported = false
+        statusTitle = "Executor Warning"
+        statusMsg = string.format("Incompatible (%d%%). Missing critical features: %s. Check F9 console", rate, table.concat(missingFeatures, ", "))
+    elseif #missingFeatures > 0 then
+        statusTitle = "Executor Notice"
+        statusMsg = string.format("Partially compatible (%d%%). Missing minor features: %s. Check F9 console", rate, table.concat(missingFeatures, ", "))
+    else
+        statusMsg = string.format("Fully compatible (%d%%). All %d required APIs are supported", rate, totalApis)
+    end
+
+    pcall(function()
+        OrionLib:MakeNotification({
+            Name = statusTitle,
+            Content = statusMsg,
+            Time = 10,
+            Image = "rbxassetid://118254173055216"
+        })
+    end)
+    
+    return isSupported, criticalMissing
+end
+
+local isSupported, criticalMissing = TestExecutorCompatibility()
+
+task.wait(3)
+
+getgenv().AutoFarm = false
+getgenv().Distance = 10
+getgenv().AttackDelay = 0.1
+getgenv().AutoFarmItem = false
+getgenv().ItemOffset = 3
+getgenv().WaitBeforeFire = 0.2
+getgenv().WaitAfterFire = 0.1
+local ItemName = "ItemPromptHolder"
+getgenv().AutoLair = false
+getgenv().inskill = false
+getgenv().SelectedLair = "15+"
+getgenv().AutoHop = false
+getgenv().HopTimeMinutes = 175 
+getgenv().MaxPing = 150
+getgenv().FindEmptyServer = false
+getgenv().AutoStorageStand = false
+getgenv().BossDistance = 10
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local VirtualUser = game:GetService("VirtualUser")
+local StarterGui = game:GetService("StarterGui")
+
+local LocalPlayer = Players.LocalPlayer
+local Data = LocalPlayer:WaitForChild("Data")
+local Quests = Data:WaitForChild("Quests")
+local Level = Data:WaitForChild("Level")
+local stand = Data:WaitForChild("Stand")
+local attri = Data:WaitForChild("Attri")
+local UseItemEvent = game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("UseItem")
+
+local StandDict = {
+    ["Star Platinum OVA"] = "StarPlatinumOVA", ["Silver Chariot"] = "SilverChariot", ["Cream"] = "Cream", 
+    ["Hierophant Green"] = "HG", ["Sticky Fingers"] = "StickyFingers", ["Star Platinum"] = "StarPlatinum", 
+    ["Killer Queen"] = "KillerQueen", ["Aerosmith"] = "Aerosmith", ["Star Platinum Stone Ocean"] = "StarPlatinumStoneOcean", 
+    ["Crazy Diamond"] = "CrazyDiamond", ["The Emperor"] = "TheEmperor", ["Stone Free"] = "StoneFree", 
+    ["Soft And Wet"] = "SoftAndWet", ["Magicians's Red"] = "MR", ["Purple Smoke"] = "PurpleHaze", 
+    ["White Snake"] = "WhiteSnake", ["Diver Down"] = "DiverDown", ["The World"] = "TheWorld", 
+    ["Golden Experience"] = "GE", ["King Crimson"] = "KingCrimson", ["Dirty Deeds Done Dirt Cheap"] = "D4C", 
+    ["Premier Macho"] = "PM", ["Silver Chariot OVA"] = "SCOVA", ["The World OVA"] = "TWOVA", 
+    ["Jotaro's Star Platinum"] = "JotarosStarPlatinum", ["Weather Report"] = "WeatherReport", ["The Hand"] = "TheHand", 
+    ["Tusk Act 1"] = "TA1", ["The World Alternate Universe"] = "TWAU", ["Dio's The World"] = "DTW", ["Sol Spirit"] = "SolSpirit", ["Sol Spirit OVA"] = "SolSpiritOVA", ["shadow the universe"] = "STU", ["the universe vestige"] = "TUVestige", ["Putrid Whine"] = "PutridWhine"
+}
+
+local StandNames = {}
+for name, _ in pairs(StandDict) do table.insert(StandNames, name) end
+table.sort(StandNames)
+
+local AttributeList = {"Strong", "Powerful", "Manic", "Tough", "Enrage", "Sloppy", 
+    "Lethargic", "Godly", "Daemon", "Glass Cannon", "Invincible", "Tragic", 
+    "Hacker", "Scourge", "Legendary"
+}
+
+getgenv().AutoRoll = false
+getgenv().TargetStandsNames = {} 
+getgenv().TargetAttributes = {}
+getgenv().ArrowType = "Stand Arrow"
+getgenv().RollMode = "stand or attribute"
+getgenv().RollWebhookEnabled = false
+getgenv().NotifyAllRolls = false 
+getgenv().RollWebhookURL = ""
+getgenv().UseSpecificRoll = false
+getgenv().SpecificSlots = {}
+for i = 1, 20 do
+    getgenv().SpecificSlots["Slot" .. i] = { Stand = "None", Attribute = "None" }
+end
+
+local function OPHover_Lock(playerHRP, targetHRP, distance, mode)
+    if not playerHRP or not targetHRP then return end
+    
+    local bv = playerHRP:FindFirstChild("OP_Flight_BV")
+    if not bv then
+        bv = Instance.new("BodyVelocity")
+        bv.Name = "OP_Flight_BV"
+        bv.MaxForce = Vector3.new(math.huge, math.huge, math.huge) 
+        bv.Velocity = Vector3.new(0, 0, 0)
+        bv.Parent = playerHRP
+    end
+
+    local bg = playerHRP:FindFirstChild("OP_Flight_BG")
+    if not bg then
+        bg = Instance.new("BodyGyro")
+        bg.Name = "OP_Flight_BG"
+        bg.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+        bg.D = 100
+        bg.P = 10000
+        bg.Parent = playerHRP
+    end
+
+    playerHRP.Velocity = Vector3.new(0, 0, 0)
+    playerHRP.RotVelocity = Vector3.new(0, 0, 0)
+
+    local finalCFrame
+    if mode == "Under_OP" or mode == "Below_Boss" then
+        
+        finalCFrame = targetHRP.CFrame * CFrame.new(0, -distance, 0) * CFrame.Angles(math.rad(90), 0, 0)
+    elseif mode == "Above" then
+        
+        finalCFrame = targetHRP.CFrame * CFrame.new(0, distance, 0) * CFrame.Angles(math.rad(-90), 0, 0)
+    elseif mode == "Behind" then
+        
+        finalCFrame = targetHRP.CFrame * CFrame.new(0, 0, distance)
+    else
+        finalCFrame = targetHRP.CFrame * CFrame.new(0, 0, distance)
+    end
+  
+    playerHRP.CFrame = playerHRP.CFrame:Lerp(finalCFrame, 0.85)
+    bg.CFrame = finalCFrame
+end
+
+local function OPHover_Remove()
+    local char = LocalPlayer.Character
+    if char and char:FindFirstChild("HumanoidRootPart") then
+        local bv = char.HumanoidRootPart:FindFirstChild("OP_Flight_BV")
+        if bv then bv:Destroy() end
+        
+        local bg = char.HumanoidRootPart:FindFirstChild("OP_Flight_BG")
+        if bg then bg:Destroy() end
+    end
+end
+
+local function isGiornoBossSpawned()
+    local livingFolder = workspace:FindFirstChild("Living")
+    if livingFolder then
+        for _, entity in ipairs(livingFolder:GetChildren()) do
+            if entity.Name:match("Giorno Giovanna Requiem") or entity.Name:gsub("%s+", ""):match("GiornoGiovannaRequiem") then
+                local hum = entity:FindFirstChild("Humanoid")
+                if hum and hum.Health > 0 and entity:FindFirstChild("HumanoidRootPart") then
+                    return true
+                end
+            end
+        end
+    end
+    return false
+end
+
+local QuestDatabase = {
+    { Name = "Giorno",         Level = 1 },
+    { Name = "Scared Noob",    Level = 10 },
+    { Name = "Koichi",         Level = 20 },
+    { Name = "aLLmemester",    Level = 30 },
+    { Name = "Okayasu",        Level = 40 },
+    { Name = "Joseph Joestar", Level = 50 },
+    { Name = "Josuke",         Level = 75 },
+    { Name = "Rohan",          Level = 100 },
+    { Name = "DIO",            Level = 125 },
+    { Name = "Muhammed Avdol", Level = 150 },
+    { Name = "Giorno2",        Level = 175 }, 
+    { Name = "Zeppeli",        Level = 200 },
+    { Name = "Young Joseph",   Level = 275 },
+    { Name = "Diavolo",        Level = 500 }
+}
+
+local function npc()
+    local lvl = Level and Level.Value or 0
+    
+    if lvl >= 500 and not isGiornoBossSpawned() then 
+        lvl = 275 
+    end
+
+    local targetName = "Giorno"
+    local maxValidLevel = -1
+    
+    for _, q in ipairs(QuestDatabase) do
+        if lvl >= q.Level and q.Level > maxValidLevel then
+            targetName = q.Name
+            maxValidLevel = q.Level
+        end
+    end
+
+    local npcsFolder = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("NPCs")
+    if not npcsFolder then return targetName end
+    
+    local targetObj = npcsFolder:FindFirstChild(targetName)
+    if targetObj then
+        return targetObj
+    end
+    
+    return targetName
+end
+
+local function getHRP()
+    local char = LocalPlayer.Character
+    if char and char:FindFirstChild("HumanoidRootPart") then
+        local humanoid = char:FindFirstChildOfClass("Humanoid")
+        if humanoid and humanoid.Health > 0 then
+            return char.HumanoidRootPart
+        end
+    end
+    return nil
+end
+
+local itemCache = {}
+
+local function check(obj)
+    if obj:IsA("BasePart") and obj.Name == ItemName then
+        local prompt = obj:FindFirstChildOfClass("ProximityPrompt")
+        if prompt then
+            itemCache[obj] = prompt
+        end
+    end
+end
+
+for _, v in ipairs(workspace:GetDescendants()) do
+    check(v)
+end
+
+workspace.DescendantAdded:Connect(function(descendant)
+    task.defer(check, descendant)
+end)
+
+workspace.DescendantRemoving:Connect(function(descendant)
+    if itemCache[descendant] then
+        itemCache[descendant] = nil
+    end
+end)
+
+local function nccam()
+    pcall(function()
+        local sc = (debug and debug.setconstant) or setconstant
+        local gc = (debug and debug.getconstants) or getconstants
+        local get_gc = getgc or getgc
+        
+        if not sc or not get_gc or not gc then return end
+        
+        local pop = LocalPlayer.PlayerScripts:WaitForChild("PlayerModule"):WaitForChild("CameraModule"):WaitForChild("ZoomController"):WaitForChild("Popper")
+        for _, v in pairs(get_gc()) do
+            if type(v) == 'function' and getfenv(v).script == pop then
+                for i, v1 in pairs(gc(v)) do
+                    if tonumber(v1) == 0.25 then
+                        sc(v, i, 0)
+                    elseif tonumber(v1) == 0 then
+                        sc(v, i, 0.25)
+                    end
+                end
+            end
+        end
+    end)
+end
+
+local function noclip()
+    RunService.Stepped:Connect(function()
+        if getgenv().AutoFarm or getgenv().AutoBoss or getgenv().AutoLair then
+            local character = LocalPlayer.Character
+            if character then
+                for _, part in ipairs(character:GetDescendants()) do
+                    
+                    if part:IsA("BasePart") and part.CanCollide and part.Name ~= "HumanoidRootPart" then
+                        part.CanCollide = false
+                    end
+                end
+            end
+        else
+            OPHover_Remove() 
+        end
+    end)
+end
+
+local function hasStandEquipped(character)
+    
+    if not stand or stand.Value == "None" or stand.Value == "" then 
+        return true 
+    end
+
+    
+    local standOutVal = character:FindFirstChild("StandOut") or character:FindFirstChild("IsStandOut")
+    if standOutVal and standOutVal:IsA("BoolValue") then
+        return standOutVal.Value
+    end
+
+    
+    for _, child in ipairs(character:GetChildren()) do
+        if child:IsA("Model") and not child:IsA("Accessory") then
+            
+            if child:FindFirstChildOfClass("AnimationController") or child:FindFirstChild("HumanoidRootPart") or child.Name == stand.Value then
+                for _, part in ipairs(child:GetDescendants()) do
+                    if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" and part.Transparency < 1 then
+                        return true 
+                    end
+                end
+            end
+        end
+    end
+    return false 
+end
+
+local function summon()
+    task.spawn(function()
+        local lastSummonTick = 0
+        
+        while task.wait(0.3) do 
+            if getgenv().AutoFarm or getgenv().AutoLair or getgenv().AutoBoss then
+                
+                if stand.Value == "None" or stand.Value == "" then continue end
+                
+                local character = LocalPlayer.Character
+                if character then
+                    local humanoid = character:FindFirstChild("Humanoid")
+                    
+                    
+                    if humanoid and humanoid.Health > 0 and humanoid:GetState() ~= Enum.HumanoidStateType.Dead and humanoid:GetState() ~= Enum.HumanoidStateType.Physics then
+                        
+                        local standEvents = character:FindFirstChild("StandEvents")
+                        if standEvents then
+                            local summonEvent = standEvents:FindFirstChild("Summon")
+                            
+                            if summonEvent and summonEvent:IsA("RemoteEvent") then
+                                if not hasStandEquipped(character) then
+                                    
+                                    if tick() - lastSummonTick > 2.5 then
+                                        summonEvent:FireServer()
+                                        lastSummonTick = tick()
+                                    end
+                                else
+                                    
+                                    if tick() - lastSummonTick > 5 then
+                                        lastSummonTick = 0 
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            else
+                task.wait(1) 
+            end
+        end
+    end)
+end
+
+local function antiafk()
+    pcall(function()
+        StarterGui:SetCore("SendNotification", {
+            Title = "anti afk",
+            Text = "✅️",
+            Duration = 5,
+        })
+    end)
+   
+    pcall(function()
+        for _, connection in pairs(getconnections(LocalPlayer.Idled)) do
+            connection:Disable()
+        end
+    end)
+    
+    LocalPlayer.Idled:Connect(function()
+        VirtualUser:CaptureController()
+        VirtualUser:ClickButton2(Vector2.new())
+    end)
+end
+
+getgenv().PlayerESPHighlight = false
+getgenv().ESPShowName = true
+getgenv().ESPShowHealth = true
+getgenv().ESPShowStand = true
+getgenv().ESPShowAttri = true
+getgenv().ESPTextSize = 11
+getgenv().ESPMaxDistance = 1000
+
+local playerEspConnections = {}
+local activeEspUpdates = {} 
+
+local function refreshAllESPs()
+    for char, updateFunc in pairs(activeEspUpdates) do
+        if char and char.Parent then
+            pcall(updateFunc)
+        else
+            activeEspUpdates[char] = nil
+        end
+    end
+end
+
+local function applyPlayerESP(player, char)
+    if not char then return end
+    if char == LocalPlayer.Character then return end
+    
+    local highlight = char:FindFirstChild("LurixPlayerESP")
+    if not highlight then
+        highlight = Instance.new("Highlight")
+        highlight.Name = "LurixPlayerESP"
+        highlight.Parent = char
+    end
+    highlight.FillColor = Color3.fromRGB(80, 150, 255)
+    highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+    highlight.FillTransparency = 0.6
+    highlight.OutlineTransparency = 0
+    highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    
+    local head = char:WaitForChild("Head", 5)
+    if not head then return end
+    
+    local billboard = char:FindFirstChild("LurixPlayerUIESP")
+    if not billboard then
+        billboard = Instance.new("BillboardGui")
+        billboard.Name = "LurixPlayerUIESP"
+        billboard.Adornee = head
+        billboard.Size = UDim2.new(0, 200, 0, 75)
+        billboard.StudsOffset = Vector3.new(0, 4, 0)
+        billboard.AlwaysOnTop = true
+        billboard.Parent = char
+        
+        local textLabel = Instance.new("TextLabel")
+        textLabel.Name = "InfoLabel"
+        textLabel.Size = UDim2.new(1, 0, 1, 0)
+        textLabel.BackgroundTransparency = 1
+        textLabel.TextStrokeTransparency = 0
+        textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+        textLabel.Font = Enum.Font.GothamBold
+        textLabel.TextSize = getgenv().ESPTextSize
+        textLabel.RichText = true
+        textLabel.Parent = billboard
+    end
+    
+    local infoLabel = billboard:FindFirstChild("InfoLabel")
+    local humanoid = char:WaitForChild("Humanoid", 5)
+    local charConnections = {}
+    
+    local function updateText()
+        if not infoLabel then return end
+        
+        infoLabel.TextSize = getgenv().ESPTextSize
+        
+        local lines = {}
+        
+        if getgenv().ESPShowName then
+            table.insert(lines, string.format("<b><font color=\"rgb(255,255,255)\">%s</font></b>", player.DisplayName))
+        end
+        
+        if getgenv().ESPShowHealth then
+            local hp = humanoid and math.floor(humanoid.Health) or 0
+            local maxHp = humanoid and math.floor(humanoid.MaxHealth) or 100
+            local ratio = math.clamp(hp / maxHp, 0, 1)
+            local r = math.floor(math.clamp(510 * (1 - ratio), 0, 255))
+            local g = math.floor(math.clamp(510 * ratio, 0, 255))
+            local hpColorStr = string.format("rgb(%d,%d,0)", r, g)
+            table.insert(lines, string.format("<font color=\"%s\">HP: %d/%d</font>", hpColorStr, hp, maxHp))
+        end
+        
+        local standName = "None"
+        local attriName = "None"
+        local playerData = player:FindFirstChild("Data")
+        if playerData then
+            local standVal = playerData:FindFirstChild("Stand")
+            if standVal then
+                standName = (standVal.Value ~= "" and standVal.Value ~= "None") and standVal.Value or "None"
+            end
+            local attriVal = playerData:FindFirstChild("Attri")
+            if attriVal then
+                attriName = (attriVal.Value ~= "" and attriVal.Value ~= "None") and attriVal.Value or "None"
+            end
+        end
+        
+        if getgenv().ESPShowStand then
+            table.insert(lines, string.format("<font color=\"rgb(255, 200, 80)\">Stand: %s</font>", standName))
+        end
+        
+        if getgenv().ESPShowAttri then
+            table.insert(lines, string.format("<font color=\"rgb(255, 100, 255)\">Attr: %s</font>", attriName))
+        end
+        
+        infoLabel.Text = table.concat(lines, "\n")
+    end
+    
+    updateText()
+    activeEspUpdates[char] = updateText
+    
+    if humanoid then
+        table.insert(charConnections, humanoid:GetPropertyChangedSignal("Health"):Connect(updateText))
+        table.insert(charConnections, humanoid:GetPropertyChangedSignal("MaxHealth"):Connect(updateText))
+    end
+    
+    task.spawn(function()
+        local playerData = player:WaitForChild("Data", 5)
+        if playerData then
+            local standVal = playerData:WaitForChild("Stand", 5)
+            if standVal then
+                table.insert(charConnections, standVal:GetPropertyChangedSignal("Value"):Connect(updateText))
+            end
+            local attriVal = playerData:WaitForChild("Attri", 5)
+            if attriVal then
+                table.insert(charConnections, attriVal:GetPropertyChangedSignal("Value"):Connect(updateText))
+            end
+            updateText()
+        end
+    end)
+    
+    local destroyConn
+    destroyConn = char.Destroying:Connect(function()
+        for _, c in ipairs(charConnections) do
+            if c then c:Disconnect() end
+        end
+        activeEspUpdates[char] = nil
+        if destroyConn then destroyConn:Disconnect() end
+    end)
+end
+
+local function removePlayerESP(char)
+    if char then
+        local highlight = char:FindFirstChild("LurixPlayerESP")
+        if highlight then highlight:Destroy() end
+        
+        local billboard = char:FindFirstChild("LurixPlayerUIESP")
+        if billboard then billboard:Destroy() end
+        
+        activeEspUpdates[char] = nil
+    end
+end
+
+local function startPlayerESP()
+    local function handlePlayer(player)
+        if player == LocalPlayer then return end
+        
+        local function onCharAdded(char)
+            if getgenv().PlayerESPHighlight then
+                task.wait(0.5)
+                applyPlayerESP(player, char)
+            end
+        end
+        
+        if player.Character then
+            onCharAdded(player.Character)
+        end
+        
+        local conn = player.CharacterAdded:Connect(onCharAdded)
+        table.insert(playerEspConnections, conn)
+    end
+
+    for _, p in ipairs(Players:GetPlayers()) do
+        handlePlayer(p)
+    end
+    
+    local playerJoinConn = Players.PlayerAdded:Connect(handlePlayer)
+    table.insert(playerEspConnections, playerJoinConn)
+end
+
+local function stopPlayerESP()
+    for _, conn in ipairs(playerEspConnections) do
+        if conn then conn:Disconnect() end
+    end
+    table.clear(playerEspConnections)
+    table.clear(activeEspUpdates)
+    
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p.Character then 
+            removePlayerESP(p.Character) 
+        end
+    end
+end
+
+task.spawn(function()
+    while true do
+        task.wait(0.1)
+        if getgenv().PlayerESPHighlight then
+            local localHRP = getHRP()
+            for char, _ in pairs(activeEspUpdates) do
+                if char and char.Parent then
+                    local targetHRP = char:FindFirstChild("HumanoidRootPart")
+                    local highlight = char:FindFirstChild("LurixPlayerESP")
+                    local billboard = char:FindFirstChild("LurixPlayerUIESP")
+                    
+                    local isWithinDistance = false
+                    if localHRP and targetHRP then
+                        local dist = (localHRP.Position - targetHRP.Position).Magnitude
+                        if dist <= (getgenv().ESPMaxDistance or 1000) then
+                            isWithinDistance = true
+                        end
+                    end
+                    
+                    if highlight then
+                        highlight.Enabled = isWithinDistance
+                    end
+                    if billboard then
+                        billboard.Enabled = isWithinDistance
+                    end
+                end
+            end
+        end
+    end
+end)
+
+local function find(enemyName)
+    local livingFolder = workspace:FindFirstChild("Living")
+    if not livingFolder then return nil end
+
+    local closestTarget = nil
+    local shortestDist = math.huge
+    local hrp = getHRP()
+    
+    if not hrp then return nil end
+
+    local cleanEnemyName = enemyName:gsub("%s+", "")
+
+    for _, entity in ipairs(livingFolder:GetChildren()) do
+        local cleanEntityName = entity.Name:gsub("%s+", "")
+        
+        if entity.Name == enemyName or cleanEntityName:match(cleanEnemyName) then
+            local humanoid = entity:FindFirstChild("Humanoid")
+            local targetHrp = entity:FindFirstChild("HumanoidRootPart")
+            
+            if humanoid and humanoid.Health > 0 and targetHrp then
+                local dist = (hrp.Position - targetHrp.Position).Magnitude
+                if dist < shortestDist then
+                    shortestDist = dist
+                    closestTarget = entity
+                end
+            end
+        end
+    end
+    return closestTarget
+end
+
+local function inlair()
+    local char = LocalPlayer.Character
+    if not char then return false end
+    
+    local playerEntity = workspace:FindFirstChild("Living") and workspace.Living:FindFirstChild(LocalPlayer.Name)
+    if playerEntity and playerEntity:FindFirstChild("InLair") then
+        return playerEntity.InLair.Value
+    end
+    
+    return false
+end
+
+local function lairnpc(levelString)
+    local npcsFolder = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("NPCs")
+    if not npcsFolder then return nil end
+
+    for _, v in ipairs(npcsFolder:GetChildren()) do
+        if v.Name == "i_stabman" and v:FindFirstChild("Head") and v.Head:FindFirstChild("Main") then
+            local success, text = pcall(function() 
+                local textObj = v.Head.Main.Text
+                if typeof(textObj) == "Instance" then return textObj.Text end
+                return textObj
+            end)
+                        
+            if success and type(text) == "string" and string.find(text, levelString) then
+                return v
+            end
+        end
+    end
+    return nil
+end
+
+local MyLairCFrame = nil
+local MyLairSize = nil
+
+local function isInsideMyLair(targetPos)
+    if not MyLairCFrame or not MyLairSize then return false end
+    
+    local relativePosition = MyLairCFrame:PointToObjectSpace(targetPos)
+    local halfSize = MyLairSize / 2
+    
+    return math.abs(relativePosition.X) <= halfSize.X
+       and math.abs(relativePosition.Y) <= halfSize.Y
+       and math.abs(relativePosition.Z) <= halfSize.Z
+end
+
+local function lockMyLair()
+    local hrp = getHRP()
+    if not hrp then return end
+
+    local mapNames = {"Lvl 15 Lair", "DIODUNGEON", "Lvl80Dungeon", "Lvl100Dungeon", "Level200Dungeon"}
+    
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if obj:IsA("Model") and table.find(mapNames, obj.Name) then
+            local pivot = obj:GetPivot().Position
+            if (hrp.Position - pivot).Magnitude < 200 then
+                
+                local cf, size = obj:GetBoundingBox()
+                MyLairCFrame = cf
+                
+                MyLairSize = size + Vector3.new(60, 60, 60)
+                obj.Name = "Locked_Lair" 
+                return obj
+            end
+        end
+    end
+end
+
+local function dungeon()
+    if MyLairCFrame then return true end
+    return false
+end
+
+local function findBoss()
+    local livingFolder = workspace:FindFirstChild("Living")
+    if not livingFolder or not MyLairCFrame then return nil end
+
+    local hrp = getHRP()
+    if not hrp then return nil end
+
+    local closestBoss = nil
+    local shortestDist = math.huge 
+
+    for _, entity in ipairs(livingFolder:GetChildren()) do
+        if string.find(entity.Name, "Boss") or entity.Name == "realboss" then
+            local targetHrp = entity:FindFirstChild("HumanoidRootPart")
+            
+            
+            if targetHrp then 
+                
+                if isInsideMyLair(targetHrp.Position) then
+                    local dist = (hrp.Position - targetHrp.Position).Magnitude
+                    if dist < shortestDist then
+                        shortestDist = dist
+                        closestBoss = entity
+                    end
+                end
+            end
+        end
+    end
+
+    if closestBoss and closestBoss.Name ~= "realboss" then
+        closestBoss.Name = "realboss"
+    end
+    return closestBoss
+end
+
+local function lair()
+    task.spawn(function()
+        local lastLairAttackTime = 0 
+        
+        
+        local LairSafeZones = {
+            ["15+"]  = CFrame.new(-739.41, 67.02, -937.28),
+            ["40+"]  = CFrame.new(-743.24, 66.53, -385.86),
+            ["80+"]  = CFrame.new(-333.14, 66.97, -132.11),
+            ["100+"] = CFrame.new(-100.67, 66.93, -871.43),
+            ["200+"] = CFrame.new(28076.99, 35.07, -258.97)
+        }
+
+        while true do 
+            task.wait() 
+            
+            if not getgenv().AutoLair then 
+                task.wait(0.5)
+                continue
+            end
+            
+            local character = LocalPlayer.Character
+            local playerHRP = character and character:FindFirstChild("HumanoidRootPart")
+            local humanoid = character and character:FindFirstChild("Humanoid")
+            
+            if not playerHRP or not humanoid or humanoid.Health <= 0 then
+                task.wait(1)
+                continue
+            end
+            
+            if not inlair() then
+ 
+                MyLairCFrame = nil
+                MyLairSize = nil
+                
+                local safeCFrame = LairSafeZones[getgenv().SelectedLair]
+                if safeCFrame then
+                    local bv = playerHRP:FindFirstChild("OP_Flight_BV")
+                    if not bv then
+                        bv = Instance.new("BodyVelocity")
+                        bv.Name = "OP_Flight_BV"
+                        bv.MaxForce = Vector3.new(9e9, 9e9, 9e9) 
+                        bv.Parent = playerHRP
+                    end
+                    bv.Velocity = Vector3.new(0, 0, 0)
+                    
+                    playerHRP.CFrame = safeCFrame
+                    playerHRP.RotVelocity = Vector3.new(0, 0, 0)
+                end
+
+                local targetNPC = nil
+               
+                if getgenv().SelectedLair == "200+" then
+                    local sanctum = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("InnerSanctum") and workspace.Map.InnerSanctum:FindFirstChild("Sanctum")
+                    local inSanctum = false
+                                      
+                    if sanctum then
+                        local sanctumPos = sanctum:IsA("BasePart") and sanctum.Position or sanctum:GetBoundingBox().Position
+                        if sanctumPos and (playerHRP.Position - sanctumPos).Magnitude < 600 then
+                            inSanctum = true
+                        end
+                    end
+                                      
+                    if not inSanctum then
+                        targetNPC = lairnpc("90+")
+                    end
+                end
+                
+                if not targetNPC then
+                    targetNPC = lairnpc(getgenv().SelectedLair)
+                end
+                
+                if targetNPC then
+                    if targetNPC:FindFirstChild("Done") then
+                        targetNPC.Done:FireServer()
+                        task.wait(1.5) 
+                    end
+                end
+            else  
+                
+                if not MyLairCFrame then
+                    lockMyLair()
+                    task.wait(0.5) 
+                end
+
+                local boss = findBoss()
+                
+                if boss then
+                    local targetHRP = boss:FindFirstChild("HumanoidRootPart")
+
+                    if targetHRP then
+                        OPHover_Lock(playerHRP, targetHRP, getgenv().Distance, "Below_Boss")
+                                                                             
+                        if tick() - lastLairAttackTime >= getgenv().AttackDelay then
+                            local standEvents = character:FindFirstChild("StandEvents")
+                            if standEvents then
+                                local m1 = standEvents:FindFirstChild("M1")
+                                if m1 and m1:IsA("RemoteEvent") then 
+                                    m1:FireServer() 
+                                end
+                            end
+                            lastLairAttackTime = tick()
+                        end
+                    end
+                else
+                    local bv = playerHRP:FindFirstChild("OP_Flight_BV")
+                    if bv then bv.Velocity = Vector3.new(0, 0, 0) end
+                    task.wait(0.2)
+                end
+            end
+        end
+    end)
+end
+
+local function claimNetworkOwnership()
+    pcall(function()
+        local sethidden = sethiddenproperty or set_hidden_property or set_hidden_prop
+        if sethidden then
+            sethidden(LocalPlayer, "SimulationRadius", math.huge)
+            sethidden(LocalPlayer, "MaxSimulationRadius", math.huge)
+        end
+    end)
+end
+
+local function instantkill(npc)
+    local humanoid = npc:FindFirstChildOfClass("Humanoid")
+    if humanoid and humanoid.Health > 0 then        
+        pcall(function()
+            
+            humanoid.Health = 0
+            humanoid:TakeDamage(math.huge)
+                       
+            humanoid:ChangeState(Enum.HumanoidStateType.Dead)
+        end)
+    end
+end
+
+local function kill()
+    task.spawn(function()
+        while true do
+            
+            task.wait() 
+            
+            if getgenv().inskill then
+                
+                claimNetworkOwnership()
+                               
+                local livingFolder = workspace:FindFirstChild("Living")
+                if livingFolder then
+                    local list = livingFolder:GetChildren()
+                    for i = 1, #list do
+                        
+                        if not getgenv().inskill then break end
+                        
+                        local obj = list[i]
+                        if obj:IsA("Model") and obj ~= LocalPlayer.Character then
+                            
+                            if not Players:GetPlayerFromCharacter(obj) then
+                                local humanoid = obj:FindFirstChildOfClass("Humanoid")
+                                if humanoid and humanoid.Health > 0 then
+                                    
+                                    task.spawn(instantkill, obj)
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end)
+end
+
+local SkillCooldowns = {}
+local CoolDownGUIEvent = game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("CoolDownGUI")
+
+CoolDownGUIEvent.OnClientEvent:Connect(function(skillName, duration)
+    if type(duration) == "number" and duration > 0 then
+        
+        SkillCooldowns[skillName] = tick() + duration
+    elseif duration == "Clear" then
+        SkillCooldowns[skillName] = 0
+    elseif duration == "ClearAll" then
+        table.clear(SkillCooldowns)
+    end
+end)
+
+getgenv().SelectedFarmSkills = {"M1", "Heavy", "Barrage"}
+getgenv().SelectedBossSkills = {"M1", "Heavy", "Barrage"}
+
+local function executeSkills(skillList)
+    local character = LocalPlayer.Character
+    if not character then return end
+    
+    local standEvents = character:FindFirstChild("StandEvents")
+    if not standEvents then return end
+
+    local skillsToUse = {}
+    if type(skillList) == "table" then
+        for k, v in pairs(skillList) do
+            if type(k) == "number" then 
+                table.insert(skillsToUse, v)
+            elseif type(k) == "string" and v == true then 
+                table.insert(skillsToUse, k)
+            end
+        end
+    end
+
+    task.spawn(function()
+        local currentTime = tick()
+        
+        for _, skillName in pairs(skillsToUse) do
+            
+            local cooldownExpiration = SkillCooldowns[skillName] or 0
+            
+            if currentTime >= cooldownExpiration then
+                local remote = standEvents:FindFirstChild(skillName)
+                if remote and remote:IsA("RemoteEvent") then
+                    
+                    if skillName == "Barrage" then
+                        remote:FireServer(true)
+                    else
+                        remote:FireServer()
+                    end
+                                       
+                    SkillCooldowns[skillName] = currentTime + 0.3
+                    task.wait(0.05) 
+                end
+            end
+        end
+    end)
+end
+
+local function quest()
+    local targetNPC = npc()
+    local npcName = (typeof(targetNPC) == "Instance") and targetNPC.Name or targetNPC
+    
+    if npcName == "Diavolo" then
+        for _, q in pairs(Quests:GetChildren()) do
+            if q:FindFirstChild("Enemy") then
+                local en = q.Enemy.Value:gsub("%s+", "")
+                if en:match("GiornoGiovannaRequiem") then
+                    return q 
+                end
+            end
+        end
+        
+        return nil 
+    end
+
+    for _, q in pairs(Quests:GetChildren()) do
+        if q:FindFirstChild("Enemy") then
+            return q
+        end
+    end
+    return nil
+end
+
+local function getOrCreatePlatform(npcObj)
+    if typeof(npcObj) ~= "Instance" then return nil end
+    
+    local platformName = "LurixPlatform_" .. npcObj.Name
+    
+    local existing = workspace:FindFirstChild(platformName)
+    if existing then return existing end
+    
+    local npcPart = npcObj:FindFirstChild("HumanoidRootPart") or npcObj:FindFirstChild("Head")
+    if not npcPart then return nil end
+    
+    local part = Instance.new("Part")
+    part.Name = platformName
+    part.Size = Vector3.new(10, 1, 10)
+    
+    part.Position = npcPart.Position - Vector3.new(0, 40, 0) 
+    
+    part.Anchored = true
+    part.CanCollide = true
+    part.Transparency = 0.5 
+    part.Material = Enum.Material.Neon
+    part.Color = Color3.fromRGB(0, 255, 0)
+    part.Parent = workspace
+    
+    return part
+end
+
+local function farm()
+    task.spawn(function()
+        local questDebounce = 0 
+        local lastAttackTime = 0
+        local currentTarget = nil 
+
+        while task.wait() do
+            if not getgenv().AutoFarm then
+                currentTarget = nil 
+                task.wait(0.2)
+                continue
+            end
+
+            local now = tick()
+            local hrp = getHRP()
+            if not hrp then continue end
+            
+            if hrp.Anchored then hrp.Anchored = false end
+
+            local currentNpcObj = npc()
+            
+            
+            local validQuestToFarm = nil
+            local hasAnyCompletedQuest = false
+
+            for _, q in pairs(Quests:GetChildren()) do
+                if q:FindFirstChild("Enemy") then
+                    local isComplete = (q:FindFirstChild("Completed") and q.Completed.Value == true) or
+                                       (q:FindFirstChild("Kills") and q:FindFirstChild("MaxKills") and q.Kills.Value >= q.MaxKills.Value)
+                    
+                    if isComplete then
+                        hasAnyCompletedQuest = true
+                    else
+                        validQuestToFarm = q 
+                    end
+                end
+            end
+            
+      
+            if not validQuestToFarm then
+                currentTarget = nil 
+                OPHover_Remove() 
+                
+                if typeof(currentNpcObj) == "Instance" then
+                    
+                    local platform = getOrCreatePlatform(currentNpcObj)
+                    if platform then
+                        hrp.Velocity = Vector3.new(0, 0, 0)
+                        hrp.CFrame = platform.CFrame * CFrame.new(0, 3.5, 0)
+                    end
+
+                    if now - questDebounce > 1 then 
+                        if hasAnyCompletedQuest then
+                            
+                            if currentNpcObj:FindFirstChild("QuestDone") then
+                                currentNpcObj.QuestDone:FireServer()
+                            end
+                            
+                            
+                            local npcsFolder = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("NPCs")
+                            if npcsFolder then
+                                for _, v in ipairs(npcsFolder:GetChildren()) do
+                                    if v:FindFirstChild("QuestDone") then
+                                        v.QuestDone:FireServer()
+                                    end
+                                end
+                            end
+                        end
+                        
+           
+                        if currentNpcObj:FindFirstChild("Done") then
+                            currentNpcObj.Done:FireServer()
+                        end
+                        questDebounce = tick()
+                    end
+                end
+                continue 
+            end
+           
+            
+            local enemyName = validQuestToFarm.Enemy.Value
+            
+            if not currentTarget or not currentTarget.Parent or not currentTarget:FindFirstChild("Humanoid") or currentTarget.Humanoid.Health <= 0 then
+                currentTarget = find(enemyName)
+            end
+
+            if currentTarget then
+                local targetHRP = currentTarget:FindFirstChild("HumanoidRootPart")
+
+                if targetHRP then
+                    local distToTarget = (hrp.Position - targetHRP.Position).Magnitude
+                                        
+                    
+                    if distToTarget > 300 then
+                        hrp.CFrame = targetHRP.CFrame * CFrame.new(0, 50, 0)
+                        hrp.Velocity = Vector3.new(0,0,0)
+                        task.wait(0.1) 
+                    end
+
+                    OPHover_Lock(hrp, targetHRP, getgenv().Distance, "Under_OP")
+                    
+                    distToTarget = (hrp.Position - targetHRP.Position).Magnitude
+                                       
+                    if distToTarget <= (getgenv().Distance + 10) then
+                        if now - lastAttackTime >= getgenv().AttackDelay then
+                            executeSkills(getgenv().SelectedFarmSkills)
+                            lastAttackTime = now
+                        end
+                    end
+                end
+            else
+                
+                OPHover_Remove() 
+                if typeof(currentNpcObj) == "Instance" then
+                    local platform = getOrCreatePlatform(currentNpcObj)
+                    if platform then
+                        hrp.Velocity = Vector3.new(0, 0, 0)
+                        hrp.CFrame = platform.CFrame * CFrame.new(0, 3.5, 0)
+                    end
+                end
+                task.wait(0.2) 
+            end
+        end
+    end)
+end
+
+local RollStats = {
+    TotalRolls = 0,
+    RokaUsed = 0,
+    StandHits = 0
+}
+
+local isRolling = false
+getgenv().RollDelay = 0.5 
+
+local function GetItemCount(itemName)
+    local count = 0
+    local function checkFolder(folder)
+        if not folder then return end
+        for _, v in ipairs(folder:GetChildren()) do
+            if v.Name == itemName and v:IsA("Tool") then
+                local amountValue = v:FindFirstChild("Amount") or v:FindFirstChild("Value") or v:FindFirstChild("Quantity")
+                if amountValue and (amountValue:IsA("IntValue") or amountValue:IsA("NumberValue")) then
+                    count = count + amountValue.Value
+                else
+                    count = count + 1
+                end
+            end
+        end
+    end
+    
+    local backpack = LocalPlayer:FindFirstChild("Backpack")
+    if backpack then checkFolder(backpack) end
+    if LocalPlayer.Character then checkFolder(LocalPlayer.Character) end
+    return count
+end
+
+local function GetFullStandName(internalName)
+    for fullName, codeName in pairs(StandDict) do
+        if codeName == internalName then
+            return fullName
+        end
+    end
+    return tostring(internalName)
+end
+
+local function SendRollWebhook(standName, attriName, isTargetHit)
+    if not getgenv().RollWebhookEnabled or getgenv().RollWebhookURL == "" then return end
+    
+    local requestFunc = syn and syn.request or http and http.request or http_request or fluxus and fluxus.request or request
+    if not requestFunc then return end
+
+    local HttpService = game:GetService("HttpService")
+    local avatarUrl = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. LocalPlayer.UserId .. "&width=150&height=150&format=png"
+
+    local fullStandName = GetFullStandName(standName)
+    local title = isTargetHit and "Stand Auto Roll - Success" or "Stand Auto Roll - Rolled"
+    local embedColor = isTargetHit and 65280 or 7241471 
+
+    local data = {
+        ["content"] = isTargetHit and "||@everyone||" or "",
+        ["embeds"] = {{
+            ["author"] = {
+                ["name"] = string.format("%s (@%s)", tostring(LocalPlayer.DisplayName), tostring(LocalPlayer.Name)),
+                ["icon_url"] = avatarUrl
+            },
+            ["title"] = title,
+            ["color"] = embedColor, 
+            ["thumbnail"] = { ["url"] = avatarUrl },
+            ["fields"] = {
+                { ["name"] = "Stand", ["value"] = "```fix\n" .. tostring(fullStandName) .. "\n```", ["inline"] = true },
+                { ["name"] = "Attribute", ["value"] = "```diff\n+ " .. tostring(attriName or "None") .. "\n```", ["inline"] = true },
+                { ["name"] = "Roll Mode", ["value"] = "```" .. tostring(getgenv().RollMode) .. "```", ["inline"] = false },
+                { ["name"] = "Stats", ["value"] = string.format("```ini\n[Total Arrows]: %d\n[Total Rokas]: %d\n```", RollStats.TotalRolls, RollStats.RokaUsed), ["inline"] = false }
+            },
+            ["footer"] = { ["text"] = "Lurix Hub", ["icon_url"] = "" },
+            ["timestamp"] = DateTime.now():ToIsoDate()
+        }}
+    }
+    
+    pcall(function()
+        requestFunc({ 
+            Url = getgenv().RollWebhookURL, 
+            Method = "POST", 
+            Headers = {["Content-Type"] = "application/json"}, 
+            Body = HttpService:JSONEncode(data) 
+        })
+    end)
+end
+
+local function IsTargetHit()
+    local currentStand = stand.Value
+    local currentAttri = attri.Value
+
+    if not currentStand or currentStand == "None" or currentStand == "" then return false end
+    local currentStandName = GetFullStandName(currentStand)
+
+    if getgenv().UseSpecificRoll and type(getgenv().SpecificSlots) == "table" then
+        for _, slot in pairs(getgenv().SpecificSlots) do
+            if type(slot) == "table" then
+                local targetStand = slot.Stand or "None"
+                local targetAttr = slot.Attribute or "None"
+                
+                if targetStand ~= "None" or targetAttr ~= "None" then
+                    local matchStand = (targetStand == "None" or targetStand == currentStandName)
+                    local matchAttr = (targetAttr == "None" or targetAttr == currentAttri)
+                    
+                    if matchStand and matchAttr then
+                        return true
+                    end
+                end
+            end
+        end
+    end
+
+    local hitStand = false
+    if type(getgenv().TargetStandsNames) == "table" and #getgenv().TargetStandsNames > 0 then
+        for _, name in pairs(getgenv().TargetStandsNames) do
+            if StandDict[name] and StandDict[name] == currentStand then 
+                hitStand = true
+                break 
+            end
+        end
+    end
+
+    local hitAttri = false
+    if type(getgenv().TargetAttributes) == "table" and #getgenv().TargetAttributes > 0 then
+        if currentAttri and currentAttri ~= "None" and currentAttri ~= "" then
+            if table.find(getgenv().TargetAttributes, currentAttri) then 
+                hitAttri = true 
+            end
+        end
+    end
+
+    local mode = getgenv().RollMode
+    if mode == "stand or attribute" then
+        local checkS = (#getgenv().TargetStandsNames > 0)
+        local checkA = (#getgenv().TargetAttributes > 0)
+        if checkS and checkA then 
+            return (hitStand or hitAttri)
+        elseif checkS then 
+            return hitStand
+        elseif checkA then 
+            return hitAttri 
+        end
+    elseif mode == "stand only" then
+        return hitStand
+    elseif mode == "attribute only" then 
+        return hitAttri
+    elseif mode == "stand and attribute" then 
+        return (hitStand and hitAttri)
+    elseif mode == "Kars" then 
+        return hitAttri 
+    end
+    
+    return false
+end
+
+-- Thêm bộ lưu trữ tạm thời (Cache) cho Gamepass để tránh gửi yêu cầu liên tục đến API của Roblox
+local gamepassCache = {}
+local function checkGamepassOwnership(gamepassId)
+    if gamepassCache[gamepassId] ~= nil then 
+        return gamepassCache[gamepassId] 
+    end
+    local success, hasGamepass = pcall(function()
+        return game:GetService("MarketplaceService"):UserOwnsGamePassAsync(LocalPlayer.UserId, gamepassId)
+    end)
+    if success then
+        gamepassCache[gamepassId] = hasGamepass
+        return hasGamepass
+    end
+    return false
+end
+
+local function IsSlotUnlocked(slotIndex)
+    if slotIndex == 1 or slotIndex == 2 then
+        return true
+    end
+    
+    local gamepassesFolder = game:GetService("ReplicatedStorage"):FindFirstChild("Gamepasses")
+    
+    if slotIndex == 3 then
+        local gp1 = gamepassesFolder and gamepassesFolder:FindFirstChild("StandStorage1")
+        local gp1Alt = gamepassesFolder and gamepassesFolder:FindFirstChild("AltStandStorage1")
+        if gp1 and checkGamepassOwnership(gp1.Value) then return true end
+        if gp1Alt and checkGamepassOwnership(gp1Alt.Value) then return true end
+        return false
+    elseif slotIndex == 4 then
+        local levelVal = Data:FindFirstChild("Level")
+        return levelVal and levelVal.Value >= 120
+    elseif slotIndex == 5 then
+        local gp2 = gamepassesFolder and gamepassesFolder:FindFirstChild("StandStorage2")
+        if gp2 and checkGamepassOwnership(gp2.Value) then return true end
+        return false
+    end
+    
+    return false
+end
+
+local function SafeStoreStand(currentStand)
+    local stored = false
+    local switchStandEvent = game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("SwitchStand", 5)
+    if not switchStandEvent then return false end
+    local currentStandName = GetFullStandName(currentStand)
+
+    for i = 1, 5 do 
+        if IsSlotUnlocked(i) then
+            local slotData = Data:FindFirstChild("Slot"..i.."Stand")
+            if slotData then
+                local isLocked = slotData:FindFirstChild("Locked")
+                local hasLockValue = isLocked and isLocked:IsA("BoolValue") and isLocked.Value
+                local isEmpty = (slotData.Value == "" or slotData.Value == "None" or slotData.Value == nil)
+                
+                if not hasLockValue and isEmpty then
+                    local initialStand = stand.Value
+                    
+                    pcall(function()
+                        switchStandEvent:FireServer("Slot"..i)
+                    end)
+                    
+                    local t = tick()
+                    while stand.Value == initialStand and (tick() - t < 4) and OrionLib.Flags["ToggleAutoRoll"].Value do 
+                        task.wait(0.1) 
+                    end
+                    
+                    if stand.Value == "None" or stand.Value == "" then
+                        stored = true
+                        pcall(function()
+                            OrionLib:MakeNotification({
+                                Name = "Storage Success", 
+                                Content = string.format("Stored [%s] in Slot %d\nContinuing to roll...", currentStandName, i), 
+                                Time = 5, 
+                                Image = "rbxassetid://4483345998"
+                            })
+                        end)
+                        break
+                    end
+                end
+            end
+        end
+    end
+    return stored
+end
+
+local function SafeEquipAndUse(itemName)
+    local char = LocalPlayer.Character
+    if not char then return false end
+    
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    if not hum or hum.Health <= 0 then return false end 
+    
+    local backpack = LocalPlayer:FindFirstChild("Backpack")
+    if not backpack then return false end
+
+    local item = backpack:FindFirstChild(itemName) or char:FindFirstChild(itemName)
+    if not item then return false end
+
+    for _, tool in ipairs(char:GetChildren()) do
+        if tool:IsA("Tool") and tool.Name ~= itemName then
+            tool.Parent = backpack
+        end
+    end
+    
+    if item.Parent ~= char then
+        hum:EquipTool(item)
+    end
+    
+    local t = tick()
+    while item.Parent ~= char and (tick() - t < 1) do
+        task.wait(0.05)
+    end
+    
+    if item.Parent == char then
+        task.wait(0.05) 
+        local success = pcall(function()
+            UseItemEvent:FireServer()
+        end)
+        
+        return success, item
+    end
+    
+    return false
+end
+ 
+local function StartAutoRoll()
+    if isRolling then return end
+    isRolling = true
+
+    task.spawn(function()
+        while OrionLib.Flags["ToggleAutoRoll"] and OrionLib.Flags["ToggleAutoRoll"].Value do
+            if not OrionLib.Flags["ToggleAutoRoll"].Value then break end
+
+            local success, err = pcall(function()
+                local char = LocalPlayer.Character
+                local hum = char and char:FindFirstChildOfClass("Humanoid")
+                
+                if not char or not hum or hum.Health <= 0 then 
+                    task.wait(1) 
+                    return 
+                end
+
+                if getgenv().RollMode == "Kars" then
+                    
+                    local currentLvl = Level and Level.Value or 0
+                    if currentLvl < 45 then
+                        OrionLib.Flags["ToggleAutoRoll"]:Set(false)
+                        pcall(function()
+                            OrionLib:MakeNotification({
+                                Name = "Level Requirement",
+                                Content = "You need to be Level 45 or higher to use Kars Mask!",
+                                Time = 8
+                            })
+                        end)
+                        return
+                    end
+                   
+                    local currentAttri = attri.Value
+                    if currentAttri == "Legendary" or currentAttri == "Hacker" then
+                        OrionLib.Flags["ToggleAutoRoll"]:Set(false)
+                        pcall(function()
+                            OrionLib:MakeNotification({
+                                Name = "Attribute Protected",
+                                Content = "Detected [" .. currentAttri .. "] which is blacklisted by Kars Mask. Auto-roll stopped to protect your rare attribute!",
+                                Time = 10
+                            })
+                        end)
+                        return
+                    end
+
+                    if IsTargetHit() then
+                        RollStats.StandHits = RollStats.StandHits + 1
+                        task.spawn(SendRollWebhook, stand.Value, attri.Value, true)
+                        OrionLib.Flags["ToggleAutoRoll"]:Set(false)
+                        pcall(function()
+                            OrionLib:MakeNotification({
+                                Name = "Found Attribute", 
+                                Content = "Found: " .. tostring(attri.Value), 
+                                Time = 10, 
+                                Image = "rbxassetid://4483345998"
+                            })
+                        end)
+                        return
+                    end
+
+                    if GetItemCount("Kars Mask") <= 0 then
+                        OrionLib.Flags["ToggleAutoRoll"]:Set(false)
+                        pcall(function()
+                            OrionLib:MakeNotification({Name = "Out of Items", Content = "You ran out of Kars Mask!", Time = 5})
+                        end)
+                        return
+                    end
+
+                    local oldAttri = attri.Value
+                    local useSuccess, maskItem = SafeEquipAndUse("Kars Mask")
+                    
+                    if useSuccess and maskItem then
+                        RollStats.TotalRolls = RollStats.TotalRolls + 1
+                        local t = tick()
+                        
+                        while attri.Value == oldAttri 
+                              and maskItem.Parent == char 
+                              and (tick() - t < 3.5) 
+                              and OrionLib.Flags["ToggleAutoRoll"].Value do 
+                            task.wait(0.03) 
+                        end
+                        task.wait(getgenv().RollDelay or 0.5)
+                    else
+                        task.wait(0.2)
+                    end
+                    return 
+                end           
+
+                local currentStandVal = stand.Value
+                if currentStandVal ~= "None" and currentStandVal ~= "" then
+                    local isHit = IsTargetHit()
+                    
+                    if isHit then
+                        RollStats.StandHits = RollStats.StandHits + 1
+                        task.spawn(SendRollWebhook, currentStandVal, attri.Value, true)
+                        
+                        if getgenv().AutoStorageStand then
+                            local storeSuccess = SafeStoreStand(currentStandVal)
+                            if not storeSuccess then
+                                OrionLib.Flags["ToggleAutoRoll"]:Set(false)
+                                pcall(function()
+                                    OrionLib:MakeNotification({
+                                        Name = "Storage Full", 
+                                        Content = "Could not store Stand. Auto Roll Stopped", 
+                                        Time = 10, 
+                                        Image = "rbxassetid://4483345998"
+                                    })
+                                end)
+                                return
+                            end
+                            task.wait(getgenv().RollDelay or 0.5)
+                            return 
+                        else
+                            OrionLib.Flags["ToggleAutoRoll"]:Set(false)
+                            pcall(function()
+                                OrionLib:MakeNotification({
+                                    Name = "Found Target Stand", 
+                                    Content = "Found: " .. GetFullStandName(currentStandVal) .. " | " .. tostring(attri.Value), 
+                                    Time = 10, 
+                                    Image = "rbxassetid://4483345998"
+                                })
+                            end)
+                            return
+                        end
+                    else
+                        if getgenv().NotifyAllRolls then
+                            task.spawn(SendRollWebhook, currentStandVal, attri.Value, false)
+                        end
+                    end
+
+                    if GetItemCount("Rokakaka") <= 0 then
+                        OrionLib.Flags["ToggleAutoRoll"]:Set(false)
+                        pcall(function()
+                            OrionLib:MakeNotification({Name = "Out of Items", Content = "You ran out of Rokakaka!", Time = 5})
+                        end)
+                        return
+                    end
+
+                    if SafeEquipAndUse("Rokakaka") then
+                        RollStats.RokaUsed = RollStats.RokaUsed + 1
+                        local t = tick()
+                        while stand.Value ~= "None" and stand.Value ~= "" and (tick() - t < 5) and OrionLib.Flags["ToggleAutoRoll"].Value do 
+                            task.wait(0.1) 
+                        end
+                        task.wait(getgenv().RollDelay or 0.5)
+                    else
+                        task.wait(0.2)
+                    end
+                else
+                    local targetArrow = getgenv().ArrowType or "Stand Arrow"
+                   
+                    if targetArrow == "Charged Arrow" then
+                        local currentLvl = Level and Level.Value or 0
+                        if currentLvl < 30 then
+                            OrionLib.Flags["ToggleAutoRoll"]:Set(false)
+                            pcall(function()
+                                OrionLib:MakeNotification({
+                                    Name = "Level Requirement",
+                                    Content = "You need to be Level 30 or higher to use Charged Arrow!",
+                                    Time = 8
+                                })
+                            end)
+                            return
+                        end
+                    end
+
+                    if GetItemCount(targetArrow) <= 0 then
+                        OrionLib.Flags["ToggleAutoRoll"]:Set(false)
+                        pcall(function()
+                            OrionLib:MakeNotification({Name = "Out of Items", Content = "You ran out of " .. tostring(targetArrow) .. "!", Time = 5})
+                        end)
+                        return
+                    end
+
+                    if SafeEquipAndUse(targetArrow) then
+                        RollStats.TotalRolls = RollStats.TotalRolls + 1
+                        local t = tick()
+                        while (stand.Value == "None" or stand.Value == "") and (tick() - t < 5) and OrionLib.Flags["ToggleAutoRoll"].Value do 
+                            task.wait(0.1) 
+                        end
+                        task.wait(getgenv().RollDelay or 0.5)
+                    else
+                        task.wait(0.2)
+                    end
+                end
+            end)
+            
+            if not success then
+                warn("[Stand Roll Error]:", err)
+                task.wait(0.5)
+            end
+            task.wait(0.05)
+        end
+        isRolling = false
+    end)
+end
+
+local firePrompt = fireproximityprompt or function()
+    warn("your executor does not support fireproximityprompt")
+end
+
+local function getClosestItem(playerHRP)
+    local closestPart = nil
+    local closestPrompt = nil
+    local shortestDistance = math.huge
+
+    for part, prompt in pairs(itemCache) do
+        if part and part.Parent and prompt and prompt.Parent and prompt.Enabled then
+            local distance = (playerHRP.Position - part.Position).Magnitude
+            if distance < shortestDistance then
+                shortestDistance = distance
+                closestPart = part
+                closestPrompt = prompt
+            end
+        else
+            itemCache[part] = nil
+        end
+    end
+    return closestPart, closestPrompt
+end
+
+task.spawn(function()
+    while true do 
+        task.wait(0.1) 
+        if getgenv().AutoFarmItem then
+            local success, err = pcall(function()
+                local hrp = getHRP()
+                if not hrp then return end
+
+                local part, prompt = getClosestItem(hrp)
+                
+                if part and prompt then
+    
+                    hrp.Velocity = Vector3.zero
+                    hrp.RotVelocity = Vector3.zero
+                    
+                    hrp.CFrame = part.CFrame + Vector3.new(0, getgenv().ItemOffset or 3, 0)
+                    
+                    task.wait(getgenv().WaitBeforeFire or 0.1)
+                                       
+                    if part.Parent and prompt.Parent and prompt.Enabled and getHRP() then
+                        firePrompt(prompt)
+                    end
+                    
+                    task.wait(getgenv().WaitAfterFire or 0.1)
+                end
+            end)
+            
+            if not success then
+                
+                task.wait(0.5)
+            end
+        else
+            task.wait(0.5) 
+        end
+    end
+end)
+
+local HttpService = game:GetService("HttpService")
+local TeleportService = game:GetService("TeleportService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local PlaceId = game.PlaceId
+local JobId = game.JobId
+
+local function notify(title, text)
+    OrionLib:MakeNotification({
+        Name = title,
+        Content = text,
+        Time = 5
+    })
+end
+
+local function AutoServerHop()
+    if not getgenv().AutoHop then return end 
+    notify("Auto Server Hop", "Searching for a new server")
+    
+    local servers = {}
+    local success, req = pcall(function()
+        return game:HttpGet("https://games.roblox.com/v1/games/" .. PlaceId .. "/servers/Public?sortOrder=Desc&limit=100&excludeFullGames=true")
+    end)
+
+    if not success then
+        return notify("Error", "Cannot get server list")
+    end
+
+    local body = HttpService:JSONDecode(req)
+
+    if body and body.data then  
+        for i, v in next, body.data do  
+            if type(v) == "table" and tonumber(v.playing) and tonumber(v.maxPlayers) and v.playing < v.maxPlayers and v.id ~= JobId then  
+                table.insert(servers, 1, v.id)  
+            end  
+        end  
+    end  
+
+    if #servers > 0 then  
+        notify("Success", "Teleporting to another server")
+        task.wait(1) 
+        TeleportService:TeleportToPlaceInstance(PlaceId, servers[math.random(1, #servers)], LocalPlayer)  
+    else  
+        return notify("Serverhop", "No suitable server found")  
+    end
+end
+
+local shutdownEvent = ReplicatedStorage:WaitForChild("Events", 5)
+if shutdownEvent then
+    local event = shutdownEvent:WaitForChild("Shutdown", 5)
+    if event then
+        event.OnClientEvent:Connect(function()
+            AutoServerHop()
+        end)
+    end
+end
+
+task.spawn(function()
+    local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+    local ShutdownGUI = PlayerGui:WaitForChild("ShutdownGUI", 10)
+    
+    if ShutdownGUI then
+        local Frame = ShutdownGUI:WaitForChild("Frame")
+               
+        if Frame.Visible then
+            AutoServerHop()
+        end
+               
+        Frame:GetPropertyChangedSignal("Visible"):Connect(function()
+            if Frame.Visible then
+                AutoServerHop()
+            end
+        end)
+    end
+end)
+
+local CoreGui = game:GetService("CoreGui")
+local UserInputService = game:GetService("UserInputService")
+
+local Bosses = {
+    { Name = "HA Jotaro", WorkspaceName = "Jotaro Over Heaven", Interval = 1800, Color = Color3.fromRGB(180, 130, 255) }, 
+    { Name = "Johnny Joestar", WorkspaceName = "JohnnyJoestar", Interval = 2700, Color = Color3.fromRGB(80, 200, 255) }, 
+    { Name = "Giorno", WorkspaceName = "Giorno Giovanna Requiem", Interval = 3600, Color = Color3.fromRGB(255, 215, 100) }, 
+    { Name = "Dio Brando", WorkspaceName = "Dio_Coffin", Interval = 3600, Color = Color3.fromRGB(255, 60, 60) } 
+}
+
+local function IsBossAlive(bossName)
+    local livingFolder = workspace:FindFirstChild("Living")
+    if livingFolder then
+        for _, entity in ipairs(livingFolder:GetChildren()) do
+            if entity.Name:match(bossName) or entity.Name:gsub("%s+", ""):match(bossName:gsub("%s+", "")) then
+                local hum = entity:FindFirstChild("Humanoid")
+                if hum and hum.Health > 0 and entity:FindFirstChild("HumanoidRootPart") then
+                    return true
+                end
+            end
+        end
+    end
+    return false
+end
+
+local function ManageBossTimer(state)
+    local uiParent = (gethui and gethui()) or CoreGui
+    
+    if uiParent:FindFirstChild("LurixBossTimer") then
+        uiParent.LurixBossTimer:Destroy()
+    end
+    
+    if not state then return end
+
+    local ScreenGui = Instance.new("ScreenGui", uiParent)
+    ScreenGui.Name = "LurixBossTimer"
+    ScreenGui.ResetOnSpawn = false
+    ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+
+    local MainFrame = Instance.new("Frame", ScreenGui)
+    
+    MainFrame.Size = UDim2.new(0, 170, 0, 110) 
+    MainFrame.Position = UDim2.new(1, -190, 0, 30)
+    MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20) 
+    MainFrame.BorderSizePixel = 0
+    MainFrame.Active = true
+
+    local UICorner = Instance.new("UICorner", MainFrame)
+    UICorner.CornerRadius = UDim.new(0, 6)
+
+    local UIStrokeMain = Instance.new("UIStroke", MainFrame)
+    UIStrokeMain.Thickness = 1
+    UIStrokeMain.Color = Color3.fromRGB(80, 150, 255)
+    UIStrokeMain.Transparency = 0.3
+    
+    local UIGradient = Instance.new("UIGradient", MainFrame)
+    UIGradient.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 200, 200))
+    }
+    UIGradient.Rotation = 45
+
+    local Header = Instance.new("Frame", MainFrame)
+    Header.Size = UDim2.new(1, 0, 0, 20) 
+    Header.BackgroundTransparency = 1
+
+    local Title = Instance.new("TextLabel", Header)
+    Title.Size = UDim2.new(1, -10, 1, 0)
+    Title.Position = UDim2.new(0, 8, 0, 0)
+    Title.BackgroundTransparency = 1
+    Title.Text = "BOSS TIMER"
+    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Title.Font = Enum.Font.GothamBold
+    Title.TextSize = 10 
+    Title.TextXAlignment = Enum.TextXAlignment.Left
+
+    local Line = Instance.new("Frame", MainFrame)
+    Line.Size = UDim2.new(1, 0, 0, 1)
+    Line.Position = UDim2.new(0, 0, 0, 20)
+    Line.BackgroundColor3 = Color3.fromRGB(80, 150, 255)
+    Line.BorderSizePixel = 0
+    Line.Transparency = 0.5
+
+    local Container = Instance.new("Frame", MainFrame)
+    Container.Size = UDim2.new(1, 0, 1, -25)
+    Container.Position = UDim2.new(0, 0, 0, 25)
+    Container.BackgroundTransparency = 1
+
+    local UIListLayout = Instance.new("UIListLayout", Container)
+    UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    UIListLayout.Padding = UDim.new(0, 3) 
+    UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+    local TimerLabels = {}
+
+    for i, boss in ipairs(Bosses) do
+        local Row = Instance.new("Frame", Container)
+        Row.Size = UDim2.new(1, -10, 0, 17) 
+        Row.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+        Row.BorderSizePixel = 0
+        Row.LayoutOrder = i
+        
+        local RowCorner = Instance.new("UICorner", Row)
+        RowCorner.CornerRadius = UDim.new(0, 4)
+        
+        local RowStroke = Instance.new("UIStroke", Row)
+        RowStroke.Color = Color3.fromRGB(0, 255, 128)
+        RowStroke.Thickness = 1
+        RowStroke.Enabled = false
+
+        local NameLabel = Instance.new("TextLabel", Row)
+        NameLabel.Size = UDim2.new(0.55, -4, 1, 0)
+        NameLabel.Position = UDim2.new(0, 4, 0, 0)
+        NameLabel.BackgroundTransparency = 1
+        NameLabel.Font = Enum.Font.GothamSemibold
+        NameLabel.TextSize = 10 
+        NameLabel.TextColor3 = boss.Color
+        NameLabel.TextXAlignment = Enum.TextXAlignment.Left
+        NameLabel.Text = boss.Name
+
+        local TimeLabel = Instance.new("TextLabel", Row)
+        TimeLabel.Size = UDim2.new(0.45, -4, 1, 0)
+        TimeLabel.Position = UDim2.new(0.55, 0, 0, 0)
+        TimeLabel.BackgroundTransparency = 1
+        TimeLabel.Font = Enum.Font.GothamBold
+        TimeLabel.TextSize = 10 
+        TimeLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+        TimeLabel.TextXAlignment = Enum.TextXAlignment.Right
+        TimeLabel.Text = "--:--:--"
+
+        TimerLabels[boss.Name] = { Label = TimeLabel, Stroke = RowStroke }
+    end
+
+    local dragging, dragInput, dragStart, startPos
+    Header.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = MainFrame.Position
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+            MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+    Header.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then 
+            dragInput = input 
+        end
+    end)
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then 
+            dragging = false 
+        end
+    end)
+    
+    task.spawn(function()
+        while ScreenGui and ScreenGui.Parent do 
+            local currentAge = workspace.DistributedGameTime 
+            local AgeObj = workspace:FindFirstChild("Age")
+            if AgeObj and (AgeObj:IsA("NumberValue") or AgeObj:IsA("IntValue")) then
+                currentAge = AgeObj.Value
+            end
+            
+            currentAge = math.floor(currentAge)
+
+            for _, boss in ipairs(Bosses) do
+                local isAlive = IsBossAlive(boss.WorkspaceName)
+                local lbl = TimerLabels[boss.Name].Label
+                local stroke = TimerLabels[boss.Name].Stroke
+                               
+                if isAlive then
+                    lbl.Text = "ALIVE"
+                    lbl.TextColor3 = Color3.fromRGB(0, 255, 128) 
+                    stroke.Enabled = true
+                else
+                    stroke.Enabled = false
+                    
+                    local timeRemaining = boss.Interval - (currentAge % boss.Interval)
+                    if timeRemaining == boss.Interval then timeRemaining = 0 end
+                    
+                    local h = math.floor(timeRemaining / 3600)
+                    local m = math.floor((timeRemaining % 3600) / 60)
+                    local s = timeRemaining % 60
+                    
+                    if h > 0 then 
+                        lbl.Text = string.format("%02d:%02d:%02d", h, m, s)
+                    else 
+                        lbl.Text = string.format("%02d:%02d", m, s) 
+                    end
+                    
+                    lbl.TextColor3 = Color3.fromRGB(200, 200, 200) 
+                end
+            end
+            task.wait(1) 
+        end
+    end)
+end
+
+getgenv().BossFarmPos = "Below" 
+
+local function EnsureStandSummoned(character)
+    if not character then return end
+    local standEvents = character:FindFirstChild("StandEvents")
+    if standEvents and standEvents:FindFirstChild("Summon") then
+        local hasStand = false
+     
+        for _, child in ipairs(character:GetChildren()) do
+            if child:IsA("Model") and not child:IsA("Accessory") then
+                for _, part in ipairs(child:GetDescendants()) do
+                    if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" and part.Transparency < 1 then
+                        hasStand = true
+                        break
+                    end
+                end
+            end
+        end
+        
+        if not hasStand then
+            standEvents.Summon:FireServer()
+            task.wait(1)
+        end
+    end
+end
+
+local function HandleMapBypass(bossName, playerHRP, targetBossHRP)
+    if not targetBossHRP then return false end
+
+    local distanceToBoss = (playerHRP.Position - targetBossHRP.Position).Magnitude
+
+    if bossName == "Jotaro Over Heaven" and distanceToBoss > 1000 then
+        playerHRP.CFrame = CFrame.new(28173.01, 35.07, -240.87)
+        playerHRP.Velocity = Vector3.new(0, 0, 0)
+        task.wait(1) 
+        return false 
+    end
+
+    if bossName == "Dio_Coffin" and distanceToBoss > 1000 then
+        playerHRP.CFrame = CFrame.new(-10565.49, -179.73, -214.23)
+        playerHRP.Velocity = Vector3.new(0, 0, 0)
+        task.wait(1) 
+        return false
+    end
+
+    if bossName == "Alternate Jotaro Part 4" and distanceToBoss > 1000 then
+        playerHRP.CFrame = CFrame.new(11867.67, -3.49, -4508.85)
+        playerHRP.Velocity = Vector3.new(0, 0, 0)
+        task.wait(1) 
+        return false
+    end
+
+    return true 
+end
+
+local BossCycleTracker = {}
+
+local function GetBossIntervalAndNPC(bossName)
+    if bossName == "Jotaro Over Heaven" then
+        return 1800, lairnpc("90+")
+    elseif bossName == "Dio_Coffin" then
+        local asertTP = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("NPCs") and workspace.Map.NPCs:FindFirstChild("Asert_TP")
+        return 3600, asertTP
+    end
+    return nil, nil
+end
+
+local function bossFarm()
+    task.spawn(function()
+        local lastBossAttackTime = 0
+        local targetBoss = nil
+        local targetBossName = nil
+
+        while task.wait() do
+            
+            if not getgenv().AutoBoss then 
+                targetBoss = nil
+                targetBossName = nil
+                task.wait(0.5)
+                continue 
+            end
+
+            local character = LocalPlayer.Character
+            local playerHRP = character and character:FindFirstChild("HumanoidRootPart")
+            local playerHum = character and character:FindFirstChild("Humanoid")
+                       
+
+            if not playerHRP or not playerHum or playerHum.Health <= 0 then 
+                targetBoss = nil
+                task.wait(1)
+                continue 
+            end
+
+            
+            if targetBoss then
+                local targetHum = targetBoss:FindFirstChild("Humanoid")
+                if not targetBoss.Parent or not targetHum or targetHum.Health <= 0 or not targetBoss:FindFirstChild("HumanoidRootPart") then
+                    
+                    if (targetBossName == "Jotaro Over Heaven" or targetBossName == "Dio_Coffin") then
+                        local interval = (targetBossName == "Jotaro Over Heaven") and 1800 or 3600
+                        local currentAge = workspace.DistributedGameTime
+                        local AgeObj = workspace:FindFirstChild("Age")
+                        if AgeObj and (AgeObj:IsA("NumberValue") or AgeObj:IsA("IntValue")) then
+                            currentAge = AgeObj.Value
+                        end
+                        if interval then
+                            local cycleID = math.floor(currentAge / interval)
+                            if not BossCycleTracker[targetBossName] then BossCycleTracker[targetBossName] = { DeadCycle = -1 } end
+                            BossCycleTracker[targetBossName].DeadCycle = cycleID
+                        end
+                    end
+                    
+                    targetBoss = nil
+                    targetBossName = nil
+                end
+            end
+
+            
+            if not targetBoss and type(getgenv().SelectedBoss) == "table" then
+                local livingFolder = workspace:FindFirstChild("Living")
+                if livingFolder then
+                    for bossName, isSelected in pairs(getgenv().SelectedBoss) do
+                        if isSelected then
+                            for _, entity in ipairs(livingFolder:GetChildren()) do
+                                if entity.Name:match(bossName) or entity.Name:gsub("%s+", ""):match(bossName:gsub("%s+", "")) then
+                                    local hum = entity:FindFirstChild("Humanoid")
+                                    if hum and hum.Health > 0 and entity:FindFirstChild("HumanoidRootPart") then
+                                        targetBoss = entity
+                                        targetBossName = bossName
+                                        break
+                                    end
+                                end
+                            end
+                                                        
+                if not targetBoss and bossName == "Alternate Jotaro Part 4" then
+                    local distanceToArena = (playerHRP.Position - Vector3.new(11867.67, -3.49, -4508.85)).Magnitude
+                    if distanceToArena > 1000 then
+                        playerHRP.CFrame = CFrame.new(11867.67, -3.49, -4508.85)
+                        playerHRP.Velocity = Vector3.new(0, 0, 0)
+                        task.wait(1.5) 
+                    end
+                end
+
+                            
+                            if not targetBoss and (bossName == "Jotaro Over Heaven" or bossName == "Dio_Coffin") then
+                                local interval = (bossName == "Jotaro Over Heaven") and 1800 or 3600
+                                local currentAge = workspace.DistributedGameTime
+                                local AgeObj = workspace:FindFirstChild("Age")
+                                if AgeObj and (AgeObj:IsA("NumberValue") or AgeObj:IsA("IntValue")) then
+                                    currentAge = AgeObj.Value
+                                end
+                                                                        
+                                local cycleID = math.floor(currentAge / interval)
+                                local timeSinceSpawn = currentAge % interval
+                                
+                                if not BossCycleTracker[bossName] then BossCycleTracker[bossName] = { DeadCycle = -1 } end
+                                if dungeon() then BossCycleTracker[bossName].DeadCycle = cycleID end
+                                                                      
+                                if BossCycleTracker[bossName].DeadCycle ~= cycleID and timeSinceSpawn < 600 then
+                                 
+                                    if bossName == "Jotaro Over Heaven" then
+                                        playerHRP.CFrame = CFrame.new(28173.01, 35.07, -240.87)
+                                    elseif bossName == "Dio_Coffin" then
+                                        playerHRP.CFrame = CFrame.new(-10565.49, -179.73, -214.23)
+                                    end
+                                    playerHRP.Velocity = Vector3.new(0, 0, 0)
+                                    task.wait(1.5) 
+                                end
+                            end
+
+                            if targetBoss then break end 
+                        end
+                    end
+                end
+            end
+            
+            if targetBoss and targetBossName then
+                local targetHRP = targetBoss:FindFirstChild("HumanoidRootPart")
+               
+                if HandleMapBypass(targetBossName, playerHRP, targetHRP) then
+                    EnsureStandSummoned(character)
+                    
+                    local bossMode = getgenv().BossFarmPos == "Below" and "Below_Boss" or getgenv().BossFarmPos
+                    
+                    OPHover_Lock(playerHRP, targetHRP, getgenv().BossDistance, bossMode)
+                                   
+                    if tick() - lastBossAttackTime >= getgenv().AttackDelay then
+                        executeSkills(getgenv().SelectedBossSkills)
+                        lastBossAttackTime = tick()
+                    end
+                end
+            else
+                task.wait(0.5)
+            end
+        end
+    end)
+end
+
+local function TeleportToPosition(targetPos)
+    local character = LocalPlayer.Character
+    local hrp = character and character:FindFirstChild("HumanoidRootPart")
+    
+    if hrp then
+        hrp.CFrame = CFrame.new(targetPos)
+        hrp.Velocity = Vector3.new(0, 0, 0)
+    else
+        OrionLib:MakeNotification({Name = "Error", Content = "Character/HumanoidRootPart not found", Time = 3})
+    end
+end
+
+local Window = OrionLib:MakeWindow({
+    Name = "lurix hub | SUR ", 
+    HidePremium = false, 
+    SaveConfig = true, 
+    ConfigFolder = "lurixconfig",
+    IntroEnabled = false
+})
+
+local MainTab = Window:MakeTab({
+    Name = "farm",
+    Icon = "rbxassetid://",
+    PremiumOnly = false
+})
+
+local BossTab = Window:MakeTab({
+    Name = "Boss",
+    Icon = "rbxassetid://",
+    PremiumOnly = false
+})
+
+local RollTab = Window:MakeTab({
+    Name = "Stand Roll",
+    Icon = "rbxassetid://",
+    PremiumOnly = false
+})
+
+local SpecRollTab = Window:MakeTab({
+    Name = "Specific Roll",
+    Icon = "rbxassetid://",
+    PremiumOnly = false
+})
+
+local ShopTab = Window:MakeTab({
+    Name = "Shop",
+    Icon = "rbxassetid://",
+    PremiumOnly = false
+})
+
+local MiscTab = Window:MakeTab({
+    Name = "Misc",
+    Icon = "rbxassetid://",
+    PremiumOnly = false
+})
+
+local DiscordTab = Window:MakeTab({
+    Name = "discord",
+    Icon = "rbxassetid://",
+    PremiumOnly = false
+})
+
+ShopTab:AddButton({
+    Name = "Teleport to Shop Lv 15",
+    Callback = function()
+        TeleportToPosition(Vector3.new(-563.62, 66.53, -689.20))
+    end
+})
+
+ShopTab:AddButton({
+    Name = "Teleport to Shop Lv 40",
+    Callback = function()
+        TeleportToPosition(Vector3.new(11926.64, -3.49, -4510.91))
+    end
+})
+
+ShopTab:AddButton({
+    Name = "Teleport to Shop Lv 120",
+    Callback = function()
+        TeleportToPosition(Vector3.new(-428.52, 66.98, -156.83))
+    end
+})
+
+ShopTab:AddButton({
+    Name = "Teleport to Shop Lv 200",
+    Callback = function()
+        TeleportToPosition(Vector3.new(-491.71, 67.03, -536.05))
+    end
+})
+
+ShopTab:AddSection({Name = "Auto Buy Lv 40"})
+
+getgenv().AutoBuyLv40 = false
+getgenv().SelectedAutoBuyOptions = {}
+
+local ShopItemMap = {
+    ["10 rokaka"] = "Option1",
+    ["rokaka"]      = "Option2",
+    ["10 arrow"]  = "Option3",
+    ["arrow"]       = "Option4"
+}
+
+ShopTab:AddDropdown({
+    Name = "Select Items to Buy",
+    Default = {},
+    Options = {"10 rokaka", "rokaka", "10 arrow", "arrow"}, 
+    Multi = true,
+    Flag = "AutoBuyLv40Dropdown",
+    Save = true,
+    Callback = function(Value)
+        local tempSelected = {}
+        for k, v in pairs(Value) do
+            local optName = ""
+            if type(k) == "number" then 
+                optName = v
+            elseif v == true then 
+                optName = k 
+            end
+            
+            if optName ~= "" and ShopItemMap[optName] then
+                table.insert(tempSelected, ShopItemMap[optName])
+            end
+        end
+        getgenv().SelectedAutoBuyOptions = tempSelected
+    end
+})
+ShopTab:AddToggle({
+    Name = "Auto Buy",
+    Default = false,
+    Flag = "AutoBuyLv40Toggle",
+    Save = true,
+    Callback = function(Value)
+        getgenv().AutoBuyLv40 = Value
+    end
+})
+
+task.spawn(function()
+    local BuyItemEvent = game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("BuyItem")
+    
+    while task.wait(0.5) do
+        if getgenv().AutoBuyLv40 and #getgenv().SelectedAutoBuyOptions > 0 then
+            for _, option in ipairs(getgenv().SelectedAutoBuyOptions) do
+                if not getgenv().AutoBuyLv40 then break end 
+                
+                pcall(function()
+                    BuyItemEvent:FireServer("MerchantAU", option)
+                end)
+                task.wait(0.1) 
+            end
+        end
+    end
+end)
+
+ShopTab:AddSection({Name = "Auto Sell Items"})
+
+getgenv().AutoSell = false
+getgenv().SelectedSellItems = {}
+getgenv().SellAmount = 1 
+
+local SellItemsList = {
+    "Dio's Diary",
+    "Stand Arrow",
+    "Charged Arrow",
+    "New Rokakaka",
+    "Rokakaka",
+    "Requiem Arrow"
+}
+
+ShopTab:AddDropdown({
+    Name = "Select Items to Sell",
+    Default = {},
+    Options = SellItemsList, 
+    Multi = true,
+    Flag = "AutoSellDropdown",
+    Save = true,
+    Callback = function(Value)
+        local tempSelected = {}
+        for k, v in pairs(Value) do
+            local optName = ""
+            if type(k) == "number" then 
+                optName = v
+            elseif v == true then 
+                optName = k 
+            end
+            
+            if optName ~= "" then
+                table.insert(tempSelected, optName)
+            end
+        end
+        getgenv().SelectedSellItems = tempSelected
+    end
+})
+
+ShopTab:AddTextbox({
+    Name = "Amount to Sell",
+    Default = "1",
+    TextDisappear = false,
+    Numeric = true, 
+    Finished = true, 
+    Flag = "AutoSellAmountBox",
+    Save = true,
+    Callback = function(Value)
+        local amount = tonumber(Value)
+        
+        if amount and amount > 0 then
+            getgenv().SellAmount = math.floor(amount)
+        else
+            getgenv().SellAmount = 1
+        end
+    end          
+})
+
+ShopTab:AddToggle({
+    Name = "Auto Sell",
+    Default = false,
+    Flag = "AutoSellToggle",
+    Save = true,
+    Callback = function(Value)
+        getgenv().AutoSell = Value
+    end
+})
+
+task.spawn(function()
+    local SM_Event = game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("SM_Event")
+    
+    while task.wait(0.5) do
+        if getgenv().AutoSell and #getgenv().SelectedSellItems > 0 then
+            for _, itemName in ipairs(getgenv().SelectedSellItems) do
+                if not getgenv().AutoSell then break end 
+                
+                pcall(function()
+                    
+                    SM_Event:FireServer("Sell", itemName, getgenv().SellAmount)
+                end)
+                
+                task.wait(0.2) 
+            end
+        end
+    end
+end)
+
+local FarmPositions = {
+    [500] = CFrame.new(-698.37, 66.93, -148.17),
+    [275] = CFrame.new(-698.37, 66.93, -148.17),
+    [200] = CFrame.new(-5184.48, -449.02, -3809.25),
+    [175] = CFrame.new(-502.30, 66.92, 32.67),
+    [150] = CFrame.new(-232.54, 66.92, -142.14),
+    [125] = CFrame.new(-370.63, 67.01, -103.93),
+    [100] = CFrame.new(-222.30, 66.97, -703.44),
+    [75]  = CFrame.new(-589.33, 66.53, -632.64),
+    [50]  = CFrame.new(35.09, 94.13, -883.21),
+    [40]  = CFrame.new(-534.22, 67.03, -1038.11),
+    [30]  = CFrame.new(-660.01, 67.03, -450.35),
+    [20]  = CFrame.new(-176.98, 66.93, -585.13),
+    [1]   = CFrame.new(-691.26, 67.02, -931.74)
+}
+
+local function GetFarmPosition(lvl)
+    local maxValidLevel = 1
+    for reqLvl, _ in pairs(FarmPositions) do
+        if lvl >= reqLvl and reqLvl > maxValidLevel then
+            maxValidLevel = reqLvl
+        end
+    end
+    return FarmPositions[maxValidLevel]
+end
+
+MainTab:AddToggle({
+    Name = "Auto Farm Level",
+    Default = false,
+    Flag = "farm",
+    Save = true,
+    Callback = function(Value)
+        getgenv().AutoFarm = Value
+               
+        if Value then
+            local currentLvl = Level and Level.Value or 1
+            local farmCFrame = GetFarmPosition(currentLvl)
+            local hrp = getHRP()
+            
+            if hrp and farmCFrame then
+                hrp.Velocity = Vector3.new(0, 0, 0)
+                hrp.CFrame = farmCFrame
+            end
+        end
+    end
+})
+
+local FarmSkillDropdown = MainTab:AddDropdown({
+    Name = "Select Skills",
+    Default = {"M1", "Heavy", "Barrage"},
+    Options = {"M1", "Heavy", "Barrage"},
+    Multi = true,
+    Flag = "FarmSkillDrop",
+    Save = true,
+    Callback = function(Value)
+        local selected = {}
+        for k, v in pairs(Value) do
+            if type(k) == "number" then table.insert(selected, v)
+            elseif v == true then table.insert(selected, k) end
+        end
+        getgenv().SelectedFarmSkills = selected
+    end
+})
+
+MainTab:AddButton({
+    Name = "Refresh Skills",
+    Callback = function()
+        if _G.ManualRefreshSkills then _G.ManualRefreshSkills() end
+    end
+})
+
+MainTab:AddSlider({
+    Name = "Distance",
+    Min = 5,
+    Max = 13,
+    Default = 10,
+    Color = Color3.fromRGB(255,255,255),
+    Increment = 1,
+    ValueName = "studs",
+    Flag = "dis",
+    Save = true,
+    Callback = function(Value)
+        getgenv().Distance = Value
+    end
+})
+
+MainTab:AddSection({Name = "Lair"})
+
+MainTab:AddDropdown({
+    Name = "Select Lair Level",
+    Default = "15+",
+    Options = {"15+", "40+", "80+", "100+", "200+"},
+    Multiple = false,
+    Flag = "LairList",
+    Save = true,
+    Callback = function(Value)
+        getgenv().SelectedLair = Value
+    end
+})
+
+MainTab:AddToggle({
+    Name = "Auto Lair",
+    Default = false,
+    Flag = "LairToggle",
+    Save = true,
+    Callback = function(Value)
+        getgenv().AutoLair = Value
+    end
+})
+
+MainTab:AddToggle({
+    Name = "Instant Kill (Only in Lair)",
+    Default = false,
+    Flag = "instantkill",
+    Save = true,
+    Callback = function(Value)
+        getgenv().inskill = Value
+    end
+})
+
+MainTab:AddSection({Name = "Items"})
+
+MainTab:AddToggle({
+    Name = "Auto Pick Up Item",
+    Default = false,
+    Flag = "item",
+    Save = true,
+    Callback = function(Value)
+        getgenv().AutoFarmItem = Value
+    end
+})
+
+BossTab:AddToggle({
+    Name = "Boss Timer",
+    Default = false,
+    Flag = "ToggleBossTimer",
+    Save = true,
+    Callback = function(Value)
+        ManageBossTimer(Value)
+    end
+})
+
+local BossList = {
+    "JohnnyJoestar",
+    "Dio_Coffin",
+    "Giorno Giovanna Requiem",
+    "Jotaro Over Heaven",
+    "Alternate Jotaro Part 4"
+}
+
+BossTab:AddDropdown({
+    Name = "select boss",
+    Default = {},
+    Options = BossList,
+    Multi = true, 
+    Flag = "BossListTarget",
+    Save = true,
+    Callback = function(Value)
+        local selected = {}
+        if type(Value) == "table" then
+            for _, v in pairs(Value) do selected[v] = true end
+        elseif type(Value) == "string" then
+            selected[Value] = true
+        end
+        getgenv().SelectedBoss = selected
+    end
+})
+
+BossTab:AddDropdown({
+    Name = "Position",
+    Default = "Below",
+    Options = {"Above", "Below", "Behind"},
+    Flag = "BossFarmPosUI",
+    Save = true,
+    Callback = function(Value)
+        getgenv().BossFarmPos = Value
+    end
+})
+
+BossTab:AddSlider({
+    Name = "Distance",
+    Min = 5,
+    Max = 13,
+    Default = 10,
+    Color = Color3.fromRGB(255, 60, 60),
+    Increment = 1,
+    ValueName = "Studs",
+    Flag = "BossFarmDistanceUI",
+    Save = true,
+    Callback = function(Value)
+        getgenv().BossDistance = Value
+    end
+})
+
+BossTab:AddToggle({
+    Name = "Auto Farm Boss",
+    Default = false,
+    Flag = "AutoBossToggle",
+    Save = true,
+    Callback = function(Value)
+        getgenv().AutoBoss = Value
+    end
+})
+
+local BossSkillDropdown = BossTab:AddDropdown({
+    Name = "Select Skills",
+    Default = {"M1", "Heavy", "Barrage"},
+    Options = {"M1", "Heavy", "Barrage"},
+    Multi = true,
+    Flag = "BossSkillDrop",
+    Save = true,
+    Callback = function(Value)
+        local selected = {}
+        for k, v in pairs(Value) do
+            if type(k) == "number" then table.insert(selected, v)
+            elseif v == true then table.insert(selected, k) end
+        end
+        getgenv().SelectedBossSkills = selected
+    end
+})
+
+BossTab:AddButton({
+    Name = "Refresh Skills",
+    Callback = function()
+        if _G.ManualRefreshSkills then _G.ManualRefreshSkills() end
+    end
+})
+
+RollTab:AddDropdown({
+    Name = "Roll Mode",
+    Default = "stand or attribute",
+    Options = {"stand or attribute", "stand only", "attribute only", "stand and attribute", "Kars"},
+    Flag = "RollModeDrop",
+    Save = true,
+    Callback = function(Value) getgenv().RollMode = Value end
+})
+
+RollTab:AddDropdown({
+    Name = "Select Stand",
+    Default = {},
+    Options = StandNames,
+    Multi = true,
+    Flag = "TargetStandsDrop",
+    Save = true,
+    Callback = function(Value) getgenv().TargetStandsNames = Value end
+})
+
+RollTab:AddDropdown({
+    Name = "Select Attribute",
+    Default = {},
+    Options = AttributeList,
+    Multi = true,
+    Flag = "TargetAttrDrop",
+    Save = true,
+    Callback = function(Value) getgenv().TargetAttributes = Value end
+})
+
+RollTab:AddDropdown({
+    Name = "Select Arrow",
+    Default = "Stand Arrow",
+    Options = {"Stand Arrow", "Charged Arrow"},
+    Flag = "ArrowSelect",
+    Save = true,
+    Callback = function(Value) getgenv().ArrowType = Value end
+})
+
+RollTab:AddToggle({
+    Name = "Auto Roll",
+    Default = false,
+    Flag = "ToggleAutoRoll",
+    Save = true,
+    Callback = function(Value)
+        if Value then 
+            local specificConfigured = false
+            if getgenv().UseSpecificRoll then
+                for _, slot in pairs(getgenv().SpecificSlots) do
+                    if slot.Stand ~= "None" or slot.Attribute ~= "None" then
+                        specificConfigured = true
+                        break
+                    end
+                end
+            end
+
+            local generalConfigured = false
+            if getgenv().RollMode == "Kars" and #getgenv().TargetAttributes > 0 then
+                generalConfigured = true
+            elseif getgenv().RollMode:match("stand") and #getgenv().TargetStandsNames > 0 then
+                if getgenv().RollMode == "stand and attribute" then
+                    generalConfigured = (#getgenv().TargetAttributes > 0)
+                else
+                    generalConfigured = true
+                end
+            elseif getgenv().RollMode:match("attribute") and #getgenv().TargetAttributes > 0 then
+                generalConfigured = true
+            end
+
+            if not (specificConfigured or generalConfigured) then
+                OrionLib:MakeNotification({
+                    Name = "Error", 
+                    Content = "Please configure at least 1 Specific Slot OR fill in the general Roll Mode settings", 
+                    Time = 10
+                })
+                OrionLib.Flags["ToggleAutoRoll"]:Set(false)
+                return
+            end
+
+            StartAutoRoll() 
+        end
+    end
+})
+
+RollTab:AddSlider({
+    Name = "Safe Delay (Seconds)",
+    Min = 0.1,
+    Max = 2,
+    Default = 0.5,
+    Color = Color3.fromRGB(80, 150, 255),
+    Increment = 0.1,
+    ValueName = "s",
+    Flag = "RollDelaySlider",
+    Save = true,
+    Callback = function(Value)
+        getgenv().RollDelay = Value
+    end
+})
+
+RollTab:AddSection({Name = "Storage"})
+
+RollTab:AddToggle({
+    Name = "Auto Store & Keep Rolling",
+    Default = false,
+    Flag = "ToggleAutoStore",
+    Save = true,
+    Callback = function(Value)
+        getgenv().AutoStorageStand = Value
+    end
+})
+
+RollTab:AddSection({Name = "Webhook"})
+
+RollTab:AddToggle({
+    Name = "Notify",
+    Default = false,
+    Flag = "ToggleRollWebhook",
+    Save = true,
+    Callback = function(Value) getgenv().RollWebhookEnabled = Value end
+})
+
+RollTab:AddToggle({
+    Name = "Notify All (mode)",
+    Default = false,
+    Flag = "ToggleNotifyAllRolls",
+    Save = true,
+    Callback = function(Value) 
+        getgenv().NotifyAllRolls = Value 
+    end
+})
+
+RollTab:AddTextbox({
+    Name = "Webhook URL",
+    Default = "",
+    TextDisappear = false,
+    Flag = "RollWebhookURL",
+    Save = true,
+    Callback = function(Value) getgenv().RollWebhookURL = Value end
+})
+
+RollTab:AddButton({
+    Name = "Test Webhook",
+    Callback = function()
+        if getgenv().RollWebhookURL == "" then
+            OrionLib:MakeNotification({Name = "Error", Content = "Please enter the Webhook URL first", Time = 3})
+            return
+        end
+        local oldState = getgenv().RollWebhookEnabled
+        getgenv().RollWebhookEnabled = true
+        SendRollWebhook("Star Platinum (TEST)", "Godly (TEST)")
+        getgenv().RollWebhookEnabled = oldState
+        OrionLib:MakeNotification({Name = "Test Sent", Content = "Test webhook sent successfully", Time = 3})
+    end
+})
+
+SpecRollTab:AddParagraph("Guide / Hướng dẫn sử dụng", 
+    "[EN] Enable 'Specific Roll' to activate. The system will automatically stop rolling when your Stand and Attribute match any of the configured slots (1 to 20). If you only want to target a Stand, set the Attribute of that slot to 'None' (and vice-versa) [use with auto roll]\n\n" ..
+    "[VI] Bật 'Specific Roll' để kích hoạt. Hệ thống sẽ tự động dừng quay khi Stand và Attribute của bạn trùng khớp với bất kỳ ô cấu hình nào được thiết lập (từ 1 đến 20). Nếu chỉ muốn tìm Stand, hãy để Attribute ở ô đó là 'None' (và ngược lại) [dùng chung với auto roll]"
+)
+
+SpecRollTab:AddSection({Name = "Specific Roll (Optional)"})
+
+SpecRollTab:AddToggle({
+    Name = "Specific Roll",
+    Default = false,
+    Flag = "ToggleUseSpecific",
+    Save = true,
+    Callback = function(Value)
+        getgenv().UseSpecificRoll = Value
+    end
+})
+
+local StandNamesWithNone = {"None"}
+for _, name in ipairs(StandNames) do 
+    table.insert(StandNamesWithNone, name) 
+end
+
+local AttributeListWithNone = {"None"}
+for _, name in ipairs(AttributeList) do 
+    table.insert(AttributeListWithNone, name) 
+end
+
+for i = 1, 20 do
+    SpecRollTab:AddSection({Name = "Slot " .. i})
+    
+    SpecRollTab:AddDropdown({
+        Name = "Slot " .. i .. " Stand",
+        Default = "None",
+        Options = StandNamesWithNone,
+        Flag = "SpecSlot" .. i .. "Stand",
+        Save = true,
+        Callback = function(Value) 
+            getgenv().SpecificSlots["Slot" .. i].Stand = Value 
+        end
+    })
+    
+    SpecRollTab:AddDropdown({
+        Name = "Slot " .. i .. " Attribute",
+        Default = "None",
+        Options = AttributeListWithNone,
+        Flag = "SpecSlot" .. i .. "Attr",
+        Save = true,
+        Callback = function(Value) 
+            getgenv().SpecificSlots["Slot" .. i].Attribute = Value 
+        end
+    })
+end
+
+local reportData = {
+    Type = "Feedback",
+    Message = ""
+}
+local lastReportTime = 0
+local MarketplaceService = game:GetService("MarketplaceService")
+local requestFunc = syn and syn.request or http and http.request or http_request or fluxus and fluxus.request or request
+local WebhookURL = "https://discord.com/api/webhooks/1503747668059361311/agFq6u4Xyt4Rf-okDhQN9Q7mdUAXhpXLx5GtY2kk1doqg3EXzmv1l1oP_WNhD5hjHgdF" 
+
+MiscTab:AddSection({Name = "Report"})
+
+MiscTab:AddDropdown({
+    Name = "Report Type (broken)",
+    Default = "Feedback",
+    Options = {"Bug Report", "Feedback"},
+    Multi = false,
+    Flag = "ReportType",
+    Callback = function(Value) 
+        reportData.Type = Value 
+    end
+})
+
+MiscTab:AddTextbox({
+    Name = "Message",
+    Default = "",
+    TextDisappear = false,
+    Flag = "ReportMessage",
+    Callback = function(Value) 
+        reportData.Message = Value 
+    end
+})
+
+MiscTab:AddButton({
+    Name = "Send",
+    Callback = function()
+        if not requestFunc then
+            OrionLib:MakeNotification({Name = "Error", Content = "Your executor does not support HTTP requests", Time = 5})
+            return
+        end
+
+        if tick() - lastReportTime < 30 then
+            OrionLib:MakeNotification({Name = "System", Content = "Spam limit. Wait " .. math.floor(30 - (tick() - lastReportTime)) .. "s", Image = "rbxassetid://7733653981", Time = 3})
+            return
+        end
+
+        if reportData.Message == "" or reportData.Message:match("^%s*$") then 
+            OrionLib:MakeNotification({Name = "Error", Content = "Message cannot be empty", Time = 3})
+            return 
+        end
+        
+        lastReportTime = tick()
+       
+        local executorName = "Unknown"
+        pcall(function() executorName = identifyexecutor and identifyexecutor() or "Unknown" end)
+
+        local platform = "Unknown Platform"
+        pcall(function()
+            if UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled then platform = "Mobile 📱"
+            elseif UserInputService.KeyboardEnabled and not UserInputService.TouchEnabled then platform = "PC 💻"
+            elseif UserInputService.TouchEnabled and UserInputService.KeyboardEnabled then platform = "Tablet/Laptop 🖥️"
+            elseif UserInputService.GamepadEnabled then platform = "Console 🎮"
+            end
+        end)
+
+        local ping = "N/A"
+        pcall(function() ping = math.floor(LocalPlayer:GetNetworkPing() * 1000) .. " ms" end)
+
+        local fps = "N/A"
+        pcall(function() fps = math.floor(workspace:GetRealPhysicsFPS()) .. " FPS" end)
+
+        local gameName = game.Name
+        pcall(function() gameName = MarketplaceService:GetProductInfo(game.PlaceId).Name end)
+
+        local avatarUrl = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. LocalPlayer.UserId .. "&width=150&height=150&format=png"
+        local isBug = (reportData.Type == "Bug Report")
+        local embedColor = isBug and 16711680 or 5763719 
+        local titleIcon = isBug and "🚨" or "✅️"
+
+        local data = {
+            ["content"] = isBug and "||<@&1503766056622227596>||" or "", 
+            ["embeds"] = {{
+                ["author"] = { ["name"] = string.format("%s (@%s)", LocalPlayer.DisplayName, LocalPlayer.Name), ["icon_url"] = avatarUrl },
+                ["title"] = titleIcon .. " " .. string.upper(reportData.Type) .. "",
+                ["description"] = ">>> **user Message:**\n```yaml\n" .. reportData.Message .. "\n```",
+                ["color"] = embedColor,
+                ["thumbnail"] = { ["url"] = avatarUrl },
+                ["fields"] = {
+                    { ["name"] = "player Info", ["value"] = string.format("```ini\n[Display]: %s\n[User]:    %s\n[ID]:      %d\n```", LocalPlayer.DisplayName, LocalPlayer.Name, LocalPlayer.UserId), ["inline"] = true },
+                    { ["name"] = "environment", ["value"] = string.format("```ini\n[Device]: %s\n[Ping]:   %s\n[FPS]:    %s\n```", platform, ping, fps), ["inline"] = true },
+                    { ["name"] = "execution Info", ["value"] = string.format("```ini\n[Executor]: %s\n[Game]:     %s\n[PlaceId]:  %d\n```", executorName, gameName, game.PlaceId), ["inline"] = false }
+                },
+                ["footer"] = { ["text"] = "report • " .. platform, ["icon_url"] = "" },
+                ["timestamp"] = DateTime.now():ToIsoDate()
+            }}
+        }
+
+        local success, response = pcall(function()
+            return requestFunc({Url = WebhookURL, Method = "POST", Headers = {["Content-Type"] = "application/json"}, Body = HttpService:JSONEncode(data)})
+        end)
+
+        if success and response and (response.StatusCode == 200 or response.StatusCode == 204) then
+            OrionLib:MakeNotification({Name = "Success", Content = "Sent successfully!", Time = 3})
+        else
+            OrionLib:MakeNotification({Name = "Error", Content = "Failed to send", Time = 3})
+        end
+    end
+})
+
+MiscTab:AddToggle({
+    Name = "Auto Server Hop (on shutdown)",
+    Default = false,
+    Flag = "ToggleAutoHop",
+    Save = true,
+    Callback = function(Value)
+        getgenv().AutoHop = Value
+    end
+})
+
+MiscTab:AddButton({
+    Name = "open storage",
+    Callback = function()
+        workspace:WaitForChild("Map"):WaitForChild("NPCs"):WaitForChild("admpn"):WaitForChild("Done"):FireServer()
+    end
+})
+
+MiscTab:AddSection({Name = "Performance"})
+
+local BlackScreenGui = nil
+
+MiscTab:AddToggle({
+    Name = "Black Screen",
+    Default = false,
+    Flag = "ToggleBlackScreen",
+    Save = true,
+    Callback = function(Value)
+        local RunService = game:GetService("RunService")
+        
+        if Value then
+            
+            if not BlackScreenGui then
+                local uiParent = (gethui and gethui()) or CoreGui or LocalPlayer:WaitForChild("PlayerGui")
+                
+                BlackScreenGui = Instance.new("ScreenGui")
+                BlackScreenGui.Name = "LurixBlackScreen"
+                BlackScreenGui.IgnoreGuiInset = true
+                BlackScreenGui.ResetOnSpawn = false
+                BlackScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+                BlackScreenGui.DisplayOrder = 9999999 
+                BlackScreenGui.Parent = uiParent
+
+                
+                local bgButton = Instance.new("TextButton", BlackScreenGui)
+                bgButton.Size = UDim2.new(1, 0, 1, 0)
+                bgButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+                bgButton.BorderSizePixel = 0
+                bgButton.Text = "" 
+                bgButton.AutoButtonColor = false 
+
+                local text = Instance.new("TextLabel", bgButton)
+                text.Size = UDim2.new(1, 0, 1, 0)
+                text.BackgroundTransparency = 1
+                text.Text = "reduce lag"
+                text.TextColor3 = Color3.fromRGB(150, 150, 150)
+                text.Font = Enum.Font.GothamBold
+                text.TextSize = 22
+
+                
+                bgButton.MouseButton1Click:Connect(function()
+                    
+                    if OrionLib.Flags["ToggleBlackScreen"] then
+                        OrionLib.Flags["ToggleBlackScreen"]:Set(false)
+                    end
+                end)
+            end
+
+            
+            pcall(function()
+                RunService:Set3dRenderingEnabled(false)
+            end)
+            
+            pcall(function()
+                if setfpscap then setfpscap(15) end
+            end)
+
+        else
+            
+            if BlackScreenGui then
+                BlackScreenGui:Destroy()
+                BlackScreenGui = nil
+            end
+
+            pcall(function()
+                RunService:Set3dRenderingEnabled(true)
+            end)
+
+            pcall(function()
+                if setfpscap then setfpscap(9999) end 
+            end)
+        end
+    end
+})
+
+getgenv().AutoReset = false
+
+MiscTab:AddToggle({
+    Name = "Auto Reset",
+    Default = false,
+    Flag = "ToggleAutoReset",
+    Save = true,
+    Callback = function(Value)
+        getgenv().AutoReset = Value
+    end
+})
+
+task.spawn(function()
+    local timePassed = 0
+    while task.wait(1) do 
+        if getgenv().AutoReset then
+            local char = LocalPlayer.Character
+            local hum = char and char:FindFirstChild("Humanoid")
+            
+            if hum and hum.Health > 0 then
+                timePassed = timePassed + 1
+                
+                if timePassed >= 300 then 
+                    hum.Health = 0 
+                    timePassed = 0                     
+                    
+                end
+            else
+                
+                timePassed = 0
+            end
+        else
+            timePassed = 0 
+        end
+    end
+end)
+
+MiscTab:AddSection({Name = "Visuals (ESP)"})
+
+MiscTab:AddToggle({
+    Name = "Player ESP",
+    Default = false,
+    Flag = "TogglePlayerESP",
+    Save = true,
+    Callback = function(Value)
+        getgenv().PlayerESPHighlight = Value
+        if Value then
+            startPlayerESP()
+        else
+            stopPlayerESP()
+        end
+    end
+})
+
+MiscTab:AddToggle({
+    Name = "Show Name",
+    Default = true,
+    Flag = "ESPShowName",
+    Save = true,
+    Callback = function(Value)
+        getgenv().ESPShowName = Value
+        refreshAllESPs()
+    end
+})
+
+MiscTab:AddToggle({
+    Name = "Show Health",
+    Default = true,
+    Flag = "ESPShowHP",
+    Save = true,
+    Callback = function(Value)
+        getgenv().ESPShowHealth = Value
+        refreshAllESPs()
+    end
+})
+
+MiscTab:AddToggle({
+    Name = "Show Stand",
+    Default = true,
+    Flag = "ESPShowStand",
+    Save = true,
+    Callback = function(Value)
+        getgenv().ESPShowStand = Value
+        refreshAllESPs()
+    end
+})
+
+MiscTab:AddToggle({
+    Name = "Show Attribute",
+    Default = true,
+    Flag = "ESPShowAttri",
+    Save = true,
+    Callback = function(Value)
+        getgenv().ESPShowAttri = Value
+        refreshAllESPs()
+    end
+})
+
+MiscTab:AddSlider({
+    Name = "ESP Font Size",
+    Min = 8,
+    Max = 20,
+    Default = 11,
+    Color = Color3.fromRGB(80, 150, 255),
+    Increment = 1,
+    ValueName = "px",
+    Flag = "ESPTxtSize",
+    Save = true,
+    Callback = function(Value)
+        getgenv().ESPTextSize = Value
+        refreshAllESPs()
+    end
+})
+
+MiscTab:AddSlider({
+    Name = "Distance",
+    Min = 50,
+    Max = 5000,
+    Default = 1000,
+    Color = Color3.fromRGB(80, 150, 255),
+    Increment = 50,
+    ValueName = "studs",
+    Flag = "ESPDistLimit",
+    Save = true,
+    Callback = function(Value)
+        getgenv().ESPMaxDistance = Value
+    end
+})
+
+local CustomGui = nil
+local ScrollContainer = nil
+local TitleLabel = nil
+local ActiveDataConnections = {} 
+
+local IgnoreData = {
+    ChangelogsRead8806 = true, Exp = true, GUID = true, BanReason = true,
+    CanKillPlayersQuest = true, Banned = true, ChrSkillPointsFolder = true,
+    Quests = true, StandSkillPoints = true, SkillPoints = true, Goncoins = true,
+    Slot1GUID = true, Slot2GUID = true, Slot3GUID = true, Slot4GUID = true, Slot5GUID = true
+}
+
+local function CreatePlayerplayerGUI()
+    local uiParent = (gethui and gethui()) or CoreGui
+    
+    if uiParent:FindFirstChild("LurixPlayerplayer") then
+        uiParent.LurixPlayerplayer:Destroy()
+    end
+
+    local ScreenGui = Instance.new("ScreenGui", uiParent)
+    ScreenGui.Name = "LurixPlayerplayer"
+    ScreenGui.ResetOnSpawn = false
+    ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+    ScreenGui.Enabled = false
+
+    local MainFrame = Instance.new("Frame", ScreenGui)
+    MainFrame.Size = UDim2.new(0, 300, 0, 400)
+    MainFrame.Position = UDim2.new(1, -650, 0, 30)
+    MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20) 
+    MainFrame.BorderSizePixel = 0
+    MainFrame.Active = true
+
+    Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
+
+    local UIStrokeMain = Instance.new("UIStroke", MainFrame)
+    UIStrokeMain.Thickness = 1.5
+    UIStrokeMain.Color = Color3.fromRGB(80, 150, 255)
+    UIStrokeMain.Transparency = 0.3
+    
+    local UIGradient = Instance.new("UIGradient", MainFrame)
+    UIGradient.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 200, 200))
+    }
+    UIGradient.Rotation = 45
+
+    local Header = Instance.new("Frame", MainFrame)
+    Header.Size = UDim2.new(1, 0, 0, 35)
+    Header.BackgroundTransparency = 1
+
+    TitleLabel = Instance.new("TextLabel", Header)
+    TitleLabel.Size = UDim2.new(1, -20, 1, 0)
+    TitleLabel.Position = UDim2.new(0, 10, 0, 0)
+    TitleLabel.BackgroundTransparency = 1
+    TitleLabel.Text = "player: not selected"
+    TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    TitleLabel.Font = Enum.Font.GothamBold
+    TitleLabel.TextSize = 13
+    TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+    local Line = Instance.new("Frame", MainFrame)
+    Line.Size = UDim2.new(1, 0, 0, 1)
+    Line.Position = UDim2.new(0, 0, 0, 35)
+    Line.BackgroundColor3 = Color3.fromRGB(80, 150, 255)
+    Line.BorderSizePixel = 0
+    Line.Transparency = 0.5
+
+    ScrollContainer = Instance.new("ScrollingFrame", MainFrame)
+    ScrollContainer.Size = UDim2.new(1, 0, 1, -45)
+    ScrollContainer.Position = UDim2.new(0, 0, 0, 40)
+    ScrollContainer.BackgroundTransparency = 1
+    ScrollContainer.BorderSizePixel = 0
+    ScrollContainer.ScrollBarThickness = 3
+    ScrollContainer.ScrollBarImageColor3 = Color3.fromRGB(80, 150, 255)
+    ScrollContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
+    ScrollContainer.AutomaticCanvasSize = Enum.AutomaticSize.Y
+
+    local UIListLayout = Instance.new("UIListLayout", ScrollContainer)
+    UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    UIListLayout.Padding = UDim.new(0, 6)
+    UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+    local dragging, dragInput, dragStart, startPos
+    Header.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true; dragStart = input.Position; startPos = MainFrame.Position
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+            MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+    Header.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then dragInput = input end
+    end)
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = false end
+    end)
+
+    return ScreenGui
+end
+
+CustomGui = CreatePlayerplayerGUI()
+
+local function LoadTargetPlayerData(playerName)
+    if not ScrollContainer then return end
+
+    for _, child in ipairs(ScrollContainer:GetChildren()) do
+        if child:IsA("Frame") then child:Destroy() end
+    end
+    for _, conn in ipairs(ActiveDataConnections) do
+        conn:Disconnect()
+    end
+    table.clear(ActiveDataConnections)
+
+    local targetPlayer = Players:FindFirstChild(playerName)
+    if not targetPlayer then
+        TitleLabel.Text = "player: player not found"
+        return
+    end
+
+    local targetData = targetPlayer:FindFirstChild("Data")
+    if not targetData then
+        TitleLabel.Text = "player: " .. string.upper(playerName) .. " (no data)"
+        return
+    end
+
+    TitleLabel.Text = "player: " .. string.upper(playerName)
+
+    local dataList = {}
+    for _, v in pairs(targetData:GetChildren()) do
+        if not IgnoreData[v.Name] and v:IsA("ValueBase") then table.insert(dataList, v) end
+    end
+    table.sort(dataList, function(a, b) return a.Name < b.Name end)
+
+    for i, v in ipairs(dataList) do
+        local Row = Instance.new("Frame", ScrollContainer)
+        Row.Size = UDim2.new(1, -20, 0, 26)
+        Row.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+        Row.BorderSizePixel = 0
+        Row.LayoutOrder = i
+        
+        Instance.new("UICorner", Row).CornerRadius = UDim.new(0, 4)
+
+        local NameLabel = Instance.new("TextLabel", Row)
+        NameLabel.Size = UDim2.new(0.45, -10, 1, 0)
+        NameLabel.Position = UDim2.new(0, 10, 0, 0)
+        NameLabel.BackgroundTransparency = 1
+        NameLabel.Font = Enum.Font.GothamSemibold
+        NameLabel.TextSize = 12
+        NameLabel.TextColor3 = Color3.fromRGB(80, 200, 255)
+        NameLabel.TextXAlignment = Enum.TextXAlignment.Left
+        NameLabel.Text = v.Name
+
+        local ValueLabel = Instance.new("TextLabel", Row)
+        ValueLabel.Size = UDim2.new(0.55, -10, 1, 0)
+        ValueLabel.Position = UDim2.new(0.45, 0, 0, 0)
+        ValueLabel.BackgroundTransparency = 1
+        ValueLabel.Font = Enum.Font.GothamBold
+        ValueLabel.TextSize = 12
+        ValueLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+        ValueLabel.TextXAlignment = Enum.TextXAlignment.Right
+        
+        local initialVal = tostring(v.Value)
+        ValueLabel.Text = (initialVal == "" or initialVal == "nil") and "[empty]" or initialVal
+
+        local conn = v:GetPropertyChangedSignal("Value"):Connect(function()
+            local newVal = tostring(v.Value)
+            ValueLabel.Text = (newVal == "" or newVal == "nil") and "[empty]" or newVal
+            
+            ValueLabel.TextColor3 = Color3.fromRGB(0, 255, 128)
+            task.delay(0.6, function()
+                if ValueLabel then ValueLabel.TextColor3 = Color3.fromRGB(200, 200, 200) end
+            end)
+        end)
+        table.insert(ActiveDataConnections, conn)
+    end
+end
+
+MiscTab:AddSection({Name = "Check player data"})
+
+local function GetPlayerNames()
+    local names = {}
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= LocalPlayer then table.insert(names, p.Name) end
+    end
+    return names
+end
+
+local PlayerSelectDropdown = MiscTab:AddDropdown({
+    Name = "player",
+    Default = "",
+    Options = GetPlayerNames(),
+    Multiple = false,
+    Callback = function(Value)
+        LoadTargetPlayerData(Value)
+    end    
+})
+
+MiscTab:AddButton({
+    Name = "refresh",
+    Callback = function()
+        if PlayerSelectDropdown then
+            PlayerSelectDropdown:Refresh(GetPlayerNames(), true)
+            OrionLib:MakeNotification({Name = "success", Content = "Player list in the server has been updated", Time = 3})
+        end
+    end
+})
+
+MiscTab:AddToggle({
+    Name = "Check player data",
+    Default = false,
+    Callback = function(Value)
+        if CustomGui then
+            CustomGui.Enabled = Value
+        end
+    end
+})
+
+MiscTab:AddSection({Name = "Settings"})
+OrionLib:BuildSettings(MiscTab)
+
+_G.ManualRefreshSkills = function()
+    local skills = {"M1", "Heavy", "Barrage"} 
+    local character = LocalPlayer.Character
+    
+    if character then
+        local standEvents = character:FindFirstChild("StandEvents")
+        if standEvents then
+            for _, remote in ipairs(standEvents:GetChildren()) do
+                if remote:IsA("RemoteEvent") and not table.find(skills, remote.Name) then
+                    table.insert(skills, remote.Name)
+                end
+            end
+        end
+    end
+   
+    pcall(function()
+        if FarmSkillDropdown then FarmSkillDropdown:Refresh(skills, true) end
+        if BossSkillDropdown then BossSkillDropdown:Refresh(skills, true) end
+        
+        OrionLib:MakeNotification({
+            Name = "Success",
+            Content = "Refreshed",
+            Time = 3
+        })
+    end)
+end
+
+nccam()
+antiafk()
+noclip()
+summon()
+farm()
+lair()
+kill()
+bossFarm()
+
+task.spawn(function()
+    pcall(function()
+        
+        local queue_on_teleport = queue_on_teleport or (syn and syn.queue_on_teleport) or (fluxus and fluxus.queue_on_teleport) or queueonteleport
+        
+        if queue_on_teleport then
+            
+            local scriptToExecute = [[
+                task.wait(2)
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/0ko0/script/refs/heads/main/Oksk"))()
+            ]]
+            
+            
+            game:GetService("Players").LocalPlayer.OnTeleport:Connect(function(State)
+                if State == Enum.TeleportState.Started or State == Enum.TeleportState.InProgress then
+                    queue_on_teleport(scriptToExecute)
+                end
+            end)
+        end
+    end)
+end)
+
+OrionLib:LoadAutoloadConfig()
+OrionLib:Init()
+task.spawn(function()
+    task.wait(2) 
+    for i = 1, 20 do
+        local standFlag = OrionLib.Flags["SpecSlot" .. i .. "Stand"]
+        local attrFlag = OrionLib.Flags["SpecSlot" .. i .. "Attr"]
+        
+        if standFlag and standFlag.Value then
+            getgenv().SpecificSlots["Slot" .. i].Stand = standFlag.Value
+        end
+        if attrFlag and attrFlag.Value then
+            getgenv().SpecificSlots["Slot" .. i].Attribute = attrFlag.Value
+        end
+    end
+end)
