@@ -1,4 +1,3 @@
-OrionLib.SelectedFont = Enum.Font.GothamBold 
 local cloneref = function(instance: any)
     return instance
 end
@@ -31,6 +30,7 @@ local writefile = writefile or function(...) end
 local listfiles = listfiles or function(...) return {} end
 
 OrionLib = {
+	SelectedFont = Enum.Font.GothamBold,
         Elements = {},
         ThemeObjects = {},
         Connections = {},
