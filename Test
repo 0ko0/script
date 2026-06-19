@@ -1711,20 +1711,15 @@ end)
         ExpandedView.Visible = false
         ExpandedView.Parent = MinimizePill
 
-        local ExpandedLayout = Instance.new("UIListLayout")
-        ExpandedLayout.FillDirection = Enum.FillDirection.Horizontal
-        ExpandedLayout.HorizontalAlignment = Enum.HorizontalAlignment.SpaceBetween
-        ExpandedLayout.VerticalAlignment = Enum.VerticalAlignment.Center
-        ExpandedLayout.Parent = ExpandedView
-
         local ExpandedPadding = Instance.new("UIPadding")
         ExpandedPadding.PaddingLeft = UDim.new(0, 12)
         ExpandedPadding.PaddingRight = UDim.new(0, 12)
         ExpandedPadding.Parent = ExpandedView
 
-        -- Bên trái: Logo và Tên Script
+        -- Bên trái: Logo và Tên Script (Căn lề tuyệt đối trái)
         local LeftSection = Instance.new("Frame")
-        LeftSection.Size = UDim2.new(0.5, 0, 1, 0)
+        LeftSection.Size = UDim2.new(0.5, -10, 1, 0)
+        LeftSection.Position = UDim2.new(0, 0, 0, 0)
         LeftSection.BackgroundTransparency = 1
         LeftSection.Parent = ExpandedView
 
@@ -1752,9 +1747,11 @@ end)
         ExpandedTitle.TextTruncate = Enum.TextTruncate.AtEnd
         ExpandedTitle.Parent = LeftSection
 
-        -- Bên phải: Chỉ số FPS/MS và Hệ thống phím tắt nhanh
+        -- Bên phải: Chỉ số FPS/MS và Hệ thống phím tắt nhanh (Căn lề tuyệt đối phải)
         local RightSection = Instance.new("Frame")
-        RightSection.Size = UDim2.new(0.5, 0, 1, 0)
+        RightSection.Size = UDim2.new(0.5, -10, 1, 0)
+        RightSection.Position = UDim2.new(1, 0, 0, 0)
+        RightSection.AnchorPoint = Vector2.new(1, 0)
         RightSection.BackgroundTransparency = 1
         RightSection.Parent = ExpandedView
 
@@ -2032,80 +2029,6 @@ end)
                     end
                 end
             end
-        end)
-
-        local function toggleMinimize(targetMinimizedState)
-                if targetMinimizedState == nil then
-                        targetMinimizedState = not Minimized
-                end
-
-                if targetMinimizedState == Minimized then return end
-                Minimized = targetMinimizedState
-
-                MainWindow.ClipsDescendants = true
-
-                if Minimized then
-                        
-                        local targetPillSize = UDim2.new(0, MinimizePill.ContentContainer.Title.TextBounds.X + 52, 0, 36)
-                        local originalPos = MainWindow.Position
-
-                        local shrinkTween = TweenService:Create(MainWindow, TweenInfo.new(0.45, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
-                                Size = UDim2.new(0, 0, 0, 0),
-                                Position = MinimizePill.Position
-                        })
-                        shrinkTween:Play()
-
-                        task.spawn(function()
-                                shrinkTween.Completed:Wait()
-                                if Minimized then
-                                        MainWindow.Visible = false
-                                        MainWindow.Position = originalPos
-
-                                        MinimizePill.Size = UDim2.new(0, 0, 0, 36)
-                                        MinimizePill.Visible = true
-                                        TweenService:Create(MinimizePill, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-                                                Size = targetPillSize
-                                        }):Play()
-                                end
-                        end)
-                else
-                        local shrinkPill = TweenService:Create(MinimizePill, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
-                                Size = UDim2.new(0, 0, 0, 36)
-                        })
-                        shrinkPill:Play()
-
-                        task.spawn(function()
-                                shrinkPill.Completed:Wait()
-                                if not Minimized then
-                                        MinimizePill.Visible = false
-
-                                        MainWindow.Size = UDim2.new(0, 0, 0, 0)
-                                        MainWindow.Visible = true
-
-                                        local expandTween = TweenService:Create(MainWindow, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                                                Size = UDim2.new(0, 615, 0, 344)
-                                        })
-                                        expandTween:Play()
-
-                                        expandTween.Completed:Wait()
-                                        if not Minimized then
-                                                MainWindow.ClipsDescendants = false
-                                        end
-                                end
-                        end)
-                end
-        end
-
-        AddConnection(MinimizeBtn.MouseButton1Up, function()
-                toggleMinimize(true)
-        end)
-
-        AddConnection(MinimizePill.ClickBtn.InputEnded, function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                        if not isDraggingPill then
-                                toggleMinimize(false)
-                        end
-                end
         end)
 
         local function LoadSequence()
