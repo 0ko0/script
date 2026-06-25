@@ -3412,6 +3412,7 @@ end
                                 local knobSize = isHovered and UDim2.new(0, 14, 0, 14) or UDim2.new(0, 10, 0, 10)
                                 local coreSize = isHovered and UDim2.new(0, 6, 0, 6) or UDim2.new(0, 4, 0, 4)
                                 local barTransparency = isHovered and 0.8 or 0.9
+                                local textTransparency = isHovered and 0 or 0.3
                                 
                                 TweenService:Create(Knob, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
                                     Size = knobSize
@@ -3422,7 +3423,6 @@ end
                                         Size = coreSize
                                     }):Play()
                                 end
-                            end
                                 
                                 TweenService:Create(SliderBar, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
                                     BackgroundTransparency = barTransparency
