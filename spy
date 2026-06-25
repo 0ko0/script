@@ -1409,23 +1409,6 @@ local ContentCardBackground = AddThemeObject(SetChildren(SetProps(MakeElement("R
             ApplyStrokeMode = Enum.ApplyStrokeMode.Border
         })
 }), "Second")
-            Create("UIGradient", {
-                Color = ColorSequence.new({
-                    ColorSequenceKeypoint.new(0, Color3.fromRGB(45, 48, 62)),
-                    ColorSequenceKeypoint.new(0.5, AccentColor),
-                    ColorSequenceKeypoint.new(1, Color3.fromRGB(45, 48, 62))
-                }),
-                Rotation = 90
-            })
-        }),
-        Create("UIGradient", {
-            Color = ColorSequence.new({
-                ColorSequenceKeypoint.new(0, Color3.fromRGB(12, 13, 20)),
-                ColorSequenceKeypoint.new(1, Color3.fromRGB(7, 8, 12))
-            }),
-            Rotation = 45
-        })
-}), "Second")
         
         if WindowConfig.SearchBar and WindowConfig.SearchBar.Mains == true then
                 local SearchBox = Create("TextBox", {
