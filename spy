@@ -38,12 +38,12 @@ OrionLib = {
         OnDestroyTo = {},
         Themes = {
                 Default = {
-                        Main = Color3.fromRGB(8, 8, 12),        
-                        Second = Color3.fromRGB(15, 15, 24),     
-                        Stroke = Color3.fromRGB(55, 45, 85),     
-                        Divider = Color3.fromRGB(24, 20, 36),    
-                        Text = Color3.fromRGB(245, 248, 255),   
-                        TextDark = Color3.fromRGB(130, 135, 160) 
+                        Main = Color3.fromRGB(10, 10, 13),        
+                        Second = Color3.fromRGB(18, 18, 22),      
+                        Stroke = Color3.fromRGB(32, 35, 45),      
+                        Divider = Color3.fromRGB(24, 25, 30),     
+                        Text = Color3.fromRGB(245, 248, 255),     
+                        TextDark = Color3.fromRGB(130, 140, 165)  
                 },
         },
         SelectedTheme = "Default",
@@ -52,8 +52,8 @@ OrionLib = {
         Folder = "OrionLibSave",
 }
 
-local AccentColor = Color3.fromRGB(0, 220, 255)       
-local AccentColorLight = Color3.fromRGB(180, 50, 255) 
+local AccentColor = Color3.fromRGB(110, 150, 255)       
+local AccentColorLight = Color3.fromRGB(150, 185, 255)  
 
 getgenv().Destroy = false
 
@@ -845,66 +845,54 @@ function OrionLib:MakeNotification(NotificationConfig)
 			ClipsDescendants = true
 		})
 		
-		local Card = SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 8), {
+		local Card = SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(18, 18, 22), 0, 6), {
 			Parent = NotificationParent,
 			Size = UDim2.new(1, -10, 0, 0),
 			Position = UDim2.new(1.5, 0, 0, 0), 
 			AutomaticSize = Enum.AutomaticSize.Y
 		}), {
-		
-			Create("UIGradient", {
-				Color = ColorSequence.new({
-					ColorSequenceKeypoint.new(0, Color3.fromRGB(15, 16, 22)), 
-					ColorSequenceKeypoint.new(1, Color3.fromRGB(10, 11, 14))  
-				}),
-				Rotation = 45
-			}),
-		
 			Create("UIStroke", {
-				Color = Color3.fromRGB(255, 255, 255),
+				Color = Color3.fromRGB(35, 40, 55),
 				Thickness = 1.0, 
 				ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-			}, {
-				Create("UIGradient", {
-					Color = ColorSequence.new({
-						ColorSequenceKeypoint.new(0, Color3.fromRGB(45, 48, 62)), 
-						ColorSequenceKeypoint.new(0.5, AccentColor),
-						ColorSequenceKeypoint.new(1, Color3.fromRGB(45, 48, 62))
-					}),
-					Rotation = 90
-				})
 			}),
 			Create("UIPadding", {
-				PaddingTop = UDim.new(0, 10),
-				PaddingBottom = UDim.new(0, 10),
-				PaddingLeft = UDim.new(0, 10),
-				PaddingRight = UDim.new(0, 10)
+				PaddingTop = UDim.new(0, 12),
+				PaddingBottom = UDim.new(0, 12),
+				PaddingLeft = UDim.new(0, 14),
+				PaddingRight = UDim.new(0, 12)
 			})
+		})
+
+		-- Thanh hiển thị màu chủ đạo chạy dọc bên mép trái thông báo cực đẹp
+		local LeftAccentStrip = Create("Frame", {
+			Parent = Card,
+			Size = UDim2.new(0, 3, 1, 0),
+			Position = UDim2.new(0, -14, 0, 0),
+			BackgroundColor3 = AccentColor,
+			BorderSizePixel = 0
+		}, {
+			Create("UICorner", {CornerRadius = UDim.new(0, 2)})
 		})
 
 		local LeftSection = Create("Frame", {
 			Parent = Card,
-			Size = UDim2.new(0, 32, 0, 32),
+			Size = UDim2.new(0, 28, 0, 28),
 			Position = UDim2.new(0, 0, 0, 0),
 			BackgroundTransparency = 1
 		}, {
 			Create("Frame", {
 				Size = UDim2.new(1, 0, 1, 0),
-				BackgroundColor3 = Color3.fromRGB(24, 24, 24), 
+				BackgroundColor3 = Color3.fromRGB(24, 25, 30), 
 				BorderSizePixel = 0
 			}, {
-				Create("UICorner", {CornerRadius = UDim.new(1, 0)}),
-				Create("UIStroke", {
-					Color = Color3.fromRGB(55, 55, 55), 
-					Thickness = 1.0,
-					Transparency = 0.5
-				}),
+				Create("UICorner", {CornerRadius = UDim.new(0, 6)}),
 				Create("ImageLabel", {
-					Size = UDim2.new(0, 18, 0, 18),
+					Size = UDim2.new(0, 16, 0, 16),
 					AnchorPoint = Vector2.new(0.5, 0.5),
 					Position = UDim2.new(0.5, 0, 0.5, 0),
 					Image = IconId,
-					ImageColor3 = Color3.fromRGB(255, 255, 255),
+					ImageColor3 = AccentColor,
 					BackgroundTransparency = 1
 				})
 			})
@@ -912,14 +900,14 @@ function OrionLib:MakeNotification(NotificationConfig)
 
 		local RightSection = Create("Frame", {
 			Parent = Card,
-			Position = UDim2.new(0, 44, 0, 0),
-			Size = UDim2.new(1, -44, 0, 0),
+			Position = UDim2.new(0, 38, 0, 0),
+			Size = UDim2.new(1, -38, 0, 0),
 			AutomaticSize = Enum.AutomaticSize.Y,
 			BackgroundTransparency = 1
 		}, {
 			Create("UIListLayout", {
 				SortOrder = Enum.SortOrder.LayoutOrder,
-				Padding = UDim.new(0, 6),
+				Padding = UDim.new(0, 4),
 				HorizontalAlignment = Enum.HorizontalAlignment.Left
 			})
 		})
@@ -936,7 +924,7 @@ function OrionLib:MakeNotification(NotificationConfig)
 			Size = UDim2.new(1, -20, 1, 0),
 			Text = ParseText(NotificationConfig.Name),
 			Font = Enum.Font.GothamBold,
-			TextSize = 13,
+			TextSize = 12,
 			TextColor3 = Color3.fromRGB(255, 255, 255),
 			BackgroundTransparency = 1,
 			RichText = true,
@@ -946,11 +934,11 @@ function OrionLib:MakeNotification(NotificationConfig)
 
 		local CloseBtn = Create("ImageButton", {
 			Parent = Header,
-			Size = UDim2.new(0, 14, 0, 14),
-			Position = UDim2.new(1, 0, 0, 1),
+			Size = UDim2.new(0, 12, 0, 12),
+			Position = UDim2.new(1, 0, 0, 2),
 			AnchorPoint = Vector2.new(1, 0),
 			Image = "rbxassetid://9886659671",
-			ImageColor3 = Color3.fromRGB(150, 150, 150),
+			ImageColor3 = Color3.fromRGB(120, 125, 140),
 			BackgroundTransparency = 1,
 			ZIndex = 5
 		})
@@ -958,19 +946,13 @@ function OrionLib:MakeNotification(NotificationConfig)
 		if NotificationConfig.Banner then
 			local Banner = Create("ImageLabel", {
 				Parent = RightSection,
-				Size = UDim2.new(1, 0, 0, 90),
+				Size = UDim2.new(1, 0, 0, 80),
 				Image = NotificationConfig.Banner,
 				ScaleType = Enum.ScaleType.Crop,
 				BackgroundTransparency = 1,
 				LayoutOrder = 2
 			})
-			Create("UICorner", {CornerRadius = UDim.new(0, 6), Parent = Banner})
-			Create("UIStroke", {
-				Parent = Banner, 
-				Transparency = 0.5, 
-				Color = Color3.fromRGB(80,80,80),
-				ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-			})
+			Create("UICorner", {CornerRadius = UDim.new(0, 4), Parent = Banner})
 		end
 		
 		local ContentLabel = Create("TextLabel", {
@@ -980,7 +962,7 @@ function OrionLib:MakeNotification(NotificationConfig)
 			Text = ParseText(NotificationConfig.Content),
 			Font = Enum.Font.GothamSemibold,
 			TextSize = 11,
-			TextColor3 = Color3.fromRGB(180, 180, 180),
+			TextColor3 = Color3.fromRGB(155, 160, 175),
 			BackgroundTransparency = 1,
 			TextXAlignment = Enum.TextXAlignment.Left,
 			TextWrapped = true,
@@ -991,7 +973,7 @@ function OrionLib:MakeNotification(NotificationConfig)
 		local BarWrapper = Create("Frame", {
 			Parent = RightSection,
 			Size = UDim2.new(1, 0, 0, 2),
-			BackgroundColor3 = Color3.fromRGB(40, 40, 40),
+			BackgroundColor3 = Color3.fromRGB(28, 30, 36),
 			BorderSizePixel = 0,
 			LayoutOrder = 4
 		})
@@ -1000,7 +982,7 @@ function OrionLib:MakeNotification(NotificationConfig)
 		local Bar = Create("Frame", {
 			Parent = BarWrapper,
 			Size = UDim2.new(0, 0, 1, 0),
-			BackgroundColor3 = Color3.fromRGB(0, 170, 255),
+			BackgroundColor3 = AccentColor,
 			BorderSizePixel = 0
 		})
 		Create("UICorner", {CornerRadius = UDim.new(1, 0), Parent = Bar})
@@ -1021,7 +1003,7 @@ function OrionLib:MakeNotification(NotificationConfig)
 		local function closeNotification()
 			if isClosed then return end
 			isClosed = true
-			local Out = TweenService:Create(Card, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
+			local Out = TweenService:Create(Card, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
 				Position = UDim2.new(1.5, 0, 0, 0)
 			})
 			Out:Play()
@@ -1035,19 +1017,17 @@ function OrionLib:MakeNotification(NotificationConfig)
 
 		AddConnection(CloseBtn.MouseEnter, function()
 			TweenService:Create(CloseBtn, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
-				ImageColor3 = Color3.fromRGB(240, 240, 240),
-				Rotation = 90
+				ImageColor3 = Color3.fromRGB(240, 240, 240)
 			}):Play()
 		end)
 
 		AddConnection(CloseBtn.MouseLeave, function()
 			TweenService:Create(CloseBtn, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
-				ImageColor3 = Color3.fromRGB(150, 150, 150),
-				Rotation = 0
+				ImageColor3 = Color3.fromRGB(120, 125, 140)
 			}):Play()
 		end)
 
-		TweenService:Create(Card, TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+		TweenService:Create(Card, TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
 			Position = UDim2.new(0, 0, 0, 0)
 		}):Play()
 		
@@ -1361,66 +1341,53 @@ end
 		
 local RoundMainWindow = typeof(WindowConfig.LinkVideo) == "string" and "RoundVideo" or "RoundFrame"
 
-local MainWindow = AddThemeObject(SetChildren(SetProps(MakeElement(RoundMainWindow, Color3.fromRGB(8, 8, 12), 0, 16), { 
+local MainWindow = AddThemeObject(SetChildren(SetProps(MakeElement(RoundMainWindow, Color3.fromRGB(10, 10, 12), 0, 8), { 
         Parent = Orion,
         Position = UDim2.new(0.5, -307, 0.5, -172),
         Size = UDim2.new(0, 615, 0, 344),
-        BackgroundTransparency = hasLinkVideo and 1 or 0.22, 
+        BackgroundTransparency = hasLinkVideo and 1 or 0, 
         ClipsDescendants = true
 }), {
-        
-        
+        -- Viền phẳng siêu mỏng thời thượng thay thế viền cầu vồng sặc sỡ cũ
         Create("UIStroke", {
-            Color = Color3.fromRGB(255, 255, 255),
-            Thickness = 1.5,
+            Color = Color3.fromRGB(38, 42, 55),
+            Thickness = 1,
             ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-        }, {
-            Create("UIGradient", {
-                Color = ColorSequence.new({
-                    ColorSequenceKeypoint.new(0, AccentColor),
-                    ColorSequenceKeypoint.new(0.5, AccentColorLight),
-                    ColorSequenceKeypoint.new(1, AccentColor)
-                }),
-                Rotation = 45
-            })
         }),
 
-        
         SetChildren(SetProps(MakeElement("TFrame"), {
-                Size = UDim2.new(1, 0, 0, 48),
+                Size = UDim2.new(1, 0, 0, 44),
                 Name = "TopBar"
         }), {
-                
-                AddThemeObject(SetChildren(SetProps(MakeElement("Label", WindowConfig.Name, 14), {
+                -- Tiêu đề tối giản, Font tinh gọn thanh thoát
+                AddThemeObject(SetChildren(SetProps(MakeElement("Label", WindowConfig.Name, 13), {
                         Size = UDim2.new(1, -120, 1, 0),
-                        Position = UDim2.new(0, 20, 0, 0),
-                        Font = Enum.Font.GothamBlack,
-                        TextSize = 15,
-                        TextColor3 = OrionLib.Themes.Default.Text
-                }), {
-                        AddThemeObject(MakeElement("Stroke"), "Stroke")
-                }), "Text"),
+                        Position = UDim2.new(0, 18, 0, 0),
+                        Font = Enum.Font.GothamBold,
+                        TextSize = 13,
+                        TextColor3 = Color3.fromRGB(255, 255, 255)
+                }), {}), "Text"),
                 
-                
+                -- Thanh line phân tách mỏng
                 AddThemeObject(SetProps(MakeElement("Frame"), {
-                        Size = UDim2.new(1, -40, 0, 1),
-                        Position = UDim2.new(0, 20, 1, -1),
-                        BackgroundTransparency = 0.6
+                        Size = UDim2.new(1, -36, 0, 1),
+                        Position = UDim2.new(0, 18, 1, -1),
+                        BackgroundTransparency = 0.95
                 }), "Stroke"),
                 
-                
-                AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 12), { 
-                        Size = UDim2.new(0, 60, 0, 26),
-                        BackgroundTransparency = 0.75,
-                        Position = UDim2.new(1, -80, 0.5, 0),
+                -- Cụm nút Đóng và Thu gọn (GIỮ NGUYÊN HOÀN TOÀN ICON GỐC THEO YÊU CẦU)
+                AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 6), { 
+                        Size = UDim2.new(0, 56, 0, 22),
+                        BackgroundTransparency = 0.94,
+                        Position = UDim2.new(1, -74, 0.5, 0),
                         AnchorPoint = Vector2.new(0, 0.5)
                 }), {
                         AddThemeObject(MakeElement("Stroke"), "Stroke"),
                         AddThemeObject(SetProps(MakeElement("Frame"), {
-                                Size = UDim2.new(0, 1, 0, 14), 
+                                Size = UDim2.new(0, 1, 0, 10), 
                                 Position = UDim2.new(0.5, 0, 0.5, 0),
                                 AnchorPoint = Vector2.new(0.5, 0.5),
-                                BackgroundTransparency = 0.75 
+                                BackgroundTransparency = 0.9
                         }), "Stroke"), 
                         CloseBtn,
                         MinimizeBtn
@@ -1430,18 +1397,18 @@ local MainWindow = AddThemeObject(SetChildren(SetProps(MakeElement(RoundMainWind
         WindowStuff
 }), "Main")
 
-local ContentCardBackground = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 12), {
+local ContentCardBackground = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(18, 18, 22), 0, 8), {
         Parent = MainWindow,
         Position = UDim2.new(0, 164, 0, 54),
         Size = UDim2.new(0, 439, 0, 278),
-        BackgroundTransparency = 0.45
+        BackgroundTransparency = 0
 }), {
-        
         Create("UIStroke", {
-            Color = Color3.fromRGB(255, 255, 255),
+            Color = Color3.fromRGB(32, 35, 45),
             Thickness = 1,
             ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-        }, {
+        })
+}), "Second")
             Create("UIGradient", {
                 Color = ColorSequence.new({
                     ColorSequenceKeypoint.new(0, Color3.fromRGB(45, 48, 62)),
@@ -1892,33 +1859,24 @@ end)
 				Type = "Tabs"
 			}
 		
-			-- ==================== KHỐI 5: NÚT CHỌN TAB & HOẠT ẢNH CAPSULE GLOW ====================
-local TabFrame = SetChildren(SetProps(MakeElement("Button"), {
-        Size = UDim2.new(1, 0, 0, 38), -- Tăng nhẹ chiều cao cho trải nghiệm Mobile tốt hơn
+			local TabFrame = SetChildren(SetProps(MakeElement("Button"), {
+        Size = UDim2.new(1, 0, 0, 34),
         Parent = TabHolder,
         Visible = TabConfig.Visible,
         AutoButtonColor = false
 }), {
-        -- Khung viền dạng viên thuốc bo tròn (Pill Background)
-        AddThemeObject(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 10), {
+        -- Khung nền phẳng tối giản cho Tab
+        AddThemeObject(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 6), {
                 Size = UDim2.new(1, -8, 1, 0),
                 Position = UDim2.new(0, 4, 0, 0),
                 BackgroundTransparency = 1,
                 Name = "PillBackground"
         }), "Stroke"),
         
-        -- Viền phát sáng của tab khi được kích hoạt hoặc di chuột qua
-        Create("UIStroke", {
-                Color = AccentColor,
-                Thickness = 1.2,
-                Transparency = 1,
-                Name = "CapsuleStroke"
-        }),
-
-        -- Chấm tròn định vị trạng thái hoạt động (Active Dot) thay thế thanh dọc thô cũ
-        SetProps(MakeElement("RoundFrame", AccentColor, 0, 4), {
-                Size = UDim2.new(0, 4, 0, 4),
-                Position = UDim2.new(0, 8, 0.5, 0),
+        -- Accent Line (Thanh sọc định vị ở góc trái) - Thay thế chấm tròn cũ
+        SetProps(MakeElement("RoundFrame", AccentColor, 0, 1.5), {
+                Size = UDim2.new(0, 3, 0, 0),
+                Position = UDim2.new(0, 4, 0.5, 0),
                 AnchorPoint = Vector2.new(0, 0.5),
                 BackgroundTransparency = 1,
                 Name = "ActiveIndicator"
@@ -1926,34 +1884,34 @@ local TabFrame = SetChildren(SetProps(MakeElement("Button"), {
 
         AddThemeObject(SetProps(MakeElement("Image", TabConfig.Icon), {
                 AnchorPoint = Vector2.new(0, 0.5),
-                Size = UDim2.new(0, 16, 0, 16),
-                Position = UDim2.new(0, 20, 0.5, 0),
-                ImageTransparency = TabConfig.Disabled and 0.7 or 0.5,
+                Size = UDim2.new(0, 14, 0, 14),
+                Position = UDim2.new(0, 16, 0.5, 0),
+                ImageTransparency = TabConfig.Disabled and 0.7 or 0.6,
                 Name = "Ico"
         }), "Text"),
 
-        AddThemeObject(SetChildren(SetProps(MakeElement("Label", TabConfig.Name, 13), {
-                Size = UDim2.new(1, -44, 1, 0),
-                Position = UDim2.new(0, 44, 0, 0),
+        AddThemeObject(SetChildren(SetProps(MakeElement("Label", TabConfig.Name, 12), {
+                Size = UDim2.new(1, -38, 1, 0),
+                Position = UDim2.new(0, 38, 0, 0),
                 Font = Enum.Font.GothamBold,
-                TextTransparency = TabConfig.Disabled and 0.7 or 0.5,
+                TextTransparency = TabConfig.Disabled and 0.7 or 0.6,
                 Name = "Title"
-        }), {AddThemeObject(MakeElement("Stroke"), "Stroke")}), "Text")
+        }), {}), "Text")
 })
 
 AddItemTable(Tabs, TabConfig.Name, TabFrame)
 
--- Hoạt ảnh chuyển đổi và kích hoạt Tab mượt mà khi nhấn
+-- Hoạt ảnh kích hoạt Tab mượt mà khi người dùng nhấn chọn (Phù hợp cả PC lẫn Touch Mobile)
 AddConnection(TabFrame.Activated, function() 
         if Tabs.Disabled then return end
         for _, Tab in next, TabHolder:GetChildren() do
                 if Tab:IsA("TextButton") then
-                        TweenService:Create(Tab.Ico, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {ImageTransparency = 0.5}):Play()
-                        TweenService:Create(Tab.Title, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {TextTransparency = 0.5}):Play()
+                        TweenService:Create(Tab.Ico, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {ImageTransparency = 0.6}):Play()
+                        TweenService:Create(Tab.Title, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {TextTransparency = 0.6}):Play()
                         
                         if Tab:FindFirstChild("ActiveIndicator") then
                                 TweenService:Create(Tab.ActiveIndicator, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
-                                        Size = UDim2.new(0, 4, 0, 4),
+                                        Size = UDim2.new(0, 3, 0, 0),
                                         BackgroundTransparency = 1
                                 }):Play()
                         end
@@ -1962,71 +1920,52 @@ AddConnection(TabFrame.Activated, function()
                                         BackgroundTransparency = 1
                                 }):Play()
                         end
-                        if Tab:FindFirstChild("CapsuleStroke") then
-                                TweenService:Create(Tab.CapsuleStroke, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
-                                        Transparency = 1
-                                }):Play()
-                        end
                 end
         end
         for _, c in next, MainWindow:GetChildren() do
                 if c.Name == "ItemContainer" then c.Visible = false end
         end
         
-        -- Tạo hiệu ứng kính mờ Neon đầy nổi bật cho Tab đang được lựa chọn
+        -- Kích hoạt hiệu ứng nổi bật tinh tế cho Tab đang chọn
         TweenService:Create(TabFrame.Ico, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {ImageTransparency = 0}):Play()
         TweenService:Create(TabFrame.Title, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {TextTransparency = 0}):Play()
         
         if TabFrame:FindFirstChild("ActiveIndicator") then
                 TweenService:Create(TabFrame.ActiveIndicator, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                        Size = UDim2.new(0, 6, 0, 6),
+                        Size = UDim2.new(0, 3, 0.55, 0),
                         BackgroundTransparency = 0,
                         BackgroundColor3 = AccentColor
                 }):Play()
         end
         if TabFrame:FindFirstChild("PillBackground") then
                 TweenService:Create(TabFrame.PillBackground, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                        BackgroundTransparency = 0.92,
+                        BackgroundTransparency = 0.95,
                         BackgroundColor3 = AccentColor
-                }):Play()
-        end
-        if TabFrame:FindFirstChild("CapsuleStroke") then
-                TweenService:Create(TabFrame.CapsuleStroke, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {
-                        Transparency = 0.4
                 }):Play()
         end
         Container.Visible = true
 end)
 
--- Hiệu ứng phản hồi khi rê chuột vào nút Tab (Hover)
+-- Hiệu ứng Hover khi lướt chuột qua (Chỉ kích hoạt tối ưu trên PC)
 AddConnection(TabFrame.MouseEnter, function()
         if Tabs.Disabled or Container.Visible then return end
         if TabFrame:FindFirstChild("PillBackground") then
                 TweenService:Create(TabFrame.PillBackground, TweenInfo.new(0.2), {
-                        BackgroundTransparency = 0.96,
+                        BackgroundTransparency = 0.97,
                         BackgroundColor3 = AccentColorLight
                 }):Play()
         end
-        if TabFrame:FindFirstChild("CapsuleStroke") then
-                TweenService:Create(TabFrame.CapsuleStroke, TweenInfo.new(0.2), {
-                        Transparency = 0.75
-                }):Play()
-        end
-        TweenService:Create(TabFrame.Ico, TweenInfo.new(0.2), {ImageTransparency = 0.2}):Play()
-        TweenService:Create(TabFrame.Title, TweenInfo.new(0.2), {TextTransparency = 0.2}):Play()
+        TweenService:Create(TabFrame.Ico, TweenInfo.new(0.2), {ImageTransparency = 0.3}):Play()
+        TweenService:Create(TabFrame.Title, TweenInfo.new(0.2), {TextTransparency = 0.3}):Play()
 end)
 
--- Trả về trạng thái bình thường khi chuột rời đi
 AddConnection(TabFrame.MouseLeave, function()
         if Tabs.Disabled or Container.Visible then return end
         if TabFrame:FindFirstChild("PillBackground") then
                 TweenService:Create(TabFrame.PillBackground, TweenInfo.new(0.2), {BackgroundTransparency = 1}):Play()
         end
-        if TabFrame:FindFirstChild("CapsuleStroke") then
-                TweenService:Create(TabFrame.CapsuleStroke, TweenInfo.new(0.2), {Transparency = 1}):Play()
-        end
-        TweenService:Create(TabFrame.Ico, TweenInfo.new(0.2), {ImageTransparency = 0.5}):Play()
-        TweenService:Create(TabFrame.Title, TweenInfo.new(0.2), {TextTransparency = 0.5}):Play()
+        TweenService:Create(TabFrame.Ico, TweenInfo.new(0.2), {ImageTransparency = 0.6}):Play()
+        TweenService:Create(TabFrame.Title, TweenInfo.new(0.2), {TextTransparency = 0.6}):Play()
 end)
 			
 			function Tabs:SetDisabled(state)
