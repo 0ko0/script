@@ -1842,12 +1842,30 @@ end)
 				Type = "Tabs"
 			}
 		
+			-- ======================================================================
+			-- THÊM ĐOẠN KHỞI TẠO CONTAINER NÀY VÀO ĐỂ KHẮC PHỤC LỖI CRASH TAB:
+			local Container = AddThemeObject(SetChildren(SetProps(MakeElement("ScrollFrame", Color3.fromRGB(255, 255, 255), 5), {
+				Size = UDim2.new(0, 439, 0, 278), -- Tương thích với ContentCardBackground mới
+				Position = UDim2.new(0, 164, 0, 54), -- Khớp vị trí vùng hiển thị chính
+				Parent = MainWindow,
+				Visible = false,
+				Name = "ItemContainer"
+			}), {
+				MakeElement("List", 0, 6),
+				MakeElement("Padding", 15, 10, 10, 15)
+			}), "Divider")
+
+			AddConnection(Container.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"), function()
+				Container.CanvasSize = UDim2.new(0, 0, 0, Container.UIListLayout.AbsoluteContentSize.Y + 30)
+			end)
+			-- ======================================================================
+		
 			local TabFrame = SetChildren(SetProps(MakeElement("Button"), {
         Size = UDim2.new(1, 0, 0, 34),
         Parent = TabHolder,
         Visible = TabConfig.Visible,
         AutoButtonColor = false
-}), {
+-- ... (Các phần mã còn lại của TabFrame giữ nguyên phía bên dưới)
         -- Khung nền phẳng tối giản cho Tab
         AddThemeObject(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 6), {
                 Size = UDim2.new(1, -8, 1, 0),
