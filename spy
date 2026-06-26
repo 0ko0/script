@@ -4965,113 +4965,101 @@ end
             ZIndex = 3
         })
 
-        -- Thanh chỉ báo trạng thái hoạt động ở góc trên bên trái
+        -- Thanh sáng chỉ báo mỏng sát lề trái của Card chính
         local AccentBar = SetProps(MakeElement("RoundFrame", TextboxConfig.AccentColor, 0, 1.5), {
-            Size = UDim2.new(0, 3, 0, 10),
-            Position = UDim2.new(0, 6, 0, 11),
+            Size = UDim2.new(0, 2.5, 0, 16),
+            Position = UDim2.new(0, 0, 0.5, 0),
             AnchorPoint = Vector2.new(0, 0.5),
             BackgroundTransparency = 1,
             Name = "AccentBar"
         })
 
-        -- Icon chỉnh sửa tinh tế đẩy về góc phải
+        -- Icon Edit đặt gọn gàng phía rìa phải của hộp nhập
         local EditIcon = AddThemeObject(SetProps(MakeElement("Image", "rbxassetid://6035057413"), {
             Size = UDim2.new(0, 12, 0, 12),
-            Position = UDim2.new(1, -24, 0.5, 0),
+            Position = UDim2.new(1, -6, 0.5, 0),
             AnchorPoint = Vector2.new(1, 0.5),
-            ImageTransparency = 0.6,
-            ImageColor3 = Color3.fromRGB(200, 200, 200),
+            ImageTransparency = 0.5,
+            ImageColor3 = Color3.fromRGB(180, 185, 195),
             ZIndex = 5,
             Name = "EditIcon"
         }), "TextDark")
 
         -- Nút xóa nhanh chữ đã nhập
         local ClearBtn = SetProps(MakeElement("ImageButton", "rbxassetid://9886659671"), {
-            Size = UDim2.new(0, 10, 0, 10),
-            Position = UDim2.new(1, -8, 0.5, 0),
+            Size = UDim2.new(0, 11, 0, 11),
+            Position = UDim2.new(1, -6, 0.5, 0),
             AnchorPoint = Vector2.new(1, 0.5),
             ImageTransparency = 1, 
-            ImageColor3 = Color3.fromRGB(180, 180, 180),
+            ImageColor3 = Color3.fromRGB(200, 200, 200),
             ZIndex = 6,
             Name = "ClearBtn"
         })
 
-        -- TextBox chính
+        -- TextBox nhập liệu chính
         local TextboxActual = AddThemeObject(Create("TextBox", {
-            Size = UDim2.new(1, -40, 1, 0), 
-            Position = UDim2.new(0, 10, 0, 0),
+            Size = UDim2.new(1, -30, 1, 0), 
+            Position = UDim2.new(0, 8, 0, 0),
             BackgroundTransparency = 1,
             TextColor3 = Color3.fromRGB(255, 255, 255),
-            PlaceholderColor3 = Color3.fromRGB(130, 130, 135),
+            PlaceholderColor3 = Color3.fromRGB(110, 115, 125),
             PlaceholderText = TextboxConfig.Placeholder,
             Text = Textbox.Value or "",
             ClearTextOnFocus = TextboxConfig.TextDisappear,
-            Font = Enum.Font.GothamSemibold,
+            Font = Enum.Font.GothamBold,
             ClipsDescendants = true,
             TextXAlignment = Enum.TextXAlignment.Left,
-            TextSize = 12,
+            TextSize = 11,
             ZIndex = 4
         }), "Text")
 
-        -- Thanh Underline mở rộng từ tâm khi Focus (phong cách Material Design)
-        local FocusUnderline = Create("Frame", {
-            Size = UDim2.new(0, 0, 0, 2),
-            Position = UDim2.new(0.5, 0, 1, -2),
-            AnchorPoint = Vector2.new(0.5, 0),
-            BackgroundColor3 = TextboxConfig.AccentColor,
-            BorderSizePixel = 0,
-            ZIndex = 5,
-            Name = "FocusUnderline"
-        })
-
-        -- Hộp chứa vùng nhập liệu (Container dưới)
-        local TextContainer = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 4), {
-            Size = UDim2.new(1, -24, 0, 28),
-            Position = UDim2.new(0.5, 0, 1, -8),
-            AnchorPoint = Vector2.new(0.5, 1),
-            BackgroundTransparency = 0.94,
+        -- Hộp chứa vùng nhập liệu (Nằm bên phải Card)
+        local TextContainer = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(10, 11, 15), 0, 5), {
+            Size = UDim2.new(0, 150, 0, 24),
+            Position = UDim2.new(1, -12, 0.5, 0),
+            AnchorPoint = Vector2.new(1, 0.5),
+            BackgroundTransparency = 0.1,
             ZIndex = 2,
             Name = "InputContainer"
         }), {
             Create("UIStroke", {
-                Color = OrionLib.Themes[OrionLib.SelectedTheme].Stroke,
+                Color = Color3.fromRGB(35, 38, 48),
                 Thickness = 1,
                 ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
                 Name = "GlowStroke"
             }),
             EditIcon,
             TextboxActual,
-            ClearBtn,
-            FocusUnderline
+            ClearBtn
         }), "Main")
 
-        -- Nhãn tên Textbox (Hàng trên)
+        -- Nhãn tên của Textbox (Nằm bên trái Card)
         local ContentLabel = AddThemeObject(SetProps(MakeElement("Label", TextboxConfig.Name, 15), {
-            Size = UDim2.new(1, -30, 0, 16),
-            Position = UDim2.new(0, 14, 0, 8),
+            Size = UDim2.new(1, -190, 1, 0),
+            Position = UDim2.new(0, 14, 0, 0),
             Font = Enum.Font.GothamBold,
-            TextSize = 11,
-            TextColor3 = Color3.fromRGB(180, 180, 185),
+            TextSize = 12,
+            TextColor3 = Color3.fromRGB(175, 180, 190),
             Visible = TextboxConfig.Visible,
             Name = "Content"
         }), "Text")
 
-        -- Khung viền ngoài cùng của Card (Chiều cao tăng lên 58px để bố cục thoáng đãng)
+        -- Khung viền ngoài của Card chính (Giữ chiều cao 38px chuẩn)
         local TextboxFrame = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 6), {
-            Size = UDim2.new(1, 0, 0, 58),
+            Size = UDim2.new(1, 0, 0, 38),
             Parent = ItemParent,
             ClipsDescendants = true
         }), {
             AccentBar,
             ContentLabel,
-            AddThemeObject(MakeElement("Stroke"), { Thickness = 1 }),
+            AddThemeObject(MakeElement("Stroke"), "Stroke"),
             TextContainer,
             Click
         }), "Second")
         
         local GlowStroke = TextContainer:FindFirstChild("GlowStroke")
 
-        -- Xử lý cập nhật giá trị đầu vào
+        -- Xử lý cập nhật giá trị thực tế
         local function SetValue()
             if Textbox.Disabled then return end
             if TextboxConfig.Numeric then
@@ -5083,8 +5071,10 @@ end
             
             if #TextboxActual.Text > 0 then
                 TweenService:Create(ClearBtn, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {ImageTransparency = 0}):Play()
+                TweenService:Create(EditIcon, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {ImageTransparency = 1}):Play()
             else
                 TweenService:Create(ClearBtn, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {ImageTransparency = 1}):Play()
+                TweenService:Create(EditIcon, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {ImageTransparency = 0.5}):Play()
             end
             
             OrionLib:SafeScript(TextboxConfig.Callback, TextboxActual.Text)
@@ -5107,71 +5097,52 @@ end
             TextboxActual:CaptureFocus()
         end)
 
-        -- Hiệu ứng chuyển động khi nhấn chọn (Focused)
+        -- Hiệu ứng chuyển động khi Focus vào ô nhập
         AddConnection(TextboxActual.Focused, function()
             if Textbox.Disabled then return end
             
+            -- Sáng viền Neon cho riêng hộp nhập liệu
             if GlowStroke then
-                TweenService:Create(GlowStroke, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {
+                TweenService:Create(GlowStroke, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
                     Color = TextboxConfig.AccentColor,
-                    Thickness = 1
+                    Thickness = 1.2
                 }):Play()
             end
             
-            -- Chạy mượt thanh Underline mở rộng từ tâm ra đầy khung
-            TweenService:Create(FocusUnderline, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                Size = UDim2.new(1, 0, 0, 2)
+            -- Hiện vạch Pulse mỏng bên trái Card chính
+            TweenService:Create(AccentBar, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
+                BackgroundTransparency = 0.2,
+                Size = UDim2.new(0, 2.5, 0, 20)
             }):Play()
 
-            -- Sáng nhẹ vạch góc trên bên trái
-            TweenService:Create(AccentBar, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {
-                BackgroundTransparency = 0,
-                BackgroundColor3 = TextboxConfig.AccentColor,
-                Size = UDim2.new(0, 3, 0, 12)
-            }):Play()
-
-            -- Chuyển màu Edit Icon sang tông Accent
-            TweenService:Create(EditIcon, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {
-                ImageTransparency = 0.2,
-                ImageColor3 = TextboxConfig.AccentColor
-            }):Play()
-
-            -- Làm sáng tiêu đề chữ
+            -- Làm sáng chữ tiêu đề
             TweenService:Create(ContentLabel, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
                 TextColor3 = Color3.fromRGB(255, 255, 255)
             }):Play()
         end)
 
-        -- Hiệu ứng chuyển động khi bỏ chọn (FocusLost)
+        -- Hiệu ứng chuyển động khi thoát Focus
         AddConnection(TextboxActual.FocusLost, function()
             if GlowStroke then
-                TweenService:Create(GlowStroke, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {
-                    Color = OrionLib.Themes[OrionLib.SelectedTheme].Stroke,
+                TweenService:Create(GlowStroke, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
+                    Color = Color3.fromRGB(35, 38, 48),
                     Thickness = 1
                 }):Play()
             end
 
-            -- Thu nhỏ thanh Underline về tâm
-            TweenService:Create(FocusUnderline, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
-                Size = UDim2.new(0, 0, 0, 2)
-            }):Play()
-
-            TweenService:Create(AccentBar, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {
+            -- Ẩn vạch Pulse bên trái Card
+            TweenService:Create(AccentBar, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
                 BackgroundTransparency = 1,
-                Size = UDim2.new(0, 3, 0, 10)
+                Size = UDim2.new(0, 2.5, 0, 16)
             }):Play()
 
-            TweenService:Create(EditIcon, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {
-                ImageTransparency = 0.6,
-                ImageColor3 = Color3.fromRGB(200, 200, 200)
-            }):Play()
-
+            -- Trả chữ tiêu đề về màu mặc định
             TweenService:Create(ContentLabel, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
-                TextColor3 = Color3.fromRGB(180, 180, 185)
+                TextColor3 = Color3.fromRGB(175, 180, 190)
             }):Play()
         end)
 
-        -- Các hàm API công khai để tương tác từ bên ngoài
+        -- Các phương thức API tương tác từ bên ngoài
         function Textbox:SetText(ToChange)
             if getgenv().Destroy or Textbox.Disabled then return end
             if TextboxActual then
@@ -5181,8 +5152,10 @@ end
                 else
                     if #ToChange > 0 then
                         ClearBtn.ImageTransparency = 0
+                        EditIcon.ImageTransparency = 1
                     else
                         ClearBtn.ImageTransparency = 1
+                        EditIcon.ImageTransparency = 0.5
                     end
                 end
             end
@@ -5213,7 +5186,7 @@ end
             Textbox.Disabled = State
             
             local targetTrans = State and 0.5 or 0
-            local targetBgTrans = State and 0.98 or 0.94
+            local targetBgTrans = State and 0.95 or 0.1
             
             TweenService:Create(TextboxFrame, TweenInfo.new(.2), {
                 BackgroundTransparency = targetTrans
@@ -5230,28 +5203,30 @@ end
                 TextboxActual.TextTransparency = State and 0.5 or 0
             end
             if EditIcon then
-                EditIcon.ImageTransparency = State and 0.8 or 0.6
+                EditIcon.ImageTransparency = State and 0.8 or 0.5
             end
             if ClearBtn then
                 ClearBtn.Active = not State
             end
         end
 
-        -- Tương tác rê chuột / Click ngoài Card
+        -- Tương tác rê chuột / Click toàn bộ Card
         AddConnection(Click.MouseEnter, function()
             if Textbox.Disabled then return end
             local darkThemeColor = OrionLib.Themes[OrionLib.SelectedTheme].Second
             local hoverBgColor = Color3.fromRGB(
-                math.clamp(darkThemeColor.R * 255 + 6, 0, 255),
-                math.clamp(darkThemeColor.G * 255 + 6, 0, 255),
-                math.clamp(darkThemeColor.B * 255 + 6, 0, 255)
+                math.clamp(darkThemeColor.R * 255 + 5, 0, 255),
+                math.clamp(darkThemeColor.G * 255 + 5, 0, 255),
+                math.clamp(darkThemeColor.B * 255 + 5, 0, 255)
             )
             TweenService:Create(TextboxFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
                 BackgroundColor3 = hoverBgColor
             }):Play()
-            if not TextboxActual:IsFocused() then
-                TweenService:Create(ContentLabel, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
-                    TextColor3 = Color3.fromRGB(220, 220, 225)
+            
+            local cardStroke = TextboxFrame:FindFirstChildOfClass("UIStroke")
+            if cardStroke then
+                TweenService:Create(cardStroke, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
+                    Color = Color3.fromRGB(45, 48, 60)
                 }):Play()
             end
         end)
@@ -5261,9 +5236,11 @@ end
             TweenService:Create(TextboxFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
                 BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Second
             }):Play()
-            if not TextboxActual:IsFocused() then
-                TweenService:Create(ContentLabel, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
-                    TextColor3 = Color3.fromRGB(180, 180, 185)
+            
+            local cardStroke = TextboxFrame:FindFirstChildOfClass("UIStroke")
+            if cardStroke then
+                TweenService:Create(cardStroke, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
+                    Color = OrionLib.Themes[OrionLib.SelectedTheme].Stroke
                 }):Play()
             end
         end)
@@ -5272,9 +5249,9 @@ end
             if Textbox.Disabled then return end
             local darkThemeColor = OrionLib.Themes[OrionLib.SelectedTheme].Second
             local hoverBgColor = Color3.fromRGB(
-                math.clamp(darkThemeColor.R * 255 + 6, 0, 255),
-                math.clamp(darkThemeColor.G * 255 + 6, 0, 255),
-                math.clamp(darkThemeColor.B * 255 + 6, 0, 255)
+                math.clamp(darkThemeColor.R * 255 + 5, 0, 255),
+                math.clamp(darkThemeColor.G * 255 + 5, 0, 255),
+                math.clamp(darkThemeColor.B * 255 + 5, 0, 255)
             )
             TweenService:Create(TextboxFrame, TweenInfo.new(0.15, Enum.EasingStyle.Quad), {
                 BackgroundColor3 = hoverBgColor
@@ -5286,9 +5263,9 @@ end
             if Textbox.Disabled then return end
             local darkThemeColor = OrionLib.Themes[OrionLib.SelectedTheme].Second
             local clickBgColor = Color3.fromRGB(
-                math.clamp(darkThemeColor.R * 255 - 10, 0, 255),
-                math.clamp(darkThemeColor.G * 255 - 10, 0, 255),
-                math.clamp(darkThemeColor.B * 255 - 10, 0, 255)
+                math.clamp(darkThemeColor.R * 255 - 8, 0, 255),
+                math.clamp(darkThemeColor.G * 255 - 8, 0, 255),
+                math.clamp(darkThemeColor.B * 255 - 8, 0, 255)
             )
             TweenService:Create(TextboxFrame, TweenInfo.new(0.1, Enum.EasingStyle.Quad), {
                 BackgroundColor3 = clickBgColor
@@ -5297,6 +5274,7 @@ end
 
         if #TextboxActual.Text > 0 then
             ClearBtn.ImageTransparency = 0
+            EditIcon.ImageTransparency = 1
         end
 
         if TextboxConfig.Flag then
