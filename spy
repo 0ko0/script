@@ -2387,14 +2387,7 @@ end)
     ButtonConfig.Icon = ButtonConfig.Icon or "rbxassetid://3944703587"
     local Button = {Disabled = ButtonConfig.Disabled, Visible = ButtonConfig.Visible, Flag = ButtonConfig.Flag}
 
-    local AccentBar = SetProps(MakeElement("RoundFrame", AccentColor, 0, 1.5), {
-        Size = UDim2.new(0, 3, 0, 10),
-        Position = UDim2.new(0, 3, 0.5, 0),
-        AnchorPoint = Vector2.new(0, 0.5),
-        BackgroundTransparency = 1,
-        Name = "AccentBar"
-    })
-
+    -- 1. Nhãn chữ hiển thị
     local Label = AddThemeObject(SetProps(MakeElement("Label", ButtonConfig.Name, 13), {
         Size = UDim2.new(0, 0, 1, 0),
         AutomaticSize = Enum.AutomaticSize.X,
@@ -2402,24 +2395,24 @@ end)
         Name = "Content"
     }), "Text")
 
-
+    -- 2. Biểu tượng bổ trợ cho nhãn
     local Icon = AddThemeObject(SetProps(MakeElement("Image", ButtonConfig.Icon), {
         Size = UDim2.new(0, 16, 0, 16),
         ImageColor3 = OrionLib.Themes[OrionLib.SelectedTheme].TextDark,
-        ImageTransparency = 0.3,
+        ImageTransparency = 0.4,
         Name = "Icon"
     }), "TextDark")
 
-    local ContentContainer = Create("Frame", {
-        Size = UDim2.new(1, -20, 1, 0),
-        Position = UDim2.new(0.5, 0, 0.5, 0),
-        AnchorPoint = Vector2.new(0.5, 0.5),
+    -- 3. Khung chứa nội dung lề trái
+    local LeftContainer = Create("Frame", {
+        Size = UDim2.new(1, -44, 1, 0),
+        Position = UDim2.new(0, 12, 0, 0),
         BackgroundTransparency = 1,
-        Name = "ContentContainer"
+        Name = "LeftContainer"
     }, {
         Create("UIListLayout", {
             FillDirection = Enum.FillDirection.Horizontal,
-            HorizontalAlignment = Enum.HorizontalAlignment.Center,
+            HorizontalAlignment = Enum.HorizontalAlignment.Left,
             VerticalAlignment = Enum.VerticalAlignment.Center,
             Padding = UDim.new(0, 8)
         }),
@@ -2427,28 +2420,42 @@ end)
         Label
     })
 
+    -- 4. Mũi tên trượt động bên rìa phải
+    local Arrow = AddThemeObject(SetProps(MakeElement("Image", "rbxassetid://6034818372"), {
+        Size = UDim2.new(0, 12, 0, 12),
+        AnchorPoint = Vector2.new(1, 0.5),
+        Position = UDim2.new(1, -16, 0.5, 0),
+        ImageColor3 = OrionLib.Themes[OrionLib.SelectedTheme].TextDark,
+        ImageTransparency = 0.7,
+        Name = "Arrow"
+    }), "TextDark")
+
+    -- 5. Viền bao quanh nút
     local Stroke = AddThemeObject(SetProps(MakeElement("Stroke"), {
         Color = OrionLib.Themes[OrionLib.SelectedTheme].Stroke,
         Thickness = 1,
         Transparency = 0.5
     }), "Stroke")
 
+    -- 6. Phím kích hoạt click ẩn
     local Click = SetProps(MakeElement("Button"), {
         Size = UDim2.new(1, 0, 1, 0),
         ZIndex = 5
     })
 
+    -- Khung nút chính
     local ButtonFrame = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 6), {
         Size = UDim2.new(1, 0, 0, 36),
         Visible = ButtonConfig.Visible,
         Parent = ItemParent
     }), {
-        AccentBar,
-        ContentContainer,
+        LeftContainer,
+        Arrow,
         Stroke,
         Click
     }), "Second")
 
+    -- Các hiệu ứng chuyển động tương tác của nút chính
     AddConnection(Click.MouseEnter, function()
         if ButtonConfig.Disabled then return end
         TweenService:Create(ButtonFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
@@ -2458,20 +2465,21 @@ end)
                 math.clamp(OrionLib.Themes[OrionLib.SelectedTheme].Second.B * 255 + 6, 0, 255)
             )
         }):Play()
-        TweenService:Create(AccentBar, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {
-            Size = UDim2.new(0, 3, 0, 22),
-            BackgroundTransparency = 0
-        }):Play()
-        TweenService:Create(Stroke, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {
+        TweenService:Create(Stroke, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
             Color = AccentColor,
-            Transparency = 0.2
+            Transparency = 0.3
         }):Play()
         TweenService:Create(Label, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
             TextColor3 = Color3.fromRGB(255, 255, 255)
         }):Play()
         TweenService:Create(Icon, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
             ImageColor3 = AccentColorLight,
-            ImageTransparency = 0
+            ImageTransparency = 0.1
+        }):Play()
+        TweenService:Create(Arrow, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+            Position = UDim2.new(1, -10, 0.5, 0),
+            ImageTransparency = 0,
+            ImageColor3 = AccentColor
         }):Play()
     end)
 
@@ -2480,11 +2488,7 @@ end)
         TweenService:Create(ButtonFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
             BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Second
         }):Play()
-        TweenService:Create(AccentBar, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {
-            Size = UDim2.new(0, 3, 0, 10),
-            BackgroundTransparency = 1
-        }):Play()
-        TweenService:Create(Stroke, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {
+        TweenService:Create(Stroke, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
             Color = OrionLib.Themes[OrionLib.SelectedTheme].Stroke,
             Transparency = 0.5
         }):Play()
@@ -2493,7 +2497,12 @@ end)
         }):Play()
         TweenService:Create(Icon, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
             ImageColor3 = OrionLib.Themes[OrionLib.SelectedTheme].TextDark,
-            ImageTransparency = 0.3
+            ImageTransparency = 0.4
+        }):Play()
+        TweenService:Create(Arrow, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
+            Position = UDim2.new(1, -16, 0.5, 0),
+            ImageTransparency = 0.7,
+            ImageColor3 = OrionLib.Themes[OrionLib.SelectedTheme].TextDark
         }):Play()
     end)
 
@@ -2501,13 +2510,13 @@ end)
         if ButtonConfig.Disabled then return end
         TweenService:Create(ButtonFrame, TweenInfo.new(0.1, Enum.EasingStyle.Quad), {
             BackgroundColor3 = Color3.fromRGB(
-                math.clamp(OrionLib.Themes[OrionLib.SelectedTheme].Second.R * 255 - 8, 0, 255),
-                math.clamp(OrionLib.Themes[OrionLib.SelectedTheme].Second.G * 255 - 8, 0, 255),
-                math.clamp(OrionLib.Themes[OrionLib.SelectedTheme].Second.B * 255 - 8, 0, 255)
+                math.clamp(OrionLib.Themes[OrionLib.SelectedTheme].Second.R * 255 - 6, 0, 255),
+                math.clamp(OrionLib.Themes[OrionLib.SelectedTheme].Second.G * 255 - 6, 0, 255),
+                math.clamp(OrionLib.Themes[OrionLib.SelectedTheme].Second.B * 255 - 6, 0, 255)
             )
         }):Play()
-        TweenService:Create(ContentContainer, TweenInfo.new(0.1, Enum.EasingStyle.Quad), {
-            Size = UDim2.new(1, -26, 1, -4)
+        TweenService:Create(LeftContainer, TweenInfo.new(0.1, Enum.EasingStyle.Quad), {
+            Position = UDim2.new(0, 15, 0, 0)
         }):Play()
     end)
 
@@ -2520,14 +2529,15 @@ end)
                 math.clamp(OrionLib.Themes[OrionLib.SelectedTheme].Second.B * 255 + 6, 0, 255)
             )
         }):Play()
-        TweenService:Create(ContentContainer, TweenInfo.new(0.15, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-            Size = UDim2.new(1, -20, 1, 0)
+        TweenService:Create(LeftContainer, TweenInfo.new(0.15, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+            Position = UDim2.new(0, 12, 0, 0)
         }):Play()
         task.spawn(function()
             Button:Click()
         end)
     end)
 
+    -- Các phương thức hỗ trợ bên trong đối tượng Button
     function Button:Set(ButtonText)
         if getgenv().Destroy or ButtonConfig.Disabled then return end
         local content = ButtonFrame and ButtonFrame:FindFirstChild("Content", true)
@@ -2542,9 +2552,9 @@ end)
         ButtonConfig.Disabled = state
         if ButtonFrame then
             TweenService:Create(ButtonFrame, TweenInfo.new(0.2), {BackgroundTransparency = state and 0.5 or 0}):Play()
-            local accent = ButtonFrame:FindFirstChild("AccentBar")
-            if accent then
-                TweenService:Create(accent, TweenInfo.new(0.2), {BackgroundTransparency = state and 1 or 1}):Play()
+            local arrow = ButtonFrame:FindFirstChild("Arrow")
+            if arrow then
+                TweenService:Create(arrow, TweenInfo.new(0.2), {ImageTransparency = state and 0.9 or 0.7}):Play()
             end
         end
         if Click then
@@ -2557,7 +2567,7 @@ end)
         end
         local icon = ButtonFrame and ButtonFrame:FindFirstChild("Icon", true)
         if icon then
-            icon.ImageTransparency = state and 0.6 or 0.3
+            icon.ImageTransparency = state and 0.7 or 0.4
         end
     end
     
@@ -2580,6 +2590,7 @@ end)
         ButtonConfig.Callback = callback
     end
     
+    -- Hàm nhân bản hỗ trợ nút phụ (Grid layout side-by-side)
     function Button:AddButton(ButtonConfigClone)
         ButtonConfigClone = ButtonConfigClone or {}
         ButtonConfigClone.Visible = ButtonConfigClone.Visible ~= false 
@@ -2598,8 +2609,8 @@ end)
                 Parent = ButtonFrame
             })
             
-            local AccentBarClone = ButtonCloneFrame:FindFirstChild("AccentBar")
-            local ContentContainerClone = ButtonCloneFrame:FindFirstChild("ContentContainer")
+            local LeftContainerClone = ButtonCloneFrame:FindFirstChild("LeftContainer")
+            local ArrowClone = ButtonCloneFrame:FindFirstChild("Arrow")
             local LabelClone = ButtonCloneFrame:FindFirstChild("Content", true)
             local IconClone = ButtonCloneFrame:FindFirstChild("Icon", true)
             local StrokeClone = ButtonCloneFrame:FindFirstChildOfClass("UIStroke")
@@ -2615,16 +2626,10 @@ end)
                         math.clamp(OrionLib.Themes[OrionLib.SelectedTheme].Second.B * 255 + 6, 0, 255)
                     )
                 }):Play()
-                if AccentBarClone then
-                    TweenService:Create(AccentBarClone, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {
-                        Size = UDim2.new(0, 3, 0, 22),
-                        BackgroundTransparency = 0
-                    }):Play()
-                end
                 if StrokeClone then
-                    TweenService:Create(StrokeClone, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {
+                    TweenService:Create(StrokeClone, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
                         Color = AccentColor,
-                        Transparency = 0.2
+                        Transparency = 0.3
                     }):Play()
                 end
                 if LabelClone then
@@ -2635,7 +2640,14 @@ end)
                 if IconClone then
                     TweenService:Create(IconClone, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
                         ImageColor3 = AccentColorLight,
-                        ImageTransparency = 0
+                        ImageTransparency = 0.1
+                    }):Play()
+                end
+                if ArrowClone then
+                    TweenService:Create(ArrowClone, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                        Position = UDim2.new(1, -10, 0.5, 0),
+                        ImageTransparency = 0,
+                        ImageColor3 = AccentColor
                     }):Play()
                 end
             end)
@@ -2645,14 +2657,8 @@ end)
                 TweenService:Create(ButtonCloneFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
                     BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Second
                 }):Play()
-                if AccentBarClone then
-                    TweenService:Create(AccentBarClone, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {
-                        Size = UDim2.new(0, 3, 0, 10),
-                        BackgroundTransparency = 1
-                    }):Play()
-                end
                 if StrokeClone then
-                    TweenService:Create(StrokeClone, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {
+                    TweenService:Create(StrokeClone, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
                         Color = OrionLib.Themes[OrionLib.SelectedTheme].Stroke,
                         Transparency = 0.5
                     }):Play()
@@ -2665,7 +2671,14 @@ end)
                 if IconClone then
                     TweenService:Create(IconClone, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
                         ImageColor3 = OrionLib.Themes[OrionLib.SelectedTheme].TextDark,
-                        ImageTransparency = 0.3
+                        ImageTransparency = 0.4
+                    }):Play()
+                end
+                if ArrowClone then
+                    TweenService:Create(ArrowClone, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
+                        Position = UDim2.new(1, -16, 0.5, 0),
+                        ImageTransparency = 0.7,
+                        ImageColor3 = OrionLib.Themes[OrionLib.SelectedTheme].TextDark
                     }):Play()
                 end
             end)
@@ -2674,14 +2687,14 @@ end)
                 if ButtonConfigClone.Disabled then return end
                 TweenService:Create(ButtonCloneFrame, TweenInfo.new(0.1, Enum.EasingStyle.Quad), {
                     BackgroundColor3 = Color3.fromRGB(
-                        math.clamp(OrionLib.Themes[OrionLib.SelectedTheme].Second.R * 255 - 8, 0, 255),
-                        math.clamp(OrionLib.Themes[OrionLib.SelectedTheme].Second.G * 255 - 8, 0, 255),
-                        math.clamp(OrionLib.Themes[OrionLib.SelectedTheme].Second.B * 255 - 8, 0, 255)
+                        math.clamp(OrionLib.Themes[OrionLib.SelectedTheme].Second.R * 255 - 6, 0, 255),
+                        math.clamp(OrionLib.Themes[OrionLib.SelectedTheme].Second.G * 255 - 6, 0, 255),
+                        math.clamp(OrionLib.Themes[OrionLib.SelectedTheme].Second.B * 255 - 6, 0, 255)
                     )
                 }):Play()
-                if ContentContainerClone then
-                    TweenService:Create(ContentContainerClone, TweenInfo.new(0.1, Enum.EasingStyle.Quad), {
-                        Size = UDim2.new(1, -26, 1, -4)
+                if LeftContainerClone then
+                    TweenService:Create(LeftContainerClone, TweenInfo.new(0.1, Enum.EasingStyle.Quad), {
+                        Position = UDim2.new(0, 15, 0, 0)
                     }):Play()
                 end
             end)
@@ -2695,9 +2708,9 @@ end)
                         math.clamp(OrionLib.Themes[OrionLib.SelectedTheme].Second.B * 255 + 6, 0, 255)
                     )
                 }):Play()
-                if ContentContainerClone then
-                    TweenService:Create(ContentContainerClone, TweenInfo.new(0.15, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-                        Size = UDim2.new(1, -20, 1, 0)
+                if LeftContainerClone then
+                    TweenService:Create(LeftContainerClone, TweenInfo.new(0.15, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                        Position = UDim2.new(0, 12, 0, 0)
                     }):Play()
                 end
                 task.spawn(function()
@@ -2718,8 +2731,8 @@ end)
                 ButtonConfigClone.Disabled = state
                 if ButtonCloneFrame then
                     TweenService:Create(ButtonCloneFrame, TweenInfo.new(0.2), {BackgroundTransparency = state and 0.5 or 0}):Play()
-                    if AccentBarClone then
-                        TweenService:Create(AccentBarClone, TweenInfo.new(0.2), {BackgroundTransparency = state and 1 or 1}):Play()
+                    if ArrowClone then
+                        TweenService:Create(ArrowClone, TweenInfo.new(0.2), {ImageTransparency = state and 0.9 or 0.7}):Play()
                     end
                 end
                 if Click then
@@ -2730,7 +2743,7 @@ end)
                     LabelClone.TextTransparency = state and 0.5 or 0
                 end
                 if IconClone then
-                    IconClone.ImageTransparency = state and 0.6 or 0.3
+                    IconClone.ImageTransparency = state and 0.7 or 0.4
                 end
             end
             
