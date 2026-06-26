@@ -2384,7 +2384,6 @@ end)
     ButtonConfig.Name = ButtonConfig.Name or "Button"
     ButtonConfig.Callback = ButtonConfig.Callback or function() end
     ButtonConfig.Flag = ButtonConfig.Flag or nil
-    ButtonConfig.Icon = ButtonConfig.Icon or "rbxassetid://3944703587"
     local Button = {Disabled = ButtonConfig.Disabled, Visible = ButtonConfig.Visible, Flag = ButtonConfig.Flag}
 
     -- 1. Nhãn chữ hiển thị
@@ -2395,15 +2394,7 @@ end)
         Name = "Content"
     }), "Text")
 
-    -- 2. Biểu tượng bổ trợ cho nhãn bên trái
-    local Icon = AddThemeObject(SetProps(MakeElement("Image", ButtonConfig.Icon), {
-        Size = UDim2.new(0, 16, 0, 16),
-        ImageColor3 = OrionLib.Themes[OrionLib.SelectedTheme].TextDark,
-        ImageTransparency = 0.4,
-        Name = "Icon"
-    }), "TextDark")
-
-    -- 3. Khung chứa nội dung lề trái
+    -- 2. Khung chứa nội dung lề trái (Đã loại bỏ Icon ở đây)
     local LeftContainer = Create("Frame", {
         Size = UDim2.new(1, -44, 1, 0),
         Position = UDim2.new(0, 12, 0, 0),
@@ -2416,11 +2407,10 @@ end)
             VerticalAlignment = Enum.VerticalAlignment.Center,
             Padding = UDim.new(0, 8)
         }),
-        Icon,
         Label
     })
 
-    -- 4. Biểu tượng vân tay bên rìa phải thay thế cho mũi tên
+    -- 3. Biểu tượng vân tay bên rìa phải
     local Fingerprint = AddThemeObject(SetProps(MakeElement("Image", "rbxassetid://10723375250"), {
         Size = UDim2.new(0, 16, 0, 16),
         AnchorPoint = Vector2.new(1, 0.5),
@@ -2430,14 +2420,14 @@ end)
         Name = "Fingerprint"
     }), "TextDark")
 
-    -- 5. Viền bao quanh nút
+    -- 4. Viền bao quanh nút
     local Stroke = AddThemeObject(SetProps(MakeElement("Stroke"), {
         Color = OrionLib.Themes[OrionLib.SelectedTheme].Stroke,
         Thickness = 1,
         Transparency = 0.5
     }), "Stroke")
 
-    -- 6. Phím kích hoạt click ẩn
+    -- 5. Phím kích hoạt click ẩn
     local Click = SetProps(MakeElement("Button"), {
         Size = UDim2.new(1, 0, 1, 0),
         ZIndex = 5
@@ -2472,10 +2462,6 @@ end)
         TweenService:Create(Label, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
             TextColor3 = Color3.fromRGB(255, 255, 255)
         }):Play()
-        TweenService:Create(Icon, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
-            ImageColor3 = AccentColorLight,
-            ImageTransparency = 0.1
-        }):Play()
         TweenService:Create(Fingerprint, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
             ImageTransparency = 0.1,
             ImageColor3 = AccentColor
@@ -2493,10 +2479,6 @@ end)
         }):Play()
         TweenService:Create(Label, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
             TextColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Text
-        }):Play()
-        TweenService:Create(Icon, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
-            ImageColor3 = OrionLib.Themes[OrionLib.SelectedTheme].TextDark,
-            ImageTransparency = 0.4
         }):Play()
         TweenService:Create(Fingerprint, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
             ImageTransparency = 0.5,
@@ -2569,10 +2551,6 @@ end)
         if content then
             content.TextTransparency = state and 0.5 or 0
         end
-        local icon = ButtonFrame and ButtonFrame:FindFirstChild("Icon", true)
-        if icon then
-            icon.ImageTransparency = state and 0.7 or 0.4
-        end
     end
     
     function Button:SetVisible(state)
@@ -2602,7 +2580,6 @@ end)
         ButtonConfigClone.Name = ButtonConfigClone.Name or "Button"
         ButtonConfigClone.Callback = ButtonConfigClone.Callback or function() end
         ButtonConfigClone.Flag = ButtonConfigClone.Flag or nil
-        ButtonConfigClone.Icon = ButtonConfigClone.Icon or "rbxassetid://3944703587"
         local ButtonClone = {Disabled = ButtonConfigClone.Disabled, Visible = ButtonConfigClone.Visible, Flag = ButtonConfigClone.Flag}
 
         if ButtonFrame then
@@ -2616,7 +2593,6 @@ end)
             local LeftContainerClone = ButtonCloneFrame:FindFirstChild("LeftContainer")
             local FingerprintClone = ButtonCloneFrame:FindFirstChild("Fingerprint")
             local LabelClone = ButtonCloneFrame:FindFirstChild("Content", true)
-            local IconClone = ButtonCloneFrame:FindFirstChild("Icon", true)
             local StrokeClone = ButtonCloneFrame:FindFirstChildOfClass("UIStroke")
             
             local Click = ButtonCloneFrame and ButtonCloneFrame:FindFirstChildOfClass("TextButton")
@@ -2641,12 +2617,6 @@ end)
                         TextColor3 = Color3.fromRGB(255, 255, 255)
                     }):Play()
                 end
-                if IconClone then
-                    TweenService:Create(IconClone, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
-                        ImageColor3 = AccentColorLight,
-                        ImageTransparency = 0.1
-                    }):Play()
-                end
                 if FingerprintClone then
                     TweenService:Create(FingerprintClone, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
                         ImageTransparency = 0.1,
@@ -2669,12 +2639,6 @@ end)
                 if LabelClone then
                     TweenService:Create(LabelClone, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
                         TextColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Text
-                    }):Play()
-                end
-                if IconClone then
-                    TweenService:Create(IconClone, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
-                        ImageColor3 = OrionLib.Themes[OrionLib.SelectedTheme].TextDark,
-                        ImageTransparency = 0.4
                     }):Play()
                 end
                 if FingerprintClone then
@@ -2753,9 +2717,6 @@ end)
                 end
                 if LabelClone then
                     LabelClone.TextTransparency = state and 0.5 or 0
-                end
-                if IconClone then
-                    IconClone.ImageTransparency = state and 0.7 or 0.4
                 end
             end
             
@@ -3259,435 +3220,534 @@ end
 							return Video
 						end
                         function ElementFunction:AddToggle(ToggleConfig)
-    ToggleConfig = ToggleConfig or {}
-    ToggleConfig.Name = ToggleConfig.Name or "Toggle"
-    ToggleConfig.Default = ToggleConfig.Default or false
-    ToggleConfig.Callback = ToggleConfig.Callback or function() end
-    ToggleConfig.Color = ToggleConfig.Color or AccentColor
-    ToggleConfig.Visible = ToggleConfig.Visible or true
-    ToggleConfig.Disabled = ToggleConfig.Disabled or false
-    ToggleConfig.Type = ToggleConfig.Type or "CheckBox"
-    ToggleConfig.Flag = ToggleConfig.Flag or nil
-    ToggleConfig.Save = ToggleConfig.Save or false
+                            ToggleConfig = ToggleConfig or {}
+                            ToggleConfig.Name = ToggleConfig.Name or "Toggle"
+                            ToggleConfig.Default = ToggleConfig.Default or false
+                            ToggleConfig.Callback = ToggleConfig.Callback or function() end
+                            ToggleConfig.Color = ToggleConfig.Color or AccentColor
+                            ToggleConfig.Visible = ToggleConfig.Visible ~= false
+                            ToggleConfig.Disabled = ToggleConfig.Disabled == true
+                            ToggleConfig.Type = ToggleConfig.Type or "CheckBox" -- "CheckBox" hoặc "Switch"
+                            ToggleConfig.Flag = ToggleConfig.Flag or nil
+                            ToggleConfig.Save = ToggleConfig.Save or false
 
-    local Toggle = {
-        Type = "Toggle",
-        Value = ToggleConfig.Default,
-        Save = ToggleConfig.Save,
-        Mode = ToggleConfig.Type,
-        Visible = ToggleConfig.Visible,
-        Disabled = ToggleConfig.Disabled,
-        ["__DisplayName"] = {}
-    }
+                            local Toggle = {
+                                Type = "Toggle",
+                                Value = ToggleConfig.Default,
+                                Save = ToggleConfig.Save,
+                                Mode = ToggleConfig.Type,
+                                Visible = ToggleConfig.Visible,
+                                Disabled = ToggleConfig.Disabled,
+                                ["__DisplayName"] = {}
+                            }
 
-    local Click = SetProps(MakeElement("Button"), {
-        Size = UDim2.new(1, 0, 1, 0)
-    })
+                            local Click = SetProps(MakeElement("Button"), {
+                                Size = UDim2.new(1, 0, 1, 0),
+                                ZIndex = 5
+                            })
 
-    local function CreateSwitch()
-        return SetChildren(SetProps(MakeElement("RoundFrame", OrionLib.Themes.Default.Divider, 0, 12), {
-            Size = UDim2.new(0, 44, 0, 22),
-            Position = UDim2.new(1, -10, 0.5, 0),
-            AnchorPoint = Vector2.new(1, 0.5),
-            BackgroundColor3 = OrionLib.Themes.Default.Divider,
-            Name = "Switch"
-        }), {
-            AddThemeObject(MakeElement("Stroke"), "Stroke"),
-            SetProps(MakeElement("Label", "OFF", 8), {
-                Size = UDim2.new(1, -6, 1, 0),
-                Position = UDim2.new(0, -6, 0, 0),
-                Font = Enum.Font.GothamBold,
-                TextColor3 = Color3.fromRGB(140, 140, 140),
-                TextXAlignment = Enum.TextXAlignment.Right,
-                Name = "StatusText",
-            }),
-            SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 10), {
-                Size = UDim2.new(0, 18, 0, 18),
-                Position = UDim2.new(0, 2, 0.5, 0),
-                AnchorPoint = Vector2.new(0, 0.5),
-                Name = "Knob"
-            }), {
-                SetProps(MakeElement("RoundFrame", Color3.fromRGB(150, 150, 150), 0, 5), {
-                    Size = UDim2.new(0, 6, 0, 6),
-                    Position = UDim2.new(0.5, 0, 0.5, 0),
-                    AnchorPoint = Vector2.new(0.5, 0.5),
-                    Name = "GlowCore"
-                })
-            })
-        })
-    end
-
-    local function CreateCheck()
-        return SetChildren(SetProps(MakeElement("RoundFrame", OrionLib.Themes.Default.Divider, 0, 12), {
-            Size = UDim2.new(0, 22, 0, 22),
-            Position = UDim2.new(1, -30, 0.5, 0),
-            AnchorPoint = Vector2.new(0.5, 0.5),
-            BackgroundColor3 = OrionLib.Themes.Default.Divider,
-            Name = "Check"
-        }), {
-            SetProps(MakeElement("Stroke"), {
-                Color = OrionLib.Themes.Default.Stroke,
-                Name = "Stroke",
-                Transparency = 0.5
-            }),
-            SetChildren(SetProps(MakeElement("RoundFrame", ToggleConfig.Color, 0, 11), {
-                Size = UDim2.new(0, 0, 0, 0),
-                AnchorPoint = Vector2.new(0.5, 0.5),
-                Position = UDim2.new(0.5, 0, 0.5, 0),
-                Name = "FillCircle",
-                BackgroundTransparency = 1
-            }), {
-                SetProps(MakeElement("Image", "rbxassetid://3944680095"), {
-                    Size = UDim2.new(0, 12, 0, 12),
-                    AnchorPoint = Vector2.new(0.5, 0.5),
-                    Position = UDim2.new(0.5, 0, 0.5, 0),
-                    ImageColor3 = Color3.fromRGB(255, 255, 255),
-                    ImageTransparency = 1,
-                    Name = "Ico"
-                })
-            })
-        })
-    end
-
-    local ToggleBox
-    if ToggleConfig.Type == "Switch" then
-        ToggleBox = CreateSwitch()
-    else
-        ToggleBox = CreateCheck()
-    end
-
-    local AccentBar = SetProps(MakeElement("RoundFrame", OrionLib.Themes.Default.Divider, 0, 1.5), {
-        Size = UDim2.new(0, 3, 0.3, 0),
-        Position = UDim2.new(0, 2, 0.5, 0),
-        AnchorPoint = Vector2.new(0, 0.5),
-        BackgroundTransparency = 1,
-        Name = "AccentBar"
-    })
-
-    local ToggleFrame = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5), {
-            Size = UDim2.new(1, 0, 0, 38),
-            Parent = ItemParent
-        }), {
-            AccentBar,
-            AddThemeObject(SetProps(MakeElement("Label", ToggleConfig.Name, 15), {
-                Size = UDim2.new(1, -24, 1, 0),
-                Position = UDim2.new(0, 16, 0, 0),
-                Font = Enum.Font.GothamBold,
-                Name = "Content",
-            }), "Text"),
-            AddThemeObject(MakeElement("Stroke"), "Stroke"), ToggleBox, Click,
-    }), "Second")
-    
-    function Toggle:UpdateTweenKeyBindToggles(Object, bool)
-        if Object:FindFirstChild("AccentBar") then
-            TweenService:Create(Object.AccentBar, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
-                BackgroundTransparency = bool and 0 or 1,
-                BackgroundColor3 = bool and ToggleConfig.Color or OrionLib.Themes.Default.Divider,
-                Size = bool and UDim2.new(0, 3, 0.5, 0) or UDim2.new(0, 3, 0.2, 0)
-            }):Play()
-        end
-
-        if Object:FindFirstChild("Switch") and Object.Switch:FindFirstChild("Knob") then
-            local SwitchFrame = Object.Switch
-            local Knob = SwitchFrame.Knob
-            local GlowCore = Knob:FindFirstChild("GlowCore")
-            local StatusText = SwitchFrame:FindFirstChild("StatusText")
-
-            TweenService:Create(SwitchFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
-                BackgroundColor3 = bool and ToggleConfig.Color or OrionLib.Themes.Default.Divider
-            }):Play()
-
-            TweenService:Create(Knob, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-                Position = bool and UDim2.new(1, -20, 0.5, 0) or UDim2.new(0, 2, 0.5, 0)
-            }):Play()
-
-            if GlowCore then
-                TweenService:Create(GlowCore, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
-                    BackgroundColor3 = bool and ToggleConfig.Color or Color3.fromRGB(138, 143, 160),
-                    Size = bool and UDim2.new(0, 8, 0, 8) or UDim2.new(0, 6, 0, 6)
-                }):Play()
-            end
-        end
-    end
-    
-    local function GetUniqueToggleName(baseName: string)
-        getgenv().ToggleNameCount = getgenv().ToggleNameCount or {}
-        if not getgenv().ToggleNameCount[baseName] then
-            getgenv().ToggleNameCount[baseName] = 1
-            return baseName
-        else
-            getgenv().ToggleNameCount[baseName] += 1
-            return string.format("%s (%d)", baseName, getgenv().ToggleNameCount[baseName])
-        end
-    end
-    
-    local function UpdateLayout()
-        local hasBind = ToggleFrame:FindFirstChild("ButtonKey")
-        if hasBind then
-            if ToggleFrame:FindFirstChild("Switch") then
-                ToggleFrame.Switch.Position = UDim2.new(1, -60, 0.5, 0)
-            end
-            if ToggleFrame:FindFirstChild("Check") then
-                ToggleFrame.Check.Position = UDim2.new(1, -50, 0.5, 0)
-            end
-        end
-    end
-
-    local function AddTogglesKeyBind(name: string)
-        local KeyBindAdd = ToggleFrame:Clone()
-        KeyBindAdd.Parent = Orion.KeyBind.ItemContainer
-        local displayName = GetUniqueToggleName(name)
-        getgenv().TogglesSaveTable[displayName] = KeyBindAdd
-        Toggle.__DisplayName = displayName
-        if KeyBindAdd then
-            if KeyBindAdd:FindFirstChild("ButtonKey") then
-                KeyBindAdd:FindFirstChild("ButtonKey"):Destroy()
-            end
-            if KeyBindAdd:FindFirstChild("TextButton") then
-                AddConnection(KeyBindAdd:FindFirstChild("TextButton").MouseButton1Up, function()
-                    Toggle:Set(not Toggle.Value)
-                end)
-            end
-            if KeyBindAdd:FindFirstChild("Frame") and KeyBindAdd.Frame:FindFirstChild("Value") then
-                AddConnection(KeyBindAdd.Frame.Value:GetPropertyChangedSignal("Text"), function()
-                    local width = KeyBindAdd.Frame.Value.TextBounds.X + 20
-                    TweenService:Create(KeyBindAdd.Frame, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {Size = UDim2.new(0, width, 0, 24)}):Play()
-                end)
-            end
-        end
-    end
-    
-    function Toggle:Set(Value)
-        if getgenv().Destroy or ToggleConfig.Disabled then return end
-        Toggle.Value = Value
-        Toggle:UpdateTweenKeyBindToggles(ToggleFrame, Toggle.Value)
-        if Toggle.__DisplayName then
-            local data = getgenv().TogglesSaveTable[Toggle.__DisplayName]
-            if data then
-                Toggle:UpdateTweenKeyBindToggles(data, Toggle.Value)
-            end
-        end
-        OrionLib:SafeScript(ToggleConfig.Callback, Toggle.Value)
-    end
-    
-    function Toggle:SetMode(newMode)
-        if getgenv().Destroy then return end
-        if not newMode then return end
-        
-        Toggle.Mode = newMode
-        ToggleConfig.Type = newMode
-        
-        if ToggleFrame:FindFirstChild("Switch") then
-            ToggleFrame.Switch:Destroy()
-        end
-        if ToggleFrame:FindFirstChild("Check") then
-            ToggleFrame.Check:Destroy()
-        end
-        
-        if newMode == "Switch" then
-            local newSwitch = CreateSwitch()
-            newSwitch.Parent = ToggleFrame
-            ToggleBox = newSwitch
-        else
-            local newCheck = CreateCheck()
-            newCheck.Parent = ToggleFrame
-            ToggleBox = newCheck
-        end
-        Toggle:UpdateTweenKeyBindToggles(ToggleFrame, Toggle.Value)
-        UpdateLayout()
-    end
-    
-    function Toggle:SetDisabled(state)
-        if getgenv().Destroy then return end
-        ToggleConfig.Disabled = state
-        Toggle.Disabled = state
-        if ToggleFrame then
-            ToggleFrame.BackgroundTransparency = state and 0.6 or 0
-            if ToggleFrame:FindFirstChild("Content") then
-                ToggleFrame.Content.TextTransparency = state and 0.5 or 0
-            end
-        end
-        if Click then
-            Click.Active = not state
-            Click.AutoButtonColor = not state
-        end
-        if ToggleBox then
-            if ToggleConfig.Type == "Switch" and ToggleBox:FindFirstChild("Knob") then
-                TweenService:Create(ToggleBox, TweenInfo.new(0.2), {
-                    BackgroundColor3 = state and Color3.fromRGB(120,120,120)
-                        or (Toggle.Value and ToggleConfig.Color or OrionLib.Themes.Default.Divider)
-                }):Play()
-            elseif ToggleBox:FindFirstChild("Stroke") then
-                TweenService:Create(ToggleBox.Stroke, TweenInfo.new(0.2), {
-                    Color = state and Color3.fromRGB(120,120,120) or (Toggle.Value and ToggleConfig.Color or OrionLib.Themes.Default.Stroke)
-                }):Play()
-            end
-        end
-        if Toggle.__DisplayName and getgenv().TogglesSaveTable[Toggle.__DisplayName] then
-            local data = getgenv().TogglesSaveTable[Toggle.__DisplayName]
-            if data then
-                if data:FindFirstChild("TextButton", true) then
-                    data:FindFirstChild("TextButton", true).Active = not state
-                    data:FindFirstChild("TextButton", true).AutoButtonColor = not state
-                end
-                data.BackgroundTransparency = state and 0.6 or 0
-                if data:FindFirstChild("Content", true) then
-                    data:FindFirstChild("Content", true).TextTransparency = state and 0.5 or 0
-                end
-            end
-        end
-    end
-    
-    function Toggle:SetVisible(state)
-        if getgenv().Destroy then return end
-        Toggle.Visible = state
-        if ToggleFrame then
-            ToggleFrame.Visible = state
-        end
-        if Toggle.__DisplayName and getgenv().TogglesSaveTable[Toggle.__DisplayName] then
-            local data = getgenv().TogglesSaveTable[Toggle.__DisplayName]
-            if data then
-                data.Visible = state
-            end
-        end
-    end
-    
-    function Toggle:SetCallback(ToChange)
-        if getgenv().Destroy or ToggleConfig.Disabled then return end
-        ToggleConfig.Callback = ToChange
-    end
-    
-    function Toggle:SetText(ToChange)
-        if getgenv().Destroy or ToggleConfig.Disabled then return end
-        if ToggleFrame and ToggleFrame:FindFirstChild("Content") then
-            ToggleFrame.Content.Text = ToChange
-        end
-        if Toggle.__DisplayName then
-            if getgenv().TogglesSaveTable[Toggle.__DisplayName] then
-                local FrameToHere = getgenv().TogglesSaveTable[Toggle.__DisplayName]
-                if FrameToHere and FrameToHere:FindFirstChild("Content", true) then
-                    FrameToHere:FindFirstChild("Content", true).Text = ToChange
-                end
-            end
-        end
-    end
-    
-    if ToggleConfig.Default == true then
-        Toggle:Set(true)
-    end
-    
-    AddConnection(Click.MouseButton1Up, function()
-        if ToggleConfig.Disabled then return end
-        Toggle:Set(not Toggle.Value)
-    end)
-
-    function Toggle:AddBind(BindConfig)
-        BindConfig = BindConfig or {}
-        BindConfig.Default = BindConfig.Default or Enum.KeyCode.Unknown
-        BindConfig.Hold = BindConfig.Hold or false
-        BindConfig.Flag = BindConfig.Flag or nil
-        BindConfig.Save = BindConfig.Save or false
-
-        local Bind = {
-            Value = BindConfig.Default.Name or BindConfig.Default,
-            Type = "Bind",
-            Save = BindConfig.Save,
-            Binding = false
-        }
-
-        local Click = SetProps(MakeElement("Button"), {
-            Size = UDim2.new(0, 30, 0, 24),
-            Position = (ToggleConfig.Type == "Switch" and UDim2.new(1, -55, 0.5, 0) or UDim2.new(1, -48, 0.5, 0)),
-            AnchorPoint = Vector2.new(1, 0.5),
-            Parent = ToggleFrame,
-            Name = "ButtonKey",
-            ZIndex = 4
-        })
-
-        local BindBox = AddThemeObject(SetChildren(SetProps(
-            MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 4), {
-                Size = UDim2.new(0, 30, 0, 24),
-                Position = Click.Position,
-                AnchorPoint = Vector2.new(1, 0.5),
-                Parent = ToggleFrame,
-                ZIndex = 1
-            }), {
-                AddThemeObject(MakeElement("Stroke"), "Stroke"),
-                AddThemeObject(SetProps(MakeElement("Label", Bind.Value, 14), {
-                    Size = UDim2.new(1, 0, 1, 0),
-                    Font = Enum.Font.GothamBold,
-                    TextXAlignment = Enum.TextXAlignment.Center,
-                    Name = "Value",
-                    ZIndex = 1
-                }), "Text")
-            }), "Main")
-
-        AddConnection(BindBox.Value:GetPropertyChangedSignal("Text"), function()
-            local width = BindBox.Value.TextBounds.X + 20
-            TweenService:Create(BindBox, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {Size = UDim2.new(0, width, 0, 24)}):Play()
-            TweenService:Create(Click, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {Size = UDim2.new(0, width, 0, 24)}):Play()
-        end)
-
-        AddConnection(Click.InputEnded, function(Input)
-            if ToggleConfig.Disabled then return end
-            if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
-                if Bind.Binding then return end
-                Bind.Binding = true
-                BindBox.Value.Text = "..."
-            end
-        end)
-
-        AddConnection(UserInputService.InputBegan, function(Input, gp)
-            if ToggleConfig.Disabled then return end
-            if gp then return end
-            if UserInputService:GetFocusedTextBox() then return end
-            if Bind.Binding then
-                if Input.KeyCode ~= Enum.KeyCode.Unknown then
-                    Bind.Value = Input.KeyCode.Name
-                    BindBox.Value.Text = Bind.Value
-                    Bind.Binding = false
-                    if Toggle.__DisplayName then
-                        if getgenv().TogglesSaveTable[Toggle.__DisplayName] then
-                            local FrameToHere = getgenv().TogglesSaveTable[Toggle.__DisplayName]
-                            if FrameToHere and FrameToHere:FindFirstChild("Frame") and FrameToHere.Frame:FindFirstChild("Value") then
-                                FrameToHere.Frame:FindFirstChild("Value").Text = Input.KeyCode.Name
+                            -- Switch hiện đại với lớp phát quang bên dưới
+                            local function CreateSwitch()
+                                return SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(24, 25, 32), 0, 12), {
+                                    Size = UDim2.new(0, 48, 0, 24),
+                                    Position = UDim2.new(1, -12, 0.5, 0),
+                                    AnchorPoint = Vector2.new(1, 0.5),
+                                    Name = "Switch"
+                                }), {
+                                    Create("UIStroke", {
+                                        Color = Color3.fromRGB(50, 52, 65),
+                                        Thickness = 1,
+                                        ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+                                        Name = "SwitchStroke"
+                                    }),
+                                    SetProps(MakeElement("RoundFrame", ToggleConfig.Color, 0, 12), {
+                                        Size = UDim2.new(1, 0, 1, 0),
+                                        BackgroundTransparency = 1, -- Điều khiển bằng Tween
+                                        Name = "GlowBg"
+                                    }),
+                                    SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 10), {
+                                        Size = UDim2.new(0, 18, 0, 18),
+                                        Position = UDim2.new(0, 3, 0.5, 0),
+                                        AnchorPoint = Vector2.new(0, 0.5),
+                                        Name = "Knob"
+                                    }), {
+                                        SetProps(MakeElement("RoundFrame", Color3.fromRGB(150, 150, 150), 0, 5), {
+                                            Size = UDim2.new(0, 6, 0, 6),
+                                            Position = UDim2.new(0.5, 0, 0.5, 0),
+                                            AnchorPoint = Vector2.new(0.5, 0.5),
+                                            Name = "GlowCore"
+                                        })
+                                    })
+                                })
                             end
+
+                            -- Checkbox tối giản phản ứng nhanh
+                            local function CreateCheck()
+                                return SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(24, 25, 32), 0, 6), {
+                                    Size = UDim2.new(0, 22, 0, 22),
+                                    Position = UDim2.new(1, -30, 0.5, 0),
+                                    AnchorPoint = Vector2.new(0.5, 0.5),
+                                    Name = "Check"
+                                }), {
+                                    Create("UIStroke", {
+                                        Color = Color3.fromRGB(50, 52, 65),
+                                        Thickness = 1.2,
+                                        ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+                                        Name = "CheckStroke"
+                                    }),
+                                    SetChildren(SetProps(MakeElement("RoundFrame", ToggleConfig.Color, 0, 5), {
+                                        Size = UDim2.new(0, 0, 0, 0), -- Giãn nở bằng Tween
+                                        AnchorPoint = Vector2.new(0.5, 0.5),
+                                        Position = UDim2.new(0.5, 0, 0.5, 0),
+                                        Name = "FillCircle"
+                                    }), {
+                                        SetProps(MakeElement("Image", "rbxassetid://3944680095"), {
+                                            Size = UDim2.new(0, 14, 0, 14),
+                                            AnchorPoint = Vector2.new(0.5, 0.5),
+                                            Position = UDim2.new(0.5, 0, 0.5, 0),
+                                            ImageColor3 = Color3.fromRGB(255, 255, 255),
+                                            ImageTransparency = 1,
+                                            Name = "Ico"
+                                        })
+                                    })
+                                })
+                            end
+
+                            local ToggleBox = (ToggleConfig.Type == "Switch" and CreateSwitch() or CreateCheck())
+
+                            -- Thanh trạng thái bên lề trái co dãn mượt mà
+                            local AccentBar = SetProps(MakeElement("RoundFrame", Color3.fromRGB(40, 42, 50), 0, 2), {
+                                Size = UDim2.new(0, 3, 0, 8),
+                                Position = UDim2.new(0, 3, 0.5, 0),
+                                AnchorPoint = Vector2.new(0, 0.5),
+                                BackgroundTransparency = 0.5,
+                                Name = "AccentBar"
+                            })
+
+                            local CardStroke = Create("UIStroke", {
+                                Color = Color3.fromRGB(35, 38, 48),
+                                Thickness = 1,
+                                ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+                                Transparency = 0.3,
+                                Name = "Stroke"
+                            })
+
+                            local ToggleFrame = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(15, 16, 22), 0, 8), {
+                                Size = UDim2.new(1, 0, 0, 40), 
+                                Parent = ItemParent
+                            }), {
+                                AccentBar,
+                                AddThemeObject(SetProps(MakeElement("Label", ToggleConfig.Name, 14), {
+                                    Size = UDim2.new(1, -24, 1, 0),
+                                    Position = UDim2.new(0, 18, 0, 0),
+                                    Font = Enum.Font.GothamBold,
+                                    TextColor3 = Color3.fromRGB(180, 183, 195),
+                                    Name = "Content",
+                                }), "Text"),
+                                CardStroke,
+                                ToggleBox,
+                                Click,
+                            }), "Second")
+
+                            -- Trình quản lý hiệu ứng chuyển động liên kết
+                            function Toggle:UpdateTweenKeyBindToggles(Object, bool)
+                                local duration = 0.35
+                                local easeOut = TweenInfo.new(duration, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+                                local springOut = TweenInfo.new(duration + 0.1, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+
+                                -- Hoạt ảnh thanh Accent bên trái
+                                if Object:FindFirstChild("AccentBar") then
+                                    TweenService:Create(Object.AccentBar, easeOut, {
+                                        BackgroundTransparency = bool and 0 or 0.5,
+                                        BackgroundColor3 = bool and ToggleConfig.Color or Color3.fromRGB(60, 62, 75),
+                                        Size = bool and UDim2.new(0, 4, 0, 24) or UDim2.new(0, 3, 0, 8)
+                                    }):Play()
+                                end
+
+                                -- Hoạt ảnh nâng tông màu nền nhẹ khi ON
+                                local targetBg = bool and Color3.fromRGB(22, 24, 32) or OrionLib.Themes[OrionLib.SelectedTheme].Second
+                                TweenService:Create(Object, easeOut, {
+                                    BackgroundColor3 = targetBg
+                                }):Play()
+
+                                -- Phát quang nhẹ ở viền Card
+                                if Object:FindFirstChild("Stroke") then
+                                    TweenService:Create(Object.Stroke, easeOut, {
+                                        Color = bool and ToggleConfig.Color or Color3.fromRGB(35, 38, 48),
+                                        Transparency = bool and 0.1 or 0.3
+                                    }):Play()
+                                end
+
+                                -- Thay đổi sắc độ màu chữ
+                                if Object:FindFirstChild("Content") then
+                                    TweenService:Create(Object.Content, easeOut, {
+                                        TextColor3 = bool and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(180, 183, 195)
+                                    }):Play()
+                                end
+
+                                -- Hoạt ảnh cho định dạng Switch
+                                if Object:FindFirstChild("Switch") then
+                                    local SwitchFrame = Object.Switch
+                                    local Knob = SwitchFrame:FindFirstChild("Knob")
+                                    local GlowBg = SwitchFrame:FindFirstChild("GlowBg")
+                                    local SwitchStroke = SwitchFrame:FindFirstChild("SwitchStroke")
+
+                                    if GlowBg then
+                                        TweenService:Create(GlowBg, easeOut, {
+                                            BackgroundTransparency = bool and 0.15 or 1
+                                        }):Play()
+                                    end
+
+                                    if SwitchStroke then
+                                        TweenService:Create(SwitchStroke, easeOut, {
+                                            Color = bool and ToggleConfig.Color or Color3.fromRGB(50, 52, 65)
+                                        }):Play()
+                                    end
+
+                                    if Knob then
+                                        local GlowCore = Knob:FindFirstChild("GlowCore")
+                                        TweenService:Create(Knob, springOut, {
+                                            Position = bool and UDim2.new(1, -21, 0.5, 0) or UDim2.new(0, 3, 0.5, 0),
+                                            BackgroundColor3 = bool and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(200, 202, 215)
+                                        }):Play()
+
+                                        if GlowCore then
+                                            TweenService:Create(GlowCore, easeOut, {
+                                                BackgroundColor3 = bool and ToggleConfig.Color or Color3.fromRGB(120, 122, 135),
+                                                Size = bool and UDim2.new(0, 8, 0, 8) or UDim2.new(0, 4, 0, 4)
+                                            }):Play()
+                                        end
+                                    end
+                                end
+
+                                -- Hoạt ảnh cho định dạng Checkbox
+                                if Object:FindFirstChild("Check") then
+                                    local CheckFrame = Object.Check
+                                    local FillCircle = CheckFrame:FindFirstChild("FillCircle")
+                                    local CheckStroke = CheckFrame:FindFirstChild("CheckStroke")
+
+                                    if CheckStroke then
+                                        TweenService:Create(CheckStroke, easeOut, {
+                                            Color = bool and ToggleConfig.Color or Color3.fromRGB(50, 52, 65)
+                                        }):Play()
+                                    end
+
+                                    if FillCircle then
+                                        local Ico = FillCircle:FindFirstChild("Ico")
+                                        TweenService:Create(FillCircle, springOut, {
+                                            Size = bool and UDim2.new(1, 0, 1, 0) or UDim2.new(0, 0, 0, 0)
+                                        }):Play()
+
+                                        if Ico then
+                                            TweenService:Create(Ico, easeOut, {
+                                                ImageTransparency = bool and 0 or 1
+                                            }):Play()
+                                        end
+                                    end
+                                end
+                            end
+
+                            local function GetUniqueToggleName(baseName: string)
+                                getgenv().ToggleNameCount = getgenv().ToggleNameCount or {}
+                                if not getgenv().ToggleNameCount[baseName] then
+                                    getgenv().ToggleNameCount[baseName] = 1
+                                    return baseName
+                                else
+                                    getgenv().ToggleNameCount[baseName] += 1
+                                    return string.format("%s (%d)", baseName, getgenv().ToggleNameCount[baseName])
+                                end
+                            end
+
+                            local function UpdateLayout()
+                                local hasBind = ToggleFrame:FindFirstChild("ButtonKey")
+                                if hasBind then
+                                    if ToggleFrame:FindFirstChild("Switch") then
+                                        ToggleFrame.Switch.Position = UDim2.new(1, -64, 0.5, 0)
+                                    end
+                                    if ToggleFrame:FindFirstChild("Check") then
+                                        ToggleFrame.Check.Position = UDim2.new(1, -54, 0.5, 0)
+                                    end
+                                end
+                            end
+
+                            local function AddTogglesKeyBind(name: string)
+                                local KeyBindAdd = ToggleFrame:Clone()
+                                KeyBindAdd.Parent = Orion.KeyBind.ItemContainer
+                                local displayName = GetUniqueToggleName(name)
+                                getgenv().TogglesSaveTable[displayName] = KeyBindAdd
+                                Toggle.__DisplayName = displayName
+                                if KeyBindAdd then
+                                    if KeyBindAdd:FindFirstChild("ButtonKey") then
+                                        KeyBindAdd:FindFirstChild("ButtonKey"):Destroy()
+                                    end
+                                    if KeyBindAdd:FindFirstChild("TextButton") then
+                                        AddConnection(KeyBindAdd:FindFirstChild("TextButton").MouseButton1Up, function()
+                                            Toggle:Set(not Toggle.Value)
+                                        end)
+                                    end
+                                    if KeyBindAdd:FindFirstChild("Frame") and KeyBindAdd.Frame:FindFirstChild("Value") then
+                                        AddConnection(KeyBindAdd.Frame.Value:GetPropertyChangedSignal("Text"), function()
+                                            local width = KeyBindAdd.Frame.Value.TextBounds.X + 20
+                                            TweenService:Create(KeyBindAdd.Frame, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {Size = UDim2.new(0, width, 0, 24)}):Play()
+                                        end)
+                                    end
+                                end
+                            end
+
+                            function Toggle:Set(Value)
+                                if getgenv().Destroy or ToggleConfig.Disabled then return end
+                                Toggle.Value = Value
+                                Toggle:UpdateTweenKeyBindToggles(ToggleFrame, Toggle.Value)
+                                if Toggle.__DisplayName then
+                                    local data = getgenv().TogglesSaveTable[Toggle.__DisplayName]
+                                    if data then
+                                        Toggle:UpdateTweenKeyBindToggles(data, Toggle.Value)
+                                    end
+                                end
+                                OrionLib:SafeScript(ToggleConfig.Callback, Toggle.Value)
+                            end
+
+                            function Toggle:SetMode(newMode)
+                                if getgenv().Destroy then return end
+                                if not newMode then return end
+
+                                Toggle.Mode = newMode
+                                ToggleConfig.Type = newMode
+
+                                if ToggleFrame:FindFirstChild("Switch") then
+                                    ToggleFrame.Switch:Destroy()
+                                end
+                                if ToggleFrame:FindFirstChild("Check") then
+                                    ToggleFrame.Check:Destroy()
+                                end
+
+                                if newMode == "Switch" then
+                                    local newSwitch = CreateSwitch()
+                                    newSwitch.Parent = ToggleFrame
+                                    ToggleBox = newSwitch
+                                else
+                                    local newCheck = CreateCheck()
+                                    newCheck.Parent = ToggleFrame
+                                    ToggleBox = newCheck
+                                end
+                                Toggle:UpdateTweenKeyBindToggles(ToggleFrame, Toggle.Value)
+                                UpdateLayout()
+                            end
+
+                            function Toggle:SetDisabled(state)
+                                if getgenv().Destroy then return end
+                                ToggleConfig.Disabled = state
+                                Toggle.Disabled = state
+                                if ToggleFrame then
+                                    ToggleFrame.BackgroundTransparency = state and 0.6 or 0
+                                    if ToggleFrame:FindFirstChild("Content") then
+                                        ToggleFrame.Content.TextTransparency = state and 0.5 or 0
+                                    end
+                                end
+                                if Click then
+                                    Click.Active = not state
+                                    Click.AutoButtonColor = not state
+                                end
+                                if ToggleBox then
+                                    local transVal = state and 0.7 or (Toggle.Value and 0.2 or 1)
+                                    if ToggleConfig.Type == "Switch" and ToggleBox:FindFirstChild("GlowBg") then
+                                        TweenService:Create(ToggleBox.GlowBg, TweenInfo.new(0.2), {
+                                            BackgroundTransparency = transVal
+                                        }):Play()
+                                    end
+                                end
+                                if Toggle.__DisplayName and getgenv().TogglesSaveTable[Toggle.__DisplayName] then
+                                    local data = getgenv().TogglesSaveTable[Toggle.__DisplayName]
+                                    if data then
+                                        if data:FindFirstChild("TextButton", true) then
+                                            data:FindFirstChild("TextButton", true).Active = not state
+                                            data:FindFirstChild("TextButton", true).AutoButtonColor = not state
+                                        end
+                                        data.BackgroundTransparency = state and 0.6 or 0
+                                        if data:FindFirstChild("Content", true) then
+                                            data:FindFirstChild("Content", true).TextTransparency = state and 0.5 or 0
+                                        end
+                                    end
+                                end
+                            end
+
+                            function Toggle:SetVisible(state)
+                                if getgenv().Destroy then return end
+                                Toggle.Visible = state
+                                if ToggleFrame then
+                                    ToggleFrame.Visible = state
+                                end
+                                if Toggle.__DisplayName and getgenv().TogglesSaveTable[Toggle.__DisplayName] then
+                                    local data = getgenv().TogglesSaveTable[Toggle.__DisplayName]
+                                    if data then
+                                        data.Visible = state
+                                    end
+                                end
+                            end
+
+                            function Toggle:SetCallback(ToChange)
+                                if getgenv().Destroy or ToggleConfig.Disabled then return end
+                                ToggleConfig.Callback = ToChange
+                            end
+
+                            function Toggle:SetText(ToChange)
+                                if getgenv().Destroy or ToggleConfig.Disabled then return end
+                                if ToggleFrame and ToggleFrame:FindFirstChild("Content") then
+                                    ToggleFrame.Content.Text = ToChange
+                                end
+                                if Toggle.__DisplayName then
+                                    if getgenv().TogglesSaveTable[Toggle.__DisplayName] then
+                                        local FrameToHere = getgenv().TogglesSaveTable[Toggle.__DisplayName]
+                                        if FrameToHere and FrameToHere:FindFirstChild("Content", true) then
+                                            FrameToHere:FindFirstChild("Content", true).Text = ToChange
+                                        end
+                                    end
+                                end
+                            end
+
+                            if ToggleConfig.Default == true then
+                                Toggle:Set(true)
+                            else
+                                Toggle:UpdateTweenKeyBindToggles(ToggleFrame, false)
+                            end
+
+                            AddConnection(Click.MouseButton1Up, function()
+                                if ToggleConfig.Disabled then return end
+                                Toggle:Set(not Toggle.Value)
+                            end)
+
+                            -- Hiệu ứng phản hồi di chuột
+                            AddConnection(Click.MouseEnter, function()
+                                if ToggleConfig.Disabled then return end
+                                TweenService:Create(CardStroke, TweenInfo.new(0.2), {
+                                    Color = ToggleConfig.Color,
+                                    Transparency = 0.15
+                                }):Play()
+                            end)
+
+                            AddConnection(Click.MouseLeave, function()
+                                if ToggleConfig.Disabled then return end
+                                TweenService:Create(CardStroke, TweenInfo.new(0.2), {
+                                    Color = Toggle.Value and ToggleConfig.Color or Color3.fromRGB(35, 38, 48),
+                                    Transparency = Toggle.Value and 0.1 or 0.3
+                                }):Play()
+                            end)
+
+                            function Toggle:AddBind(BindConfig)
+                                BindConfig = BindConfig or {}
+                                BindConfig.Default = BindConfig.Default or Enum.KeyCode.Unknown
+                                BindConfig.Hold = BindConfig.Hold or false
+                                BindConfig.Flag = BindConfig.Flag or nil
+                                BindConfig.Save = BindConfig.Save or false
+
+                                local Bind = {
+                                    Value = BindConfig.Default.Name or BindConfig.Default,
+                                    Type = "Bind",
+                                    Save = BindConfig.Save,
+                                    Binding = false
+                                }
+
+                                local Click = SetProps(MakeElement("Button"), {
+                                    Size = UDim2.new(0, 30, 0, 24),
+                                    Position = (ToggleConfig.Type == "Switch" and UDim2.new(1, -70, 0.5, 0) or UDim2.new(1, -58, 0.5, 0)),
+                                    AnchorPoint = Vector2.new(1, 0.5),
+                                    Parent = ToggleFrame,
+                                    Name = "ButtonKey",
+                                    ZIndex = 4
+                                })
+
+                                local BindBox = AddThemeObject(SetChildren(SetProps(
+                                    MakeElement("RoundFrame", Color3.fromRGB(24, 25, 32), 0, 4), {
+                                        Size = UDim2.new(0, 30, 0, 24),
+                                        Position = Click.Position,
+                                        AnchorPoint = Vector2.new(1, 0.5),
+                                        Parent = ToggleFrame,
+                                        ZIndex = 1
+                                    }), {
+                                        Create("UIStroke", {
+                                            Color = Color3.fromRGB(50, 52, 65),
+                                            Thickness = 1,
+                                            ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+                                            Name = "Stroke"
+                                        }),
+                                        AddThemeObject(SetProps(MakeElement("Label", Bind.Value, 13), {
+                                            Size = UDim2.new(1, 0, 1, 0),
+                                            Font = Enum.Font.GothamBold,
+                                            TextColor3 = Color3.fromRGB(200, 203, 215),
+                                            TextXAlignment = Enum.TextXAlignment.Center,
+                                            Name = "Value",
+                                            ZIndex = 1
+                                        }), "Text")
+                                    }), "Main")
+
+                                AddConnection(BindBox.Value:GetPropertyChangedSignal("Text"), function()
+                                    local width = BindBox.Value.TextBounds.X + 20
+                                    TweenService:Create(BindBox, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {Size = UDim2.new(0, width, 0, 24)}):Play()
+                                    TweenService:Create(Click, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {Size = UDim2.new(0, width, 0, 24)}):Play()
+                                end)
+
+                                AddConnection(Click.InputEnded, function(Input)
+                                    if ToggleConfig.Disabled then return end
+                                    if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+                                        if Bind.Binding then return end
+                                        Bind.Binding = true
+                                        BindBox.Value.Text = "..."
+                                    end
+                                end)
+
+                                AddConnection(UserInputService.InputBegan, function(Input, gp)
+                                    if ToggleConfig.Disabled then return end
+                                    if gp then return end
+                                    if UserInputService:GetFocusedTextBox() then return end
+                                    if Bind.Binding then
+                                        if Input.KeyCode ~= Enum.KeyCode.Unknown then
+                                            Bind.Value = Input.KeyCode.Name
+                                            BindBox.Value.Text = Bind.Value
+                                            Bind.Binding = false
+                                            if Toggle.__DisplayName then
+                                                if getgenv().TogglesSaveTable[Toggle.__DisplayName] then
+                                                    local FrameToHere = getgenv().TogglesSaveTable[Toggle.__DisplayName]
+                                                    if FrameToHere and FrameToHere:FindFirstChild("Frame") and FrameToHere.Frame:FindFirstChild("Value") then
+                                                        FrameToHere.Frame:FindFirstChild("Value").Text = Input.KeyCode.Name
+                                                    end
+                                                end
+                                            end
+                                        end
+                                        return
+                                    end
+                                    if Input.KeyCode.Name == Bind.Value then
+                                        Toggle:Set(not Toggle.Value)
+                                    end
+                                end)
+
+                                function Bind:Set(Key)
+                                    if ToggleConfig.Disabled then return end
+                                    Bind.Value = Key.Name or Key
+                                    BindBox.Value.Text = Bind.Value
+                                    if Toggle.__DisplayName then
+                                        if getgenv().TogglesSaveTable[Toggle.__DisplayName] then
+                                            local FrameToHere = getgenv().TogglesSaveTable[Toggle.__DisplayName]
+                                            if FrameToHere and FrameToHere:FindFirstChild("Frame") and FrameToHere.Frame:FindFirstChild("Value") then
+                                                FrameToHere.Frame:FindFirstChild("Value").Text = Key
+                                            end
+                                        end
+                                    end
+                                end
+
+                                AddTogglesKeyBind(ToggleConfig.Name)
+                                UpdateLayout()
+
+                                if BindConfig.Flag then
+                                    OrionLib.Flags[BindConfig.Flag] = Bind
+                                end
+                                return Bind
+                            end
+
+                            if ToggleConfig.Flag then
+                                OrionLib.Flags[ToggleConfig.Flag] = Toggle
+                            end
+                            return Toggle
                         end
-                    end
-                end
-                return
-            end
-            if Input.KeyCode.Name == Bind.Value then
-                Toggle:Set(not Toggle.Value)
-            end
-        end)
-
-        function Bind:Set(Key)
-            if ToggleConfig.Disabled then return end
-            Bind.Value = Key.Name or Key
-            BindBox.Value.Text = Bind.Value
-            if Toggle.__DisplayName then
-                if getgenv().TogglesSaveTable[Toggle.__DisplayName] then
-                    local FrameToHere = getgenv().TogglesSaveTable[Toggle.__DisplayName]
-                    if FrameToHere and FrameToHere:FindFirstChild("Frame") and FrameToHere.Frame:FindFirstChild("Value") then
-                        FrameToHere.Frame:FindFirstChild("Value").Text = Key
-                    end
-                end
-            end
-        end
-        
-        AddTogglesKeyBind(ToggleConfig.Name)
-
-        if BindConfig.Flag then
-    OrionLib.Flags[BindConfig.Flag] = Bind
-end
-        return Bind
-    end
-    if ToggleConfig.Flag then
-        OrionLib.Flags[ToggleConfig.Flag] = Toggle
-    end
-    return Toggle
-end
 						function ElementFunction:AddSlider(SliderConfig)
                             SliderConfig = SliderConfig or {}
                             SliderConfig.Name = SliderConfig.Name or "Slider"
