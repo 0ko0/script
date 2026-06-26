@@ -4333,7 +4333,7 @@ end
     }
 
     local MaxElementsHeight = 220
-    local HeaderHeight = 42 -- Tăng nhẹ chiều cao nút chính để tạo cảm giác thoáng đãng, hiện đại
+    local HeaderHeight = 42 
 
     local function GetKeyList(tbl)
         local keys = {}
@@ -4366,13 +4366,11 @@ end
         end
     end
 
-    -- Dropdown List Layout (Khoảng cách giữa các option thoáng hơn)
     local DropdownList = MakeElement("List")
     DropdownList.Padding = UDim.new(0, 6)
 
-    -- Container chứa các option: Ẩn hoàn toàn thanh cuộn dọc thô kệch để tạo thiết kế tràn viền hiện đại
     local DropdownContainer = AddThemeObject(SetProps(SetChildren(
-        MakeElement("ScrollFrame", Color3.fromRGB(255, 255, 255), 0), -- Độ dày thanh cuộn = 0 (Không dùng thanh dọc)
+        MakeElement("ScrollFrame", Color3.fromRGB(255, 255, 255), 0), 
         {
             DropdownList,
             MakeElement("Padding", 8, 8, 8, 8)
@@ -4383,7 +4381,7 @@ end
         Size = UDim2.new(1, 0, 1, -HeaderHeight),
         ClipsDescendants = true,
         BackgroundTransparency = 1,
-        ScrollBarThickness = 0, -- Loại bỏ thanh cuộn dọc (Cuộn mượt bằng thao tác kéo/vuốt/chuột)
+        ScrollBarThickness = 0, 
     }), "Divider")
 
     local Click = SetProps(MakeElement("Button"), {
@@ -4391,7 +4389,6 @@ end
         ZIndex = 10
     })
     
-    -- Lựa chọn hiển thị: Thiết kế dạng Capsule Badge (Viên thuốc) bo tròn mềm mại, trong suốt (Frosted Glass Effect)
     local SelectedBadgeText = AddThemeObject(SetProps(MakeElement("Label", "...", 11), {
         Size = UDim2.new(1, -16, 1, 0),
         Position = UDim2.new(0, 8, 0, 0),
@@ -4405,7 +4402,7 @@ end
         Size = UDim2.new(0, 100, 0, 22),
         Position = UDim2.new(1, -54, 0.5, 0),
         AnchorPoint = Vector2.new(1, 0.5),
-        BackgroundTransparency = 0.4, -- Trong suốt nhẹ nhàng sang trọng
+        BackgroundTransparency = 0.4, 
         Name = "Badge"
     }), {
         SelectedBadgeText,
@@ -4418,7 +4415,6 @@ end
         })
     }), "Second")
 
-    -- Khung Dropdown chính ngoài cùng: Bo góc tinh tế, nền sẫm sang trọng
     local DropdownFrame = AddThemeObject(SetChildren(SetProps(
         MakeElement("RoundFrame", Color3.fromRGB(13, 14, 20), 0, 10),
         {
@@ -4438,7 +4434,7 @@ end
 
             SelectedBadge,
 
-            AddThemeObject(SetProps(MakeElement("Image", "rbxassetid://100553310917137"), { -- Icon mũi tên chevron hiện đại
+            AddThemeObject(SetProps(MakeElement("Image", "rbxassetid://7072706796"), { 
                 Size = UDim2.new(0, 14, 0, 14),
                 AnchorPoint = Vector2.new(0.5, 0.5),
                 Position = UDim2.new(1, -24, 0.5, 0),
@@ -4481,7 +4477,6 @@ end
         end
     end)
 
-    -- Hiệu ứng chuyển động (Animation) cao cấp cho từng Option khi Hover/Select
     local function AnimateOption(btn, state, OptionVal)
         local isSelected = false
         if DropdownConfig.Multi then
@@ -4511,7 +4506,7 @@ end
 
         if state == "Selected" or (state == "Default" and isSelected) then
             targetBgColor = AccentColor
-            targetBgTrans = 0.94 -- Nền sáng nhẹ sang trọng của màu chủ đạo
+            targetBgTrans = 0.94 
             targetStrokeColor = AccentColor
             targetStrokeTrans = 0.4
             targetTitlePos = UDim2.new(0, textLeftPadding + 6, 0, titleY)
@@ -4520,7 +4515,7 @@ end
             targetDescTrans = 0.15
             targetIconTrans = 0
             targetThumbStrokeTrans = 0.2
-            targetGlowWidth = 4 -- Hiện thanh Highlight ngang nhỏ
+            targetGlowWidth = 4 
         elseif state == "Hover" then
             targetBgColor = Color3.fromRGB(28, 30, 42)
             targetBgTrans = 0.85
@@ -4597,7 +4592,6 @@ end
         end
     end
 
-    -- Khởi tạo danh sách Options với layout cực kỳ hiện đại
     local function AddOptions(Options)
         for k, v in pairs(Options) do
             local OptionVal = (type(k) == "string" and k) or v
@@ -4611,7 +4605,6 @@ end
             
             local ButtonHeight = (ThumbStr and 68) or ((DescStr or IconStr) and 48) or 34
 
-            -- Thanh nhỏ định vị (Indicator) nằm ngang phát sáng thay thế cho đường thẳng dọc
             local GlowLine = Create("Frame", {
                 Name = "GlowLine",
                 Size = UDim2.new(0, 0, 0, 16),
@@ -4685,7 +4678,6 @@ end
                 }), "Text"))
             end
             
-            -- Thiết kế nút kiểm (Selection Indicator) dạng Mini Capsule gọn gàng
             local SelectIndicator
             if DropdownConfig.Multi then
                 SelectIndicator = SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(32, 34, 44), 0, 5), {
@@ -4711,7 +4703,7 @@ end
                     })
                 })
             else
-                -- Indicator hình tròn nhỏ gọn màu Gradient sang xịn
+                
                 SelectIndicator = SetChildren(SetProps(MakeElement("RoundFrame", AccentColor, 0, 10), {
                     Size = UDim2.new(0, 6, 0, 6),
                     Position = UDim2.new(1, -18, 0.5, 0),
@@ -5172,7 +5164,7 @@ end
         TextboxConfig.Visible = TextboxConfig.Visible ~= false
         TextboxConfig.Disabled = TextboxConfig.Disabled or false
         TextboxConfig.Placeholder = TextboxConfig.Placeholder or "Type here..."
-        TextboxConfig.AccentColor = TextboxConfig.AccentColor or Color3.fromRGB(0, 170, 255)
+        TextboxConfig.AccentColor = TextboxConfig.AccentColor or AccentColor
 
         local Textbox = {
             Value = TextboxConfig.Default,
@@ -5188,8 +5180,8 @@ end
         })
 
         local EditIcon = AddThemeObject(SetProps(MakeElement("Image", "rbxassetid://6035057413"), {
-            Size = UDim2.new(0, 12, 0, 12),
-            Position = UDim2.new(1, -6, 0.5, 0),
+            Size = UDim2.new(0, 10, 0, 10),
+            Position = UDim2.new(1, -8, 0.5, 0),
             AnchorPoint = Vector2.new(1, 0.5),
             ImageTransparency = 0.5,
             ImageColor3 = Color3.fromRGB(180, 185, 195),
@@ -5198,8 +5190,8 @@ end
         }), "TextDark")
 
         local ClearBtn = SetProps(MakeElement("ImageButton", "rbxassetid://9886659671"), {
-            Size = UDim2.new(0, 11, 0, 11),
-            Position = UDim2.new(1, -6, 0.5, 0),
+            Size = UDim2.new(0, 10, 0, 10),
+            Position = UDim2.new(1, -8, 0.5, 0),
             AnchorPoint = Vector2.new(1, 0.5),
             ImageTransparency = 1, 
             ImageColor3 = Color3.fromRGB(200, 200, 200),
@@ -5208,20 +5200,45 @@ end
         })
 
         local TextboxActual = AddThemeObject(Create("TextBox", {
-            Size = UDim2.new(1, -30, 1, 0), 
-            Position = UDim2.new(0, 8, 0, 0),
+            Size = UDim2.new(1, -34, 1, 0), 
+            Position = UDim2.new(0, 18, 0, 0),
             BackgroundTransparency = 1,
             TextColor3 = Color3.fromRGB(255, 255, 255),
-            PlaceholderColor3 = Color3.fromRGB(110, 115, 125),
+            PlaceholderColor3 = Color3.fromRGB(90, 95, 105),
             PlaceholderText = TextboxConfig.Placeholder,
             Text = Textbox.Value or "",
             ClearTextOnFocus = TextboxConfig.TextDisappear,
-            Font = Enum.Font.GothamBold,
+            Font = Enum.Font.GothamSemibold,
             ClipsDescendants = true,
             TextXAlignment = Enum.TextXAlignment.Left,
             TextSize = 11,
             ZIndex = 4
         }), "Text")
+
+        local StatusIndicator = Create("Frame", {
+            Size = UDim2.new(0, 4, 0, 4),
+            Position = UDim2.new(0, 8, 0.5, 0),
+            AnchorPoint = Vector2.new(0, 0.5),
+            BackgroundColor3 = Color3.fromRGB(120, 125, 135),
+            BackgroundTransparency = 0.4,
+            ZIndex = 5,
+            Name = "StatusIndicator"
+        }, {
+            Create("UICorner", {CornerRadius = UDim.new(1, 0)})
+        })
+
+        local ActiveLine = Create("Frame", {
+            Size = UDim2.new(0, 0, 0, 1.5),
+            Position = UDim2.new(0.5, 0, 1, -1.5),
+            AnchorPoint = Vector2.new(0.5, 1),
+            BackgroundColor3 = TextboxConfig.AccentColor,
+            BackgroundTransparency = 0,
+            BorderSizePixel = 0,
+            ZIndex = 5,
+            Name = "ActiveLine"
+        }, {
+            Create("UICorner", {CornerRadius = UDim.new(1, 0)})
+        })
 
         local TextContainer = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(10, 11, 15), 0, 5), {
             Size = UDim2.new(0, 150, 0, 24),
@@ -5237,6 +5254,8 @@ end
                 ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
                 Name = "GlowStroke"
             }),
+            StatusIndicator,
+            ActiveLine,
             EditIcon,
             TextboxActual,
             ClearBtn
@@ -5302,19 +5321,25 @@ end
             TextboxActual:CaptureFocus()
         end)
 
-        
         AddConnection(TextboxActual.Focused, function()
             if Textbox.Disabled then return end
             
-            
             if GlowStroke then
-                TweenService:Create(GlowStroke, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
+                TweenService:Create(GlowStroke, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {
                     Color = TextboxConfig.AccentColor,
                     Thickness = 1.2
                 }):Play()
             end
 
-            
+            TweenService:Create(ActiveLine, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {
+                Size = UDim2.new(1, 0, 0, 1.5)
+            }):Play()
+
+            TweenService:Create(StatusIndicator, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
+                BackgroundColor3 = TextboxConfig.AccentColor,
+                BackgroundTransparency = 0
+            }):Play()
+
             TweenService:Create(ContentLabel, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
                 TextColor3 = Color3.fromRGB(255, 255, 255)
             }):Play()
@@ -5322,18 +5347,26 @@ end
 
         AddConnection(TextboxActual.FocusLost, function()
             if GlowStroke then
-                TweenService:Create(GlowStroke, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
+                TweenService:Create(GlowStroke, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {
                     Color = Color3.fromRGB(35, 38, 48),
                     Thickness = 1
                 }):Play()
             end
+
+            TweenService:Create(ActiveLine, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
+                Size = UDim2.new(0, 0, 0, 1.5)
+            }):Play()
+
+            TweenService:Create(StatusIndicator, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
+                BackgroundColor3 = Color3.fromRGB(120, 125, 135),
+                BackgroundTransparency = 0.4
+            }):Play()
 
             TweenService:Create(ContentLabel, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
                 TextColor3 = Color3.fromRGB(175, 180, 190)
             }):Play()
         end)
 
-        
         function Textbox:SetText(ToChange)
             if getgenv().Destroy or Textbox.Disabled then return end
             if TextboxActual then
