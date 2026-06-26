@@ -1226,37 +1226,7 @@ function OrionLib:MakeWindow(WindowConfig)
                 Size = UDim2.new(1, 0, 0, 50)
         })
 		
-		local hasLinkVideo = typeof(WindowConfig.LinkVideo) == "string"             
-local WindowStuff = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(15, 15, 19), 0, 8), {
-        Size = UDim2.new(0, 140, 0, 278),
-        Position = UDim2.new(0, 12, 0, 54),
-        BackgroundTransparency = hasLinkVideo and 0.5 or 0 
-}), {
-        
-        Create("UIStroke", {
-            Color = Color3.fromRGB(32, 35, 45),
-            Thickness = 1,
-            ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-        }),
-        
-        TabHolder,
-        SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(10, 10, 13), 0, 8), {
-                Size = UDim2.new(1, -12, 0, 46),
-                Position = UDim2.new(0, 6, 1, -52),
-                BackgroundTransparency = 0.2
-        }), {
-                Create("UIStroke", {
-                    Color = AccentColor,
-                    Thickness = 1,
-                    Transparency = 0.7
-                }),
-                
-                AddThemeObject(SetChildren(SetProps(MakeElement("Frame"), {
-                        AnchorPoint = Vector2.new(0, 0.5),
-                        Size = UDim2.new(0, 30, 0, 30),
-                        Position = UDim2.new(0, 8, 0.5, 0)
-                }), {
-                        
+		local hasLinkVideo = typeof(WindowConfig.LinkVideo) == "string"                            
 local ProfileAvatar = SetChildren(SetProps(MakeElement("Image", "https://www.roblox.com/headshot-thumbnail/image?userId=".. LocalPlayer.UserId .."&width=420&height=420&format=png"), {
         Size = UDim2.new(1, 0, 1, 0)
 }), {MakeElement("Corner", 1)})
