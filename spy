@@ -1,5 +1,5 @@
--- new
-local cloneref = function(instance: any)
+-- new 2
+local cloneref = cloneref or function(instance: any)
     return instance
 end
 local getgenv = getgenv or function()
@@ -20,7 +20,13 @@ local Mouse = LocalPlayer:GetMouse()
 local _currentKey = Enum.KeyCode.RightShift
 local isToggling = false 
 local MainWindowVideo
-local PARENT = cloneref(game:GetService("CoreGui")) or (gethui and gethui()) or LocalPlayer:WaitForChild("PlayerGui")
+local PARENT
+local success, coreGui = pcall(function() return game:GetService("CoreGui") end)
+if success and coreGui then
+    PARENT = coreGui
+else
+    PARENT = (gethui and gethui()) or LocalPlayer:WaitForChild("PlayerGui")
+end
 local request = http_request or request or (syn and syn.request) or (fluxus and fluxus.request) or function(...) return {} end
 local getcustomasset = getcustomasset or getsynasset or function(...) return "" end
 local makefolder = makefolder or function(...) end
@@ -62,7 +68,8 @@ getgenv().Destroy = false
 local Icons = {}
 
 local Success, Response = pcall(function()
-        Icons = HttpService:JSONDecode(game:HttpGet("https://raw.githubusercontent.com/Articles-Hub/ROBLOXScript/refs/heads/main/Library/Orion/icons.json")).icons
+        local decoded = HttpService:JSONDecode(game:HttpGet("https://raw.githubusercontent.com/Articles-Hub/ROBLOXScript/refs/heads/main/Library/Orion/icons.json"))
+        Icons = (decoded and decoded.icons) or {}
 end)
 
 if not Success then
@@ -995,7 +1002,7 @@ function OrionLib:MakeNotification(NotificationConfig)
 				s.SoundId = "rbxassetid://" .. sId
 				s.Volume = NotificationConfig.Volume
 				s.PlayOnRemove = true
-				s.Parent = game:GetService("CoreGui") 
+				s.Parent = game:GetService("SoundService") or PARENT
 				s:Destroy()
 			end
 		end
@@ -5849,16 +5856,20 @@ AddConnection(ColorP.InputBegan, function(input)
             ColorInputConn = nil 
         end
         ColorInputConn = RunService.RenderStepped:Connect(function()
-    if getgenv().Destroy or not ColorP or not ColorP.Parent then
-        if ColorInputConn then ColorInputConn:Disconnect() end
-        return
-    end
-    local ColorX = (math.clamp(Mouse.X - ColorP.AbsolutePosition.X, 0, ColorP.AbsoluteSize.X) / ColorP.AbsoluteSize.X)
-            local ColorY = (math.clamp(Mouse.Y - ColorP.AbsolutePosition.Y, 0, ColorP.AbsoluteSize.Y) / ColorP.AbsoluteSize.Y)
-            ColorSelection.Position = UDim2.new(ColorX, 0, ColorY, 0)
-            ColorS = ColorX
-            ColorV = 1 - ColorY
-            UpdateColorPicker()
+            if getgenv().Destroy or not ColorP or not ColorP.Parent then
+                if ColorInputConn then ColorInputConn:Disconnect() end
+                return
+            end
+            local absSizeX = ColorP.AbsoluteSize.X
+            local absSizeY = ColorP.AbsoluteSize.Y
+            if absSizeX > 0 and absSizeY > 0 then
+                local ColorX = (math.clamp(Mouse.X - ColorP.AbsolutePosition.X, 0, absSizeX) / absSizeX)
+                local ColorY = (math.clamp(Mouse.Y - ColorP.AbsolutePosition.Y, 0, absSizeY) / absSizeY)
+                ColorSelection.Position = UDim2.new(ColorX, 0, ColorY, 0)
+                ColorS = ColorX
+                ColorV = 1 - ColorY
+                UpdateColorPicker()
+            end
         end)
     end
 end)
@@ -5879,10 +5890,17 @@ AddConnection(Hue.InputBegan, function(input)
             HueInputConn = nil 
         end
         HueInputConn = RunService.RenderStepped:Connect(function()
-            local HueY = (math.clamp(Mouse.Y - Hue.AbsolutePosition.Y, 0, Hue.AbsoluteSize.Y) / Hue.AbsoluteSize.Y)
-            HueSelection.Position = UDim2.new(0.5, 0, HueY, 0)
-            ColorH = 1 - HueY
-            UpdateColorPicker()
+            if getgenv().Destroy or not Hue or not Hue.Parent then
+                if HueInputConn then HueInputConn:Disconnect() end
+                return
+            end
+            local absSizeY = Hue.AbsoluteSize.Y
+            if absSizeY > 0 then
+                local HueY = (math.clamp(Mouse.Y - Hue.AbsolutePosition.Y, 0, absSizeY) / absSizeY)
+                HueSelection.Position = UDim2.new(0.5, 0, HueY, 0)
+                ColorH = 1 - HueY
+                UpdateColorPicker()
+            end
         end)
     end
 end)
