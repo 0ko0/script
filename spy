@@ -1776,6 +1776,7 @@ MakeDraggable(MinimizePill.ClickBtn, MinimizePill)
 local dragStartPos = Vector3.new()
 local isDraggingPill = false
 local isHoveringPill = false
+local pillClickDown = false 
 
 task.spawn(function()
     local stroke = MinimizePill:FindFirstChildOfClass("UIStroke")
@@ -1845,11 +1846,12 @@ AddConnection(MinimizePill.ClickBtn.InputBegan, function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                 dragStartPos = input.Position
                 isDraggingPill = false
+                pillClickDown = true
         end
 end)
 
-AddConnection(MinimizePill.ClickBtn.InputChanged, function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+AddConnection(UserInputService.InputChanged, function(input)
+        if pillClickDown and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
                 if (input.Position - dragStartPos).Magnitude > 8 then
                         isDraggingPill = true
                 end
@@ -1933,8 +1935,8 @@ end)
 
 AddConnection(MinimizePill.ClickBtn.InputEnded, function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                pillClickDown = false
                 if not isDraggingPill then
-                        
                         toggleMinimize(false)
                 end
         end
