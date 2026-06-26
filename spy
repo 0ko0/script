@@ -1,4 +1,4 @@
--- new 2
+-- new 3
 local cloneref = cloneref or function(instance: any)
     return instance
 end
@@ -21,7 +21,14 @@ local _currentKey = Enum.KeyCode.RightShift
 local isToggling = false 
 local MainWindowVideo
 local PARENT
-local success, coreGui = pcall(function() return game:GetService("CoreGui") end)
+local success, coreGui = pcall(function() 
+    local cg = game:GetService("CoreGui")
+    local test = Instance.new("Folder")
+    test.Parent = cg
+    test:Destroy()
+    return cg
+end)
+
 if success and coreGui then
     PARENT = coreGui
 else
@@ -91,7 +98,14 @@ end
 local Orion = Instance.new("ScreenGui")
 Orion.Name = "Orion"
 Orion.ResetOnSpawn = false 
-Orion.Parent = PARENT
+
+local parentSuccess = pcall(function()
+    Orion.Parent = PARENT
+end)
+if not parentSuccess then
+    PARENT = LocalPlayer:WaitForChild("PlayerGui")
+    Orion.Parent = PARENT
+end
 
 local _currentKey = Enum.KeyCode.RightShift
 function OrionLib:SetKeyToggleUI(key)
@@ -1839,8 +1853,8 @@ local pressStartTime = 0
 local holdTimer = nil
 
 task.spawn(function()
-    local header = MinimizePill:FindFirstChild("HeaderFrame")
-    local statusDot = header and header:FindFirstChild("StatusDot")
+    local header = MinimizePill:WaitForChild("HeaderFrame", 5)
+    local statusDot = header and header:WaitForChild("StatusDot", 5)
     if statusDot then
         while MinimizePill and not getgenv().Destroy do
             if MinimizePill.Visible then
@@ -1857,11 +1871,11 @@ task.spawn(function()
     end
 end)
 
-local actionsContainer = MinimizePill:FindFirstChild("ActionsContainer")
+local actionsContainer = MinimizePill:WaitForChild("ActionsContainer", 5)
 if actionsContainer then
-    local restoreBtn = actionsContainer:FindFirstChild("Restore")
-    local toggleBindsBtn = actionsContainer:FindFirstChild("ToggleBinds")
-    local destroyUIBtn = actionsContainer:FindFirstChild("DestroyUI")
+    local restoreBtn = actionsContainer:WaitForChild("Restore", 5)
+    local toggleBindsBtn = actionsContainer:WaitForChild("ToggleBinds", 5)
+    local destroyUIBtn = actionsContainer:WaitForChild("DestroyUI", 5)
     
     if restoreBtn then
         AddConnection(restoreBtn.MouseButton1Click, function()
@@ -1886,10 +1900,10 @@ local function updateIslandLayout(expanded)
     if getgenv().Destroy or not Minimized then return end
     menuExpanded = expanded
     
-    local headerFrame = MinimizePill:FindFirstChild("HeaderFrame")
-    local titleLabel = headerFrame and headerFrame:FindFirstChild("Title")
+    local headerFrame = MinimizePill:WaitForChild("HeaderFrame", 5)
+    local titleLabel = headerFrame and headerFrame:WaitForChild("Title", 5)
     local stroke = MinimizePill:FindFirstChildOfClass("UIStroke")
-    local actBox = MinimizePill:FindFirstChild("ActionsContainer")
+    local actBox = MinimizePill:WaitForChild("ActionsContainer", 5)
     
     local textWidth = titleLabel and titleLabel.TextBounds.X or 60
     local baseWidth = math.max(120, 56 + textWidth)
@@ -1943,11 +1957,12 @@ local function updateIslandLayout(expanded)
     end
 end
 
-local headerFrame = MinimizePill:FindFirstChild("HeaderFrame")
-if headerFrame and headerFrame:FindFirstChild("Title") then
-    AddConnection(headerFrame.Title:GetPropertyChangedSignal("Text"), function()
+local headerFrame = MinimizePill:WaitForChild("HeaderFrame", 5)
+if headerFrame and headerFrame:WaitForChild("Title", 5) then
+    local titleLabel = headerFrame:WaitForChild("Title", 5)
+    AddConnection(titleLabel:GetPropertyChangedSignal("Text"), function()
         if not menuExpanded and Minimized then
-            local textWidth = headerFrame.Title.TextBounds.X
+            local textWidth = titleLabel.TextBounds.X
             local baseWidth = math.max(120, 56 + textWidth)
             TweenService:Create(MinimizePill, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {Size = UDim2.new(0, baseWidth, 0, 30)}):Play()
         end
@@ -6069,7 +6084,7 @@ end
         return Functions
 end   
 
-function OrionLib:BuildSettings(Tab: table)
+function OrionLib:BuildSettings(Tab: any) 
     Tab:AddToggle({
 		Name = "Toggle Keybind",
 		Default = false,
