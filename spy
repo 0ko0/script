@@ -1706,7 +1706,7 @@ local MinimizePill = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame
         ClipsDescendants = true,
         BackgroundTransparency = 0.05
 }), {
-        Create("UICorner", {CornerRadius = UDim.new(1, 0)}), 
+        Create("UICorner", {CornerRadius = UDim.new(0, 15)}), 
         AddThemeObject(SetProps(MakeElement("Stroke"), {
             Color = AccentColor,
             Thickness = 1.2,
@@ -1718,104 +1718,120 @@ local MinimizePill = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame
                 ZIndex = 5
         }),
         
-        SetChildren(SetProps(MakeElement("TFrame"), {
-                Size = UDim2.new(1, 0, 1, 0),
-                Name = "ContentContainer"
+        Create("UIListLayout", {
+            FillDirection = Enum.FillDirection.Vertical,
+            VerticalAlignment = Enum.VerticalAlignment.Top,
+            HorizontalAlignment = Enum.HorizontalAlignment.Center,
+            Padding = UDim.new(0, 2),
+            SortOrder = Enum.SortOrder.LayoutOrder
+        }),
+        Create("UIPadding", {
+            PaddingLeft = UDim.new(0, 12),
+            PaddingRight = UDim.new(0, 12),
+            PaddingTop = UDim.new(0, 0),
+            PaddingBottom = UDim.new(0, 0)
+        }),
+        
+        SetChildren(Create("Frame", {
+            Size = UDim2.new(1, 0, 0, 30),
+            BackgroundTransparency = 1,
+            LayoutOrder = 1,
+            Name = "HeaderFrame"
         }), {
-                Create("UIListLayout", {
-                        FillDirection = Enum.FillDirection.Horizontal,
-                        VerticalAlignment = Enum.VerticalAlignment.Center,
-                        HorizontalAlignment = Enum.HorizontalAlignment.Center,
-                        Padding = UDim.new(0, 8),
-                        SortOrder = Enum.SortOrder.LayoutOrder
-                }),
-                Create("UIPadding", {
-                        PaddingLeft = UDim.new(0, 12),
-                        PaddingRight = UDim.new(0, 12)
-                }),
-                
-                Create("Frame", {
-                    Size = UDim2.new(0, 6, 0, 6),
-                    BackgroundColor3 = Color3.fromRGB(100, 255, 100), 
-                    BorderSizePixel = 0,
-                    LayoutOrder = 0,
-                    Name = "StatusDot"
-                }, {
-                    Create("UICorner", {CornerRadius = UDim.new(1, 0)})
-                }),                               
-                AddThemeObject(SetProps(MakeElement("Image", WindowConfig.Icon or "rbxassetid://108533901677473"), {
-                        Size = UDim2.new(0, 16, 0, 16),
-                        LayoutOrder = 1,
-                        Name = "Icon"
-                }), "Text"),                                
-                AddThemeObject(SetProps(MakeElement("Label", WindowConfig.Name, 11), {
-                        Size = UDim2.new(0, 0, 1, 0),
-                        AutomaticSize = Enum.AutomaticSize.X,
-                        Font = Enum.Font.GothamBold,
-                        LayoutOrder = 2,
-                        Name = "Title",
-                        TextTransparency = 0,
-                        Visible = true
-                }), "Text"),
-                
-                Create("Frame", {
+            Create("UIListLayout", {
+                FillDirection = Enum.FillDirection.Horizontal,
+                VerticalAlignment = Enum.VerticalAlignment.Center,
+                HorizontalAlignment = Enum.HorizontalAlignment.Center,
+                Padding = UDim.new(0, 8),
+                SortOrder = Enum.SortOrder.LayoutOrder
+            }),
+
+            Create("Frame", {
+                Size = UDim2.new(0, 6, 0, 6),
+                BackgroundColor3 = Color3.fromRGB(100, 255, 100), 
+                BorderSizePixel = 0,
+                LayoutOrder = 1,
+                Name = "StatusDot"
+            }, {
+                Create("UICorner", {CornerRadius = UDim.new(1, 0)})
+            }),                          
+            AddThemeObject(SetProps(MakeElement("Image", WindowConfig.Icon or "rbxassetid://108533901677473"), {
+                    Size = UDim2.new(0, 16, 0, 16),
+                    LayoutOrder = 2,
+                    Name = "Icon"
+            }), "Text"),                
+            AddThemeObject(SetProps(MakeElement("Label", WindowConfig.Name, 11), {
                     Size = UDim2.new(0, 0, 1, 0),
-                    BackgroundTransparency = 1,
-                    ClipsDescendants = true,
+                    AutomaticSize = Enum.AutomaticSize.X,
+                    Font = Enum.Font.GothamBold,
                     LayoutOrder = 3,
-                    Name = "ActionsContainer"
-                }, {
-                    Create("UIListLayout", {
-                        FillDirection = Enum.FillDirection.Horizontal,
-                        VerticalAlignment = Enum.VerticalAlignment.Center,
-                        Padding = UDim.new(0, 8),
-                        SortOrder = Enum.SortOrder.LayoutOrder
-                    }),
-                    
-                    Create("ImageButton", {
-                        Size = UDim2.new(0, 16, 0, 16),
-                        BackgroundTransparency = 1,
-                        Image = "rbxassetid://100553310917137", 
-                        ImageColor3 = Color3.fromRGB(240, 240, 240),
-                        ImageTransparency = 1,
-                        LayoutOrder = 1,
-                        Name = "Restore",
-                        ZIndex = 6
-                    }),
-                    
-                    Create("ImageButton", {
-                        Size = UDim2.new(0, 16, 0, 16),
-                        BackgroundTransparency = 1,
-                        Image = "rbxassetid://112731150255946", 
-                        ImageColor3 = Color3.fromRGB(200, 200, 200),
-                        ImageTransparency = 1,
-                        LayoutOrder = 2,
-                        Name = "ToggleBinds",
-                        ZIndex = 6
-                    }),
-                    
-                    Create("ImageButton", {
-                        Size = UDim2.new(0, 16, 0, 16),
-                        BackgroundTransparency = 1,
-                        Image = "rbxassetid://9886659671", 
-                        ImageColor3 = Color3.fromRGB(255, 100, 100),
-                        ImageTransparency = 1,
-                        LayoutOrder = 3,
-                        Name = "DestroyUI",
-                        ZIndex = 6
-                    })
-                })
+                    Name = "Title",
+                    TextTransparency = 0,
+                    Visible = true
+            }), "Text")
+        }),
+               
+        SetChildren(Create("Frame", {
+            Size = UDim2.new(1, 0, 0, 0), 
+            BackgroundTransparency = 1,
+            ClipsDescendants = true,
+            LayoutOrder = 2,
+            Name = "ActionsContainer"
+        }), {
+            Create("UIListLayout", {
+                FillDirection = Enum.FillDirection.Horizontal,
+                VerticalAlignment = Enum.VerticalAlignment.Center,
+                HorizontalAlignment = Enum.HorizontalAlignment.Center,
+                Padding = UDim.new(0, 14), 
+                SortOrder = Enum.SortOrder.LayoutOrder
+            }),
+            
+            Create("ImageButton", {
+                Size = UDim2.new(0, 16, 0, 16),
+                BackgroundTransparency = 1,
+                Image = "rbxassetid://100553310917137", 
+                ImageColor3 = Color3.fromRGB(240, 240, 240),
+                ImageTransparency = 1,
+                LayoutOrder = 1,
+                Name = "Restore",
+                ZIndex = 6
+            }),
+            
+            Create("ImageButton", {
+                Size = UDim2.new(0, 16, 0, 16),
+                BackgroundTransparency = 1,
+                Image = "rbxassetid://112731150255946", 
+                ImageColor3 = Color3.fromRGB(200, 200, 200),
+                ImageTransparency = 1,
+                LayoutOrder = 2,
+                Name = "ToggleBinds",
+                ZIndex = 6
+            }),
+            
+            Create("ImageButton", {
+                Size = UDim2.new(0, 16, 0, 16),
+                BackgroundTransparency = 1,
+                Image = "rbxassetid://9886659671", 
+                ImageColor3 = Color3.fromRGB(255, 100, 100),
+                ImageTransparency = 1,
+                LayoutOrder = 3,
+                Name = "DestroyUI",
+                ZIndex = 6
+            })
         })
-}), "Second")
+})), "Second")
 
         MakeDraggable(MinimizePill.ClickBtn, MinimizePill)
 
 local dragStartPos = Vector3.new()
 local isDraggingPill = false
-local isHoveringPill = false
+local menuExpanded = false
+local pressStartTime = 0
+local holdTimer = nil
 
 task.spawn(function()
-    local statusDot = MinimizePill.ContentContainer:FindFirstChild("StatusDot")
+    local header = MinimizePill:FindFirstChild("HeaderFrame")
+    local statusDot = header and header:FindFirstChild("StatusDot")
     if statusDot then
         while MinimizePill and not getgenv().Destroy do
             if MinimizePill.Visible then
@@ -1832,7 +1848,7 @@ task.spawn(function()
     end
 end)
 
-local actionsContainer = MinimizePill.ContentContainer:FindFirstChild("ActionsContainer")
+local actionsContainer = MinimizePill:FindFirstChild("ActionsContainer")
 if actionsContainer then
     local restoreBtn = actionsContainer:FindFirstChild("Restore")
     local toggleBindsBtn = actionsContainer:FindFirstChild("ToggleBinds")
@@ -1857,51 +1873,55 @@ if actionsContainer then
     end
 end
 
-local function updateIslandLayout(hovered)
+local function updateIslandLayout(expanded)
     if getgenv().Destroy or not Minimized then return end
-    isHoveringPill = hovered
+    menuExpanded = expanded
     
-    local titleLabel = MinimizePill.ContentContainer:FindFirstChild("Title")
+    local headerFrame = MinimizePill:FindFirstChild("HeaderFrame")
+    local titleLabel = headerFrame and headerFrame:FindFirstChild("Title")
     local stroke = MinimizePill:FindFirstChildOfClass("UIStroke")
-    local actBox = MinimizePill.ContentContainer:FindFirstChild("ActionsContainer")
+    local actBox = MinimizePill:FindFirstChild("ActionsContainer")
     
     local textWidth = titleLabel and titleLabel.TextBounds.X or 60
-    local baseWidth = math.max(120, 56 + textWidth) 
+    local baseWidth = math.max(120, 56 + textWidth)
     
     local targetWidth = baseWidth
-    local targetActionsWidth = 0
+    local targetHeight = 30
+    local targetActionsHeight = 0
     local targetIconTrans = 1
     local targetStrokeTransparency = 0.5
     
-    if hovered then
-        targetWidth = baseWidth + 72 
-        targetActionsWidth = 64
+    if expanded then
+        targetWidth = baseWidth + 24 
+        targetHeight = 62            
+        targetActionsHeight = 28
         targetIconTrans = 0
         targetStrokeTransparency = 0.1
     else
         targetWidth = baseWidth
-        targetActionsWidth = 0
+        targetHeight = 30
+        targetActionsHeight = 0
         targetIconTrans = 1
         targetStrokeTransparency = 0.5
     end
     
-    local tInfo = TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+    local tInfo = TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
     
     TweenService:Create(MinimizePill, tInfo, {
-        Size = UDim2.new(0, targetWidth, 0, 30),
-        BackgroundTransparency = hovered and 0.02 or 0.05
+        Size = UDim2.new(0, targetWidth, 0, targetHeight),
+        BackgroundTransparency = expanded and 0.02 or 0.05
     }):Play()
     
     if stroke then
         TweenService:Create(stroke, tInfo, {
             Transparency = targetStrokeTransparency,
-            Color = hovered and AccentColorLight or AccentColor
+            Color = expanded and AccentColorLight or AccentColor
         }):Play()
     end
     
     if actBox then
         TweenService:Create(actBox, tInfo, {
-            Size = UDim2.new(0, targetActionsWidth, 1, 0)
+            Size = UDim2.new(1, 0, 0, targetActionsHeight)
         }):Play()
         
         for _, btn in pairs(actBox:GetChildren()) do
@@ -1914,35 +1934,50 @@ local function updateIslandLayout(hovered)
     end
 end
 
-AddConnection(MinimizePill.ContentContainer.Title:GetPropertyChangedSignal("Text"), function()
-    if not isHoveringPill and Minimized then
-        local textWidth = MinimizePill.ContentContainer.Title.TextBounds.X
-        local baseWidth = math.max(120, 56 + textWidth)
-        TweenService:Create(MinimizePill, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {Size = UDim2.new(0, baseWidth, 0, 30)}):Play()
+local headerFrame = MinimizePill:FindFirstChild("HeaderFrame")
+if headerFrame and headerFrame:FindFirstChild("Title") then
+    AddConnection(headerFrame.Title:GetPropertyChangedSignal("Text"), function()
+        if not menuExpanded and Minimized then
+            local textWidth = headerFrame.Title.TextBounds.X
+            local baseWidth = math.max(120, 56 + textWidth)
+            TweenService:Create(MinimizePill, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {Size = UDim2.new(0, baseWidth, 0, 30)}):Play()
+        end
+    end)
+end
+
+AddConnection(MinimizePill.ClickBtn.InputBegan, function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragStartPos = input.Position
+        isDraggingPill = false
+        pressStartTime = os.clock()
+        
+        if holdTimer then task.cancel(holdTimer) end
+        holdTimer = task.delay(0.5, function() 
+            if not isDraggingPill then
+                updateIslandLayout(true) 
+            end
+        end)
     end
 end)
 
-AddConnection(MinimizePill.ClickBtn.MouseEnter, function()
-    updateIslandLayout(true)
-end)
-
-AddConnection(MinimizePill.ClickBtn.MouseLeave, function()
-    updateIslandLayout(false)
-end)
-
-AddConnection(MinimizePill.ClickBtn.InputBegan, function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                dragStartPos = input.Position
-                isDraggingPill = false
+AddConnection(MinimizePill.ClickBtn.InputEnded, function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        if holdTimer then 
+            task.cancel(holdTimer) 
+            holdTimer = nil 
         end
-end)
-
-AddConnection(MinimizePill.ClickBtn.InputChanged, function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-                if (input.Position - dragStartPos).Magnitude > 8 then
-                        isDraggingPill = true
+        
+        if not isDraggingPill then
+            local pressDuration = os.clock() - pressStartTime
+            if pressDuration < 0.5 then 
+                if menuExpanded then
+                    updateIslandLayout(false)
+                else
+                    toggleMinimize(false) 
                 end
+            end
         end
+    end
 end)
 
 local function toggleMinimize(targetMinimizedState)
@@ -1956,7 +1991,7 @@ local function toggleMinimize(targetMinimizedState)
         MainWindow.ClipsDescendants = true
 
         if Minimized then
-   
+                
                 local originalPos = MainWindow.Position
                 local shrinkTween = TweenService:Create(MainWindow, TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
                         Size = UDim2.new(0, 80, 0, 30),
@@ -1973,7 +2008,9 @@ local function toggleMinimize(targetMinimizedState)
                                 MinimizePill.Size = UDim2.new(0, 0, 0, 30)
                                 MinimizePill.Visible = true
                                 
-                                local textWidth = MinimizePill.ContentContainer.Title.TextBounds.X
+                                local header = MinimizePill:FindFirstChild("HeaderFrame")
+                                local titleLabel = header and header:FindFirstChild("Title")
+                                local textWidth = titleLabel and titleLabel.TextBounds.X or 60
                                 local baseWidth = math.max(120, 56 + textWidth)
                                                                 
                                 TweenService:Create(MinimizePill, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
@@ -1992,7 +2029,7 @@ local function toggleMinimize(targetMinimizedState)
                         shrinkPill.Completed:Wait()
                         if not Minimized then
                                 MinimizePill.Visible = false
-                                isHoveringPill = false
+                                menuExpanded = false
 
                                 MainWindow.Size = UDim2.new(0, 80, 0, 30)
                                 MainWindow.Position = MinimizePill.Position
@@ -2015,15 +2052,6 @@ end
 
 AddConnection(MinimizeBtn.MouseButton1Up, function()
         toggleMinimize(true)
-end)
-
-AddConnection(MinimizePill.ClickBtn.InputEnded, function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                if not isDraggingPill then
-                        
-                        toggleMinimize(false)
-                end
-        end
 end)
 
         local function LoadSequence()
