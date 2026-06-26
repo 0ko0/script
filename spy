@@ -864,7 +864,7 @@ function OrionLib:MakeNotification(NotificationConfig)
 			})
 		})
 
-		-- Thanh hiển thị màu chủ đạo chạy dọc bên mép trái thông báo cực đẹp
+		
 		local LeftAccentStrip = Create("Frame", {
 			Parent = Card,
 			Size = UDim2.new(0, 3, 1, 0),
@@ -1168,6 +1168,7 @@ function OrionLib:MakeWindow(WindowConfig)
         WindowConfig.IntroText = WindowConfig.IntroText or "Orion Library"
         WindowConfig.CloseCallback = WindowConfig.CloseCallback or function() end
         WindowConfig.ShowIcon = WindowConfig.ShowIcon or false
+        WindowConfig.Subtitle = WindowConfig.Subtitle or "Beta Version"
         WindowConfig.Icon = WindowConfig.Icon or "rbxassetid://108533901677473"
         WindowConfig.IntroIcon = WindowConfig.IntroIcon or "rbxassetid://108533901677473"
         WindowConfig.SearchBar = WindowConfig.SearchBar or nil
@@ -1348,7 +1349,7 @@ local MainWindow = AddThemeObject(SetChildren(SetProps(MakeElement(RoundMainWind
         BackgroundTransparency = hasLinkVideo and 1 or 0, 
         ClipsDescendants = true
 }), {
-        -- Viền phẳng siêu mỏng thời thượng thay thế viền cầu vồng sặc sỡ cũ
+        
         Create("UIStroke", {
             Color = Color3.fromRGB(38, 42, 55),
             Thickness = 1,
@@ -1358,24 +1359,28 @@ local MainWindow = AddThemeObject(SetChildren(SetProps(MakeElement(RoundMainWind
         SetChildren(SetProps(MakeElement("TFrame"), {
                 Size = UDim2.new(1, 0, 0, 44),
                 Name = "TopBar"
-        }), {
-                -- Tiêu đề tối giản, Font tinh gọn thanh thoát
+        }), {                
                 AddThemeObject(SetChildren(SetProps(MakeElement("Label", WindowConfig.Name, 13), {
-                        Size = UDim2.new(1, -120, 1, 0),
-                        Position = UDim2.new(0, 18, 0, 0),
+                        Size = UDim2.new(1, -120, 0, 16),
+                        Position = UDim2.new(0, 18, 0, 8),
                         Font = Enum.Font.GothamBold,
                         TextSize = 13,
                         TextColor3 = Color3.fromRGB(255, 255, 255)
                 }), {}), "Text"),
-                
-                -- Thanh line phân tách mỏng
+                                
+                AddThemeObject(SetProps(MakeElement("Label", WindowConfig.Subtitle, 9), {
+                        Size = UDim2.new(1, -120, 0, 12),
+                        Position = UDim2.new(0, 18, 0, 24),
+                        Font = Enum.Font.GothamMedium,
+                        TextSize = 9,
+                        TextColor3 = Color3.fromRGB(160, 165, 180)
+                }), "TextDark"),
+                                
                 AddThemeObject(SetProps(MakeElement("Frame"), {
                         Size = UDim2.new(1, -36, 0, 1),
                         Position = UDim2.new(0, 18, 1, -1),
                         BackgroundTransparency = 0.95
-                }), "Stroke"),
-                
-                -- Cụm nút Đóng và Thu gọn (GIỮ NGUYÊN HOÀN TOÀN ICON GỐC THEO YÊU CẦU)
+                }), "Stroke"),               
                 AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 6), { 
                         Size = UDim2.new(0, 56, 0, 22),
                         BackgroundTransparency = 0.94,
@@ -1841,12 +1846,10 @@ end)
 				Visible = TabConfig.Visible,
 				Type = "Tabs"
 			}
-		
-			-- ======================================================================
-			-- THÊM ĐOẠN KHỞI TẠO CONTAINER NÀY VÀO ĐỂ KHẮC PHỤC LỖI CRASH TAB:
+					
 			local Container = AddThemeObject(SetChildren(SetProps(MakeElement("ScrollFrame", Color3.fromRGB(255, 255, 255), 5), {
-				Size = UDim2.new(0, 439, 0, 278), -- Tương thích với ContentCardBackground mới
-				Position = UDim2.new(0, 164, 0, 54), -- Khớp vị trí vùng hiển thị chính
+				Size = UDim2.new(0, 439, 0, 278), 
+				Position = UDim2.new(0, 164, 0, 54), 
 				Parent = MainWindow,
 				Visible = false,
 				Name = "ItemContainer"
@@ -1858,15 +1861,13 @@ end)
 			AddConnection(Container.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"), function()
 				Container.CanvasSize = UDim2.new(0, 0, 0, Container.UIListLayout.AbsoluteContentSize.Y + 30)
 			end)
-			-- ======================================================================
-		
+					
 			local TabFrame = SetChildren(SetProps(MakeElement("Button"), {
 				Size = UDim2.new(1, 0, 0, 34),
 				Parent = TabHolder,
 				Visible = TabConfig.Visible,
 				AutoButtonColor = false
 			}), {
-				-- Khung nền phẳng tối giản cho Tab
 				AddThemeObject(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 6), {
 						Size = UDim2.new(1, -8, 1, 0),
 						Position = UDim2.new(0, 4, 0, 0),
@@ -1874,7 +1875,7 @@ end)
 						Name = "PillBackground"
 				}), "Stroke"),
 				
-				-- Accent Line (Thanh sọc định vị ở góc trái) - Thay thế chấm tròn cũ
+				
 				SetProps(MakeElement("RoundFrame", AccentColor, 0, 1.5), {
 						Size = UDim2.new(0, 3, 0, 0),
 						Position = UDim2.new(0, 4, 0.5, 0),
@@ -1902,7 +1903,6 @@ end)
 
 AddItemTable(Tabs, TabConfig.Name, TabFrame)
 
--- Hoạt ảnh kích hoạt Tab mượt mà khi người dùng nhấn chọn (Phù hợp cả PC lẫn Touch Mobile)
 AddConnection(TabFrame.Activated, function() 
         if Tabs.Disabled then return end
         for _, Tab in next, TabHolder:GetChildren() do
@@ -1927,7 +1927,7 @@ AddConnection(TabFrame.Activated, function()
                 if c.Name == "ItemContainer" then c.Visible = false end
         end
         
-        -- Kích hoạt hiệu ứng nổi bật tinh tế cho Tab đang chọn
+        
         TweenService:Create(TabFrame.Ico, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {ImageTransparency = 0}):Play()
         TweenService:Create(TabFrame.Title, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {TextTransparency = 0}):Play()
         
@@ -1947,7 +1947,6 @@ AddConnection(TabFrame.Activated, function()
         Container.Visible = true
 end)
 
--- Hiệu ứng Hover khi lướt chuột qua (Chỉ kích hoạt tối ưu trên PC)
 AddConnection(TabFrame.MouseEnter, function()
         if Tabs.Disabled or Container.Visible then return end
         if TabFrame:FindFirstChild("PillBackground") then
