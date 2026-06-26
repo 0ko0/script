@@ -4333,6 +4333,7 @@ end
     }
 
     local MaxElementsHeight = 220
+    local HeaderHeight = 42 -- Tăng nhẹ chiều cao nút chính để tạo cảm giác thoáng đãng, hiện đại
 
     local function GetKeyList(tbl)
         local keys = {}
@@ -4352,7 +4353,6 @@ end
         if type(Dropdown.Value) ~= "table" then
             Dropdown.Value = {}
         end
-    
         if DropdownConfig.MultiTrue then
             for _, v in ipairs(Dropdown.Options) do
                 if Dropdown.Value[v] == nil then
@@ -4366,21 +4366,24 @@ end
         end
     end
 
+    -- Dropdown List Layout (Khoảng cách giữa các option thoáng hơn)
     local DropdownList = MakeElement("List")
-    DropdownList.Padding = UDim.new(0, 4)
+    DropdownList.Padding = UDim.new(0, 6)
 
+    -- Container chứa các option: Ẩn hoàn toàn thanh cuộn dọc thô kệch để tạo thiết kế tràn viền hiện đại
     local DropdownContainer = AddThemeObject(SetProps(SetChildren(
-        MakeElement("ScrollFrame", Color3.fromRGB(40, 42, 55), 3),
+        MakeElement("ScrollFrame", Color3.fromRGB(255, 255, 255), 0), -- Độ dày thanh cuộn = 0 (Không dùng thanh dọc)
         {
             DropdownList,
-            MakeElement("Padding", 6, 6, 6, 6)
+            MakeElement("Padding", 8, 8, 8, 8)
         }
     ), {
         Parent = ItemParent,
-        Position = UDim2.new(0, 0, 0, 38),
-        Size = UDim2.new(1, 0, 1, -38),
+        Position = UDim2.new(0, 0, 0, HeaderHeight),
+        Size = UDim2.new(1, 0, 1, -HeaderHeight),
         ClipsDescendants = true,
-        BackgroundTransparency = 1
+        BackgroundTransparency = 1,
+        ScrollBarThickness = 0, -- Loại bỏ thanh cuộn dọc (Cuộn mượt bằng thao tác kéo/vuốt/chuột)
     }), "Divider")
 
     local Click = SetProps(MakeElement("Button"), {
@@ -4388,35 +4391,38 @@ end
         ZIndex = 10
     })
     
+    -- Lựa chọn hiển thị: Thiết kế dạng Capsule Badge (Viên thuốc) bo tròn mềm mại, trong suốt (Frosted Glass Effect)
     local SelectedBadgeText = AddThemeObject(SetProps(MakeElement("Label", "...", 11), {
-        Size = UDim2.new(1, -14, 1, 0),
-        Position = UDim2.new(0, 7, 0, 0),
+        Size = UDim2.new(1, -16, 1, 0),
+        Position = UDim2.new(0, 8, 0, 0),
         Font = Enum.Font.GothamBold,
         Name = "SelectedText",
         TextXAlignment = Enum.TextXAlignment.Center,
         TextTruncate = Enum.TextTruncate.AtEnd
     }), "Text")
 
-    local SelectedBadge = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(35, 38, 48), 0, 10), {
-        Size = UDim2.new(0, 100, 0, 20),
+    local SelectedBadge = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(30, 32, 45), 0, 10), {
+        Size = UDim2.new(0, 100, 0, 22),
         Position = UDim2.new(1, -54, 0.5, 0),
         AnchorPoint = Vector2.new(1, 0.5),
-        BackgroundTransparency = 0.5,
+        BackgroundTransparency = 0.4, -- Trong suốt nhẹ nhàng sang trọng
         Name = "Badge"
     }), {
         SelectedBadgeText,
         Create("UIStroke", {
-            Color = Color3.fromRGB(55, 60, 75),
+            Color = AccentColor,
             Thickness = 1,
+            Transparency = 0.75,
             ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
             Name = "BadgeStroke"
         })
     }), "Second")
 
+    -- Khung Dropdown chính ngoài cùng: Bo góc tinh tế, nền sẫm sang trọng
     local DropdownFrame = AddThemeObject(SetChildren(SetProps(
-        MakeElement("RoundFrame", Color3.fromRGB(20, 21, 28), 0, 8),
+        MakeElement("RoundFrame", Color3.fromRGB(13, 14, 20), 0, 10),
         {
-            Size = UDim2.new(1, 0, 0, 38),
+            Size = UDim2.new(1, 0, 0, HeaderHeight),
             Parent = ItemParent,
             ClipsDescendants = true
         }
@@ -4425,14 +4431,14 @@ end
         SetProps(SetChildren(MakeElement("TFrame"), {
             AddThemeObject(SetProps(MakeElement("Label", DropdownConfig.Name, 13), {
                 Size = UDim2.new(1, -170, 1, 0),
-                Position = UDim2.new(0, 14, 0, 0),
+                Position = UDim2.new(0, 16, 0, 0),
                 Font = Enum.Font.GothamBold,
                 Name = "Content"
             }), "Text"),
 
             SelectedBadge,
 
-            AddThemeObject(SetProps(MakeElement("Image", "rbxassetid://7072706796"), {
+            AddThemeObject(SetProps(MakeElement("Image", "rbxassetid://100553310917137"), { -- Icon mũi tên chevron hiện đại
                 Size = UDim2.new(0, 14, 0, 14),
                 AnchorPoint = Vector2.new(0.5, 0.5),
                 Position = UDim2.new(1, -24, 0.5, 0),
@@ -4440,49 +4446,42 @@ end
                 Name = "Ico"
             }), "TextDark"),
 
-            AddThemeObject(SetProps(MakeElement("Frame"), {
-                Size = UDim2.new(1, -20, 0, 1),
-                Position = UDim2.new(0.5, 0, 1, -1),
-                AnchorPoint = Vector2.new(0.5, 0),
-                Name = "Line",
-                Visible = false,
-                BackgroundTransparency = 0.8
-            }), "Divider"),
-
             Click
         }), {
-            Size = UDim2.new(1, 0, 0, 38),
+            Size = UDim2.new(1, 0, 0, HeaderHeight),
             ClipsDescendants = true,
             Name = "F"
         }),
         Create("UIStroke", {
-            Color = Color3.fromRGB(45, 48, 60),
+            Color = Color3.fromRGB(38, 40, 52),
             Thickness = 1,
+            Transparency = 0.3,
             ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
             Name = "BorderStroke"
         }),
-        MakeElement("Corner", 0, 8)
+        MakeElement("Corner", 0, 10)
     }), "Second")
 
     AddConnection(DropdownList:GetPropertyChangedSignal("AbsoluteContentSize"), function()
-        DropdownContainer.CanvasSize = UDim2.new(0, 0, 0, DropdownList.AbsoluteContentSize.Y + 12)
+        DropdownContainer.CanvasSize = UDim2.new(0, 0, 0, DropdownList.AbsoluteContentSize.Y + 16)
     end)
     
     AddConnection(SelectedBadgeText:GetPropertyChangedSignal("Text"), function()
         local textWidth = SelectedBadgeText.TextBounds.X
-        local targetWidth = math.clamp(textWidth + 18, 50, 140)
+        local targetWidth = math.clamp(textWidth + 20, 60, 150)
         
-        TweenService:Create(SelectedBadge, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-            Size = UDim2.new(0, targetWidth, 0, 20)
+        TweenService:Create(SelectedBadge, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+            Size = UDim2.new(0, targetWidth, 0, 22)
         }):Play()
         
         if DropdownFrame.F:FindFirstChild("Content") then
-            TweenService:Create(DropdownFrame.F.Content, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                Size = UDim2.new(1, -(targetWidth + 70), 1, 0)
+            TweenService:Create(DropdownFrame.F.Content, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                Size = UDim2.new(1, -(targetWidth + 75), 1, 0)
             }):Play()
         end
     end)
 
+    -- Hiệu ứng chuyển động (Animation) cao cấp cho từng Option khi Hover/Select
     local function AnimateOption(btn, state, OptionVal)
         local isSelected = false
         if DropdownConfig.Multi then
@@ -4496,10 +4495,11 @@ end
         local stroke = btn:FindFirstChild("OptionStroke")
         local icon = btn:FindFirstChild("Icon")
         local thumb = btn:FindFirstChild("Thumbnail")
+        local glowLine = btn:FindFirstChild("GlowLine")
 
         local textLeftPadding = thumb and 72 or (icon and 42 or 16)
         local titleY = desc and (thumb and 12 or 6) or 0
-        local descY = thumb and 30 or 22
+        local descY = thumb and 32 or 22
 
         local targetBgColor, targetBgTrans
         local targetStrokeColor, targetStrokeTrans
@@ -4507,32 +4507,35 @@ end
         local targetDescPos, targetDescTrans
         local targetIconTrans = 0.4
         local targetThumbStrokeTrans = 0.5
+        local targetGlowWidth = 0
 
         if state == "Selected" or (state == "Default" and isSelected) then
-            targetBgColor = AccentColor or Color3.fromRGB(0, 170, 255)
-            targetBgTrans = 0.92
-            targetStrokeColor = AccentColor or Color3.fromRGB(0, 170, 255)
-            targetStrokeTrans = 0.3
+            targetBgColor = AccentColor
+            targetBgTrans = 0.94 -- Nền sáng nhẹ sang trọng của màu chủ đạo
+            targetStrokeColor = AccentColor
+            targetStrokeTrans = 0.4
             targetTitlePos = UDim2.new(0, textLeftPadding + 6, 0, titleY)
             targetTitleTrans = 0
             targetDescPos = UDim2.new(0, textLeftPadding + 6, 0, descY)
             targetDescTrans = 0.15
             targetIconTrans = 0
             targetThumbStrokeTrans = 0.2
+            targetGlowWidth = 4 -- Hiện thanh Highlight ngang nhỏ
         elseif state == "Hover" then
-            targetBgColor = Color3.fromRGB(35, 38, 50)
-            targetBgTrans = 0.9
-            targetStrokeColor = Color3.fromRGB(80, 85, 105)
-            targetStrokeTrans = 0.7
+            targetBgColor = Color3.fromRGB(28, 30, 42)
+            targetBgTrans = 0.85
+            targetStrokeColor = Color3.fromRGB(70, 75, 95)
+            targetStrokeTrans = 0.6
             targetTitlePos = UDim2.new(0, textLeftPadding + 4, 0, titleY)
-            targetTitleTrans = 0.2
+            targetTitleTrans = 0.15
             targetDescPos = UDim2.new(0, textLeftPadding + 4, 0, descY)
-            targetDescTrans = 0.35
-            targetIconTrans = 0.2
+            targetDescTrans = 0.3
+            targetIconTrans = 0.15
             targetThumbStrokeTrans = 0.4
+            targetGlowWidth = 2
         else 
-            targetBgColor = Color3.fromRGB(24, 25, 32)
-            targetBgTrans = 0.98
+            targetBgColor = Color3.fromRGB(18, 19, 25)
+            targetBgTrans = 1
             targetStrokeColor = Color3.fromRGB(45, 48, 60)
             targetStrokeTrans = 1 
             targetTitlePos = UDim2.new(0, textLeftPadding, 0, titleY)
@@ -4541,9 +4544,10 @@ end
             targetDescTrans = 0.5
             targetIconTrans = 0.4
             targetThumbStrokeTrans = 0.5
+            targetGlowWidth = 0
         end
 
-        local tInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+        local tInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
 
         TweenService:Create(btn, tInfo, {
             BackgroundColor3 = targetBgColor,
@@ -4560,6 +4564,7 @@ end
         if title then
             TweenService:Create(title, tInfo, {
                 Position = targetTitlePos,
+                TextColor3 = (state == "Selected" or (state == "Default" and isSelected)) and AccentColorLight or Color3.fromRGB(245, 248, 255),
                 TextTransparency = targetTitleTrans
             }):Play()
         end
@@ -4573,7 +4578,8 @@ end
 
         if icon then
             TweenService:Create(icon, tInfo, {
-                ImageTransparency = targetIconTrans
+                ImageTransparency = targetIconTrans,
+                ImageColor3 = (state == "Selected" or (state == "Default" and isSelected)) and AccentColor or Color3.fromRGB(150, 160, 185)
             }):Play()
         end
 
@@ -4582,8 +4588,16 @@ end
                 Transparency = targetThumbStrokeTrans
             }):Play()
         end
+
+        if glowLine then
+            TweenService:Create(glowLine, tInfo, {
+                Size = UDim2.new(0, targetGlowWidth, 0, 16),
+                BackgroundTransparency = (targetGlowWidth > 0) and 0 or 1
+            }):Play()
+        end
     end
 
+    -- Khởi tạo danh sách Options với layout cực kỳ hiện đại
     local function AddOptions(Options)
         for k, v in pairs(Options) do
             local OptionVal = (type(k) == "string" and k) or v
@@ -4595,10 +4609,24 @@ end
             local IconStr = HasData and (Data.Icon or Data.icon or nil) or nil
             local ThumbStr = HasData and (Data.Thumbnail or Data.thumbnail or nil) or nil
             
-            local ButtonHeight = (ThumbStr and 65) or ((DescStr or IconStr) and 45) or 32
+            local ButtonHeight = (ThumbStr and 68) or ((DescStr or IconStr) and 48) or 34
+
+            -- Thanh nhỏ định vị (Indicator) nằm ngang phát sáng thay thế cho đường thẳng dọc
+            local GlowLine = Create("Frame", {
+                Name = "GlowLine",
+                Size = UDim2.new(0, 0, 0, 16),
+                Position = UDim2.new(0, 6, 0.5, 0),
+                AnchorPoint = Vector2.new(0, 0.5),
+                BackgroundColor3 = AccentColor,
+                BackgroundTransparency = 1,
+                BorderSizePixel = 0
+            }, {
+                Create("UICorner", {CornerRadius = UDim.new(1, 0)})
+            })
 
             local Elements = {
-                MakeElement("Corner", 0, 6)
+                MakeElement("Corner", 0, 8),
+                GlowLine
             }
             
             local TextLeftPadding = 16
@@ -4609,12 +4637,11 @@ end
                     Thickness = 1,
                     Transparency = 0.5
                 }
-
                 table.insert(Elements, SetProps(SetChildren(MakeElement("Image", ThumbStr), {
-                    MakeElement("Corner", 0, 4),
+                    MakeElement("Corner", 0, 6),
                     SetProps(MakeElement("Stroke"), strokeProps)
                 }), {
-                    Size = UDim2.new(0, 50, 0, 50),
+                    Size = UDim2.new(0, 52, 0, 52),
                     AnchorPoint = Vector2.new(0, 0.5),
                     Position = UDim2.new(0, 12, 0.5, 0),
                     ImageTransparency = 0,
@@ -4622,15 +4649,15 @@ end
                     ScaleType = Enum.ScaleType.Crop,
                     BackgroundColor3 = Color3.fromRGB(20, 20, 20)
                 }))
-                TextLeftPadding = 72
+                TextLeftPadding = 74
             elseif IconStr then
                 table.insert(Elements, SetProps(MakeElement("Image", IconStr), {
                     Size = UDim2.new(0, 20, 0, 20),
-                    Position = UDim2.new(0, 12, 0.5, -10),
+                    Position = UDim2.new(0, 14, 0.5, -10),
                     ImageTransparency = 0.3,
                     Name = "Icon"
                 }))
-                TextLeftPadding = 42
+                TextLeftPadding = 44
             end
 
             local TitleY = DescStr and 6 or 0
@@ -4646,29 +4673,30 @@ end
             }), "Text"))
 
             if DescStr then
-                local DescY = ThumbStr and 30 or 22
+                local DescY = ThumbStr and 32 or 22
                 table.insert(Elements, AddThemeObject(SetProps(MakeElement("Label", DescStr, 11, 0.5), {
                     Position = UDim2.new(0, TextLeftPadding, 0, DescY),
                     Size = UDim2.new(1, -(TextLeftPadding + 45), 0, 14),
                     TextXAlignment = Enum.TextXAlignment.Left,
                     Name = "Desc",
                     Font = Enum.Font.Gotham,
-                    TextColor3 = Color3.fromRGB(150, 150, 150),
+                    TextColor3 = Color3.fromRGB(140, 145, 160),
                     ClipsDescendants = true
                 }), "Text"))
             end
             
+            -- Thiết kế nút kiểm (Selection Indicator) dạng Mini Capsule gọn gàng
             local SelectIndicator
             if DropdownConfig.Multi then
-                SelectIndicator = SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(30, 32, 40), 0, 8), {
+                SelectIndicator = SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(32, 34, 44), 0, 5), {
                     Size = UDim2.new(0, 16, 0, 16),
-                    Position = UDim2.new(1, -12, 0.5, 0),
+                    Position = UDim2.new(1, -14, 0.5, 0),
                     AnchorPoint = Vector2.new(1, 0.5),
                     BackgroundTransparency = 0,
                     Name = "Indicator"
                 }), {
                     Create("UIStroke", {
-                        Color = Color3.fromRGB(60, 64, 80),
+                        Color = Color3.fromRGB(55, 58, 72),
                         Thickness = 1,
                         ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
                         Name = "IndicatorStroke"
@@ -4683,15 +4711,16 @@ end
                     })
                 })
             else
-                SelectIndicator = SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(0, 170, 255), 0, 10), {
+                -- Indicator hình tròn nhỏ gọn màu Gradient sang xịn
+                SelectIndicator = SetChildren(SetProps(MakeElement("RoundFrame", AccentColor, 0, 10), {
                     Size = UDim2.new(0, 6, 0, 6),
-                    Position = UDim2.new(1, -16, 0.5, 0),
+                    Position = UDim2.new(1, -18, 0.5, 0),
                     AnchorPoint = Vector2.new(1, 0.5),
                     BackgroundTransparency = 1,
                     Name = "Indicator"
                 }), {
                     Create("UIStroke", {
-                        Color = Color3.fromRGB(0, 170, 255),
+                        Color = AccentColor,
                         Thickness = 1.5,
                         ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
                         Transparency = 1,
@@ -4702,14 +4731,14 @@ end
             table.insert(Elements, SelectIndicator)
 
             local OptionBtn = AddThemeObject(SetProps(SetChildren(
-                MakeElement("Button", Color3.fromRGB(35, 35, 35)),
+                MakeElement("Button", Color3.fromRGB(25, 26, 35)),
                 Elements
             ), {
                 Parent = DropdownContainer,
                 Size = UDim2.new(1, 0, 0, ButtonHeight),
-                BackgroundTransparency = 0.98,
+                BackgroundTransparency = 1,
                 ClipsDescendants = true,
-                BackgroundColor3 = Color3.fromRGB(24, 25, 32)
+                BackgroundColor3 = Color3.fromRGB(18, 19, 25)
             }), "Divider")
 
             local OptionStroke = Create("UIStroke", {
@@ -4746,12 +4775,12 @@ end
         DropdownConfig.Disabled = state
         if state and Dropdown.Toggled then
             Dropdown.Toggled = false
-            TweenService:Create(DropdownFrame.F.Ico, TweenInfo.new(.15), {Rotation = 0}):Play()
-            TweenService:Create(DropdownFrame, TweenInfo.new(.15), {
-                Size = UDim2.new(1, 0, 0, 38)
+            TweenService:Create(DropdownFrame.F.Ico, TweenInfo.new(.2), {Rotation = 0}):Play()
+            TweenService:Create(DropdownFrame, TweenInfo.new(.2), {
+                Size = UDim2.new(1, 0, 0, HeaderHeight)
             }):Play()
             if DropdownFrame:FindFirstChild("BorderStroke") then
-                TweenService:Create(DropdownFrame.BorderStroke, TweenInfo.new(.15), {
+                TweenService:Create(DropdownFrame.BorderStroke, TweenInfo.new(.2), {
                     Color = OrionLib.Themes[OrionLib.SelectedTheme].Stroke
                 }):Play()
             end
@@ -4811,8 +4840,8 @@ end
                 if ind then
                     if DropdownConfig.Multi then
                         if ind:FindFirstChild("CheckIcon") then TweenService:Create(ind.CheckIcon, TweenInfo.new(.15), {ImageTransparency = 1}):Play() end
-                        if ind:FindFirstChild("IndicatorStroke") then TweenService:Create(ind.IndicatorStroke, TweenInfo.new(.15), {Color = Color3.fromRGB(60, 64, 80)}):Play() end
-                        TweenService:Create(ind, TweenInfo.new(.15), {BackgroundColor3 = Color3.fromRGB(30, 32, 40)}):Play()
+                        if ind:FindFirstChild("IndicatorStroke") then TweenService:Create(ind.IndicatorStroke, TweenInfo.new(.15), {Color = Color3.fromRGB(55, 58, 72)}):Play() end
+                        TweenService:Create(ind, TweenInfo.new(.15), {BackgroundColor3 = Color3.fromRGB(32, 34, 44)}):Play()
                     else
                         TweenService:Create(ind, TweenInfo.new(.15), {BackgroundTransparency = 1}):Play()
                         if ind:FindFirstChild("IndicatorStroke") then TweenService:Create(ind.IndicatorStroke, TweenInfo.new(.15), {Transparency = 1}):Play() end
@@ -4835,12 +4864,12 @@ end
                 if ind then
                     if state then
                         if ind:FindFirstChild("CheckIcon") then TweenService:Create(ind.CheckIcon, TweenInfo.new(.15), {ImageTransparency = 0}):Play() end
-                        if ind:FindFirstChild("IndicatorStroke") then TweenService:Create(ind.IndicatorStroke, TweenInfo.new(.15), {Color = Color3.fromRGB(0, 170, 255)}):Play() end
-                        TweenService:Create(ind, TweenInfo.new(.15), {BackgroundColor3 = Color3.fromRGB(0, 170, 255)}):Play()
+                        if ind:FindFirstChild("IndicatorStroke") then TweenService:Create(ind.IndicatorStroke, TweenInfo.new(.15), {Color = AccentColor}):Play() end
+                        TweenService:Create(ind, TweenInfo.new(.15), {BackgroundColor3 = AccentColor}):Play()
                     else
                         if ind:FindFirstChild("CheckIcon") then TweenService:Create(ind.CheckIcon, TweenInfo.new(.15), {ImageTransparency = 1}):Play() end
-                        if ind:FindFirstChild("IndicatorStroke") then TweenService:Create(ind.IndicatorStroke, TweenInfo.new(.15), {Color = Color3.fromRGB(60, 64, 80)}):Play() end
-                        TweenService:Create(ind, TweenInfo.new(.15), {BackgroundColor3 = Color3.fromRGB(30, 32, 40)}):Play()
+                        if ind:FindFirstChild("IndicatorStroke") then TweenService:Create(ind.IndicatorStroke, TweenInfo.new(.15), {Color = Color3.fromRGB(55, 58, 72)}):Play() end
+                        TweenService:Create(ind, TweenInfo.new(.15), {BackgroundColor3 = Color3.fromRGB(32, 34, 44)}):Play()
                     end
                 end
                 local selectedList = {}
@@ -4864,16 +4893,16 @@ end
                     AnimateOption(btn, "Default", Value)
                     if ind then
                         if ind:FindFirstChild("CheckIcon") then TweenService:Create(ind.CheckIcon, TweenInfo.new(.15), {ImageTransparency = 1}):Play() end
-                        if ind:FindFirstChild("IndicatorStroke") then TweenService:Create(ind.IndicatorStroke, TweenInfo.new(.15), {Color = Color3.fromRGB(60, 64, 80)}):Play() end
-                        TweenService:Create(ind, TweenInfo.new(.15), {BackgroundColor3 = Color3.fromRGB(30, 32, 40)}):Play()
+                        if ind:FindFirstChild("IndicatorStroke") then TweenService:Create(ind.IndicatorStroke, TweenInfo.new(.15), {Color = Color3.fromRGB(55, 58, 72)}):Play() end
+                        TweenService:Create(ind, TweenInfo.new(.15), {BackgroundColor3 = Color3.fromRGB(32, 34, 44)}):Play()
                     end
                 else
                     table.insert(Dropdown.Value, Value)
                     AnimateOption(btn, "Selected", Value)
                     if ind then
                         if ind:FindFirstChild("CheckIcon") then TweenService:Create(ind.CheckIcon, TweenInfo.new(.15), {ImageTransparency = 0}):Play() end
-                        if ind:FindFirstChild("IndicatorStroke") then TweenService:Create(ind.IndicatorStroke, TweenInfo.new(.15), {Color = Color3.fromRGB(0, 170, 255)}):Play() end
-                        TweenService:Create(ind, TweenInfo.new(.15), {BackgroundColor3 = Color3.fromRGB(0, 170, 255)}):Play()
+                        if ind:FindFirstChild("IndicatorStroke") then TweenService:Create(ind.IndicatorStroke, TweenInfo.new(.15), {Color = AccentColor}):Play() end
+                        TweenService:Create(ind, TweenInfo.new(.15), {BackgroundColor3 = AccentColor}):Play()
                     end
                 end
                 if #Dropdown.Value == 0 then
@@ -4914,27 +4943,26 @@ end
     AddConnection(Click.MouseButton1Click, function()
         if Dropdown.Disabled then return end
         Dropdown.Toggled = not Dropdown.Toggled
-        DropdownFrame.F.Line.Visible = Dropdown.Toggled
         
-        TweenService:Create(DropdownFrame.F.Ico, TweenInfo.new(.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+        TweenService:Create(DropdownFrame.F.Ico, TweenInfo.new(.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
             Rotation = Dropdown.Toggled and 180 or 0,
-            ImageColor3 = Dropdown.Toggled and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(150, 160, 185)
+            ImageColor3 = Dropdown.Toggled and AccentColor or Color3.fromRGB(150, 160, 185)
         }):Play()
         
         if DropdownFrame:FindFirstChild("BorderStroke") then
-            TweenService:Create(DropdownFrame.BorderStroke, TweenInfo.new(.25, Enum.EasingStyle.Quint), {
-                Color = Dropdown.Toggled and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(45, 48, 60)
+            TweenService:Create(DropdownFrame.BorderStroke, TweenInfo.new(.3, Enum.EasingStyle.Quint), {
+                Color = Dropdown.Toggled and AccentColor or Color3.fromRGB(38, 40, 52)
             }):Play()
         end
 
         local currentContentSize = DropdownList.AbsoluteContentSize.Y
         local expandSize = math.min(currentContentSize, MaxElementsHeight)
         local sizeY = (currentContentSize > 0)
-            and (38 + expandSize)
-            or 38
+            and (HeaderHeight + expandSize + 16)
+            or HeaderHeight
 
-        TweenService:Create(DropdownFrame, TweenInfo.new(.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-            Size = Dropdown.Toggled and UDim2.new(1, 0, 0, sizeY) or UDim2.new(1, 0, 0, 38)
+        TweenService:Create(DropdownFrame, TweenInfo.new(.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+            Size = Dropdown.Toggled and UDim2.new(1, 0, 0, sizeY) or UDim2.new(1, 0, 0, HeaderHeight)
         }):Play()
     end)
 
