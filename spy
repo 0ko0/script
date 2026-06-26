@@ -3246,10 +3246,10 @@ end
                                 ZIndex = 5
                             })
 
-                            -- Switch hiện đại với lớp phát quang bên dưới
+                            -- Switch hiện đại tinh chỉnh góc neo bên phải
                             local function CreateSwitch()
                                 return SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(24, 25, 32), 0, 12), {
-                                    Size = UDim2.new(0, 48, 0, 24),
+                                    Size = UDim2.new(0, 44, 0, 22),
                                     Position = UDim2.new(1, -12, 0.5, 0),
                                     AnchorPoint = Vector2.new(1, 0.5),
                                     Name = "Switch"
@@ -3262,11 +3262,11 @@ end
                                     }),
                                     SetProps(MakeElement("RoundFrame", ToggleConfig.Color, 0, 12), {
                                         Size = UDim2.new(1, 0, 1, 0),
-                                        BackgroundTransparency = 1, -- Điều khiển bằng Tween
+                                        BackgroundTransparency = 1,
                                         Name = "GlowBg"
                                     }),
                                     SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 10), {
-                                        Size = UDim2.new(0, 18, 0, 18),
+                                        Size = UDim2.new(0, 16, 0, 16),
                                         Position = UDim2.new(0, 3, 0.5, 0),
                                         AnchorPoint = Vector2.new(0, 0.5),
                                         Name = "Knob"
@@ -3281,12 +3281,12 @@ end
                                 })
                             end
 
-                            -- Checkbox tối giản phản ứng nhanh
+                            -- Checkbox tinh chỉnh góc neo bên phải đồng bộ với Switch
                             local function CreateCheck()
                                 return SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(24, 25, 32), 0, 6), {
                                     Size = UDim2.new(0, 22, 0, 22),
-                                    Position = UDim2.new(1, -30, 0.5, 0),
-                                    AnchorPoint = Vector2.new(0.5, 0.5),
+                                    Position = UDim2.new(1, -12, 0.5, 0),
+                                    AnchorPoint = Vector2.new(1, 0.5),
                                     Name = "Check"
                                 }), {
                                     Create("UIStroke", {
@@ -3296,7 +3296,7 @@ end
                                         Name = "CheckStroke"
                                     }),
                                     SetChildren(SetProps(MakeElement("RoundFrame", ToggleConfig.Color, 0, 5), {
-                                        Size = UDim2.new(0, 0, 0, 0), -- Giãn nở bằng Tween
+                                        Size = UDim2.new(0, 0, 0, 0),
                                         AnchorPoint = Vector2.new(0.5, 0.5),
                                         Position = UDim2.new(0.5, 0, 0.5, 0),
                                         Name = "FillCircle"
@@ -3315,15 +3315,6 @@ end
 
                             local ToggleBox = (ToggleConfig.Type == "Switch" and CreateSwitch() or CreateCheck())
 
-                            -- Thanh trạng thái bên lề trái co dãn mượt mà
-                            local AccentBar = SetProps(MakeElement("RoundFrame", Color3.fromRGB(40, 42, 50), 0, 2), {
-                                Size = UDim2.new(0, 3, 0, 8),
-                                Position = UDim2.new(0, 3, 0.5, 0),
-                                AnchorPoint = Vector2.new(0, 0.5),
-                                BackgroundTransparency = 0.5,
-                                Name = "AccentBar"
-                            })
-
                             local CardStroke = Create("UIStroke", {
                                 Color = Color3.fromRGB(35, 38, 48),
                                 Thickness = 1,
@@ -3333,13 +3324,12 @@ end
                             })
 
                             local ToggleFrame = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(15, 16, 22), 0, 8), {
-                                Size = UDim2.new(1, 0, 0, 40), 
+                                Size = UDim2.new(1, 0, 0, 38), 
                                 Parent = ItemParent
                             }), {
-                                AccentBar,
                                 AddThemeObject(SetProps(MakeElement("Label", ToggleConfig.Name, 14), {
-                                    Size = UDim2.new(1, -24, 1, 0),
-                                    Position = UDim2.new(0, 18, 0, 0),
+                                    Size = UDim2.new(1, -95, 1, 0), -- Giới hạn để không bao giờ chạm phím bấm bên phải
+                                    Position = UDim2.new(0, 14, 0, 0), -- Đẩy text về lề trái sau khi xóa thanh dọc
                                     Font = Enum.Font.GothamBold,
                                     TextColor3 = Color3.fromRGB(180, 183, 195),
                                     Name = "Content",
@@ -3349,28 +3339,19 @@ end
                                 Click,
                             }), "Second")
 
-                            -- Trình quản lý hiệu ứng chuyển động liên kết
+                            -- Quản lý hiệu ứng chuyển động tương tác
                             function Toggle:UpdateTweenKeyBindToggles(Object, bool)
                                 local duration = 0.35
                                 local easeOut = TweenInfo.new(duration, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
                                 local springOut = TweenInfo.new(duration + 0.1, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 
-                                -- Hoạt ảnh thanh Accent bên trái
-                                if Object:FindFirstChild("AccentBar") then
-                                    TweenService:Create(Object.AccentBar, easeOut, {
-                                        BackgroundTransparency = bool and 0 or 0.5,
-                                        BackgroundColor3 = bool and ToggleConfig.Color or Color3.fromRGB(60, 62, 75),
-                                        Size = bool and UDim2.new(0, 4, 0, 24) or UDim2.new(0, 3, 0, 8)
-                                    }):Play()
-                                end
-
-                                -- Hoạt ảnh nâng tông màu nền nhẹ khi ON
+                                -- Hoạt ảnh thay đổi màu nền nhẹ của Card khi bật/tắt
                                 local targetBg = bool and Color3.fromRGB(22, 24, 32) or OrionLib.Themes[OrionLib.SelectedTheme].Second
                                 TweenService:Create(Object, easeOut, {
                                     BackgroundColor3 = targetBg
                                 }):Play()
 
-                                -- Phát quang nhẹ ở viền Card
+                                -- Sáng viền Card khi bật
                                 if Object:FindFirstChild("Stroke") then
                                     TweenService:Create(Object.Stroke, easeOut, {
                                         Color = bool and ToggleConfig.Color or Color3.fromRGB(35, 38, 48),
@@ -3378,14 +3359,14 @@ end
                                     }):Play()
                                 end
 
-                                -- Thay đổi sắc độ màu chữ
+                                -- Thay đổi độ sáng chữ tiêu đề
                                 if Object:FindFirstChild("Content") then
                                     TweenService:Create(Object.Content, easeOut, {
                                         TextColor3 = bool and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(180, 183, 195)
                                     }):Play()
                                 end
 
-                                -- Hoạt ảnh cho định dạng Switch
+                                -- Chuyển động của Switch
                                 if Object:FindFirstChild("Switch") then
                                     local SwitchFrame = Object.Switch
                                     local Knob = SwitchFrame:FindFirstChild("Knob")
@@ -3407,7 +3388,7 @@ end
                                     if Knob then
                                         local GlowCore = Knob:FindFirstChild("GlowCore")
                                         TweenService:Create(Knob, springOut, {
-                                            Position = bool and UDim2.new(1, -21, 0.5, 0) or UDim2.new(0, 3, 0.5, 0),
+                                            Position = bool and UDim2.new(1, -19, 0.5, 0) or UDim2.new(0, 3, 0.5, 0),
                                             BackgroundColor3 = bool and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(200, 202, 215)
                                         }):Play()
 
@@ -3420,7 +3401,7 @@ end
                                     end
                                 end
 
-                                -- Hoạt ảnh cho định dạng Checkbox
+                                -- Chuyển động của Checkbox
                                 if Object:FindFirstChild("Check") then
                                     local CheckFrame = Object.Check
                                     local FillCircle = CheckFrame:FindFirstChild("FillCircle")
@@ -3458,15 +3439,17 @@ end
                                 end
                             end
 
+                            -- Sắp xếp động vị trí Keybind Box kế bên Toggle Box để chống đè lấp
                             local function UpdateLayout()
                                 local hasBind = ToggleFrame:FindFirstChild("ButtonKey")
-                                if hasBind then
-                                    if ToggleFrame:FindFirstChild("Switch") then
-                                        ToggleFrame.Switch.Position = UDim2.new(1, -64, 0.5, 0)
-                                    end
-                                    if ToggleFrame:FindFirstChild("Check") then
-                                        ToggleFrame.Check.Position = UDim2.new(1, -54, 0.5, 0)
-                                    end
+                                local bindBox = ToggleFrame:FindFirstChild("BindBox")
+                                if hasBind and bindBox then
+                                    local isSwitch = ToggleFrame:FindFirstChild("Switch") ~= nil
+                                    -- Nếu là Switch: vị trí keybind lùi về -64 (bên trái Switch có biên trái là -56)
+                                    -- Nếu là Checkbox: vị trí keybind lùi về -42 (bên trái Checkbox có biên trái là -34)
+                                    local targetPos = isSwitch and UDim2.new(1, -64, 0.5, 0) or UDim2.new(1, -42, 0.5, 0)
+                                    ToggleFrame.ButtonKey.Position = targetPos
+                                    bindBox.Position = targetPos
                                 end
                             end
 
@@ -3616,7 +3599,7 @@ end
                                 Toggle:Set(not Toggle.Value)
                             end)
 
-                            -- Hiệu ứng phản hồi di chuột
+                            -- Hover sáng viền nhẹ
                             AddConnection(Click.MouseEnter, function()
                                 if ToggleConfig.Disabled then return end
                                 TweenService:Create(CardStroke, TweenInfo.new(0.2), {
@@ -3647,9 +3630,12 @@ end
                                     Binding = false
                                 }
 
+                                local isSwitch = ToggleConfig.Type == "Switch"
+                                local initialPos = isSwitch and UDim2.new(1, -64, 0.5, 0) or UDim2.new(1, -42, 0.5, 0)
+
                                 local Click = SetProps(MakeElement("Button"), {
                                     Size = UDim2.new(0, 30, 0, 24),
-                                    Position = (ToggleConfig.Type == "Switch" and UDim2.new(1, -70, 0.5, 0) or UDim2.new(1, -58, 0.5, 0)),
+                                    Position = initialPos,
                                     AnchorPoint = Vector2.new(1, 0.5),
                                     Parent = ToggleFrame,
                                     Name = "ButtonKey",
@@ -3659,10 +3645,11 @@ end
                                 local BindBox = AddThemeObject(SetChildren(SetProps(
                                     MakeElement("RoundFrame", Color3.fromRGB(24, 25, 32), 0, 4), {
                                         Size = UDim2.new(0, 30, 0, 24),
-                                        Position = Click.Position,
+                                        Position = initialPos,
                                         AnchorPoint = Vector2.new(1, 0.5),
                                         Parent = ToggleFrame,
-                                        ZIndex = 1
+                                        ZIndex = 1,
+                                        Name = "BindBox"
                                     }), {
                                         Create("UIStroke", {
                                             Color = Color3.fromRGB(50, 52, 65),
