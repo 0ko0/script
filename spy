@@ -1379,6 +1379,24 @@ end
 		
 local RoundMainWindow = typeof(WindowConfig.LinkVideo) == "string" and "RoundVideo" or "RoundFrame"
 
+local TitleLabel = AddThemeObject(SetProps(MakeElement("Label", WindowConfig.Name, 13), {
+        Size = UDim2.new(1, -140, 0, 16),
+        Position = UDim2.new(0, 18, 0, 8),
+        Font = Enum.Font.GothamBold,
+        TextSize = 13,
+        TextColor3 = Color3.fromRGB(255, 255, 255),
+        TextTruncate = Enum.TextTruncate.AtEnd 
+}), "Text")
+
+local SubtitleLabel = AddThemeObject(SetProps(MakeElement("Label", WindowConfig.Subtitle, 9), {
+        Size = UDim2.new(1, -140, 0, 12),
+        Position = UDim2.new(0, 18, 0, 24),
+        Font = Enum.Font.GothamMedium,
+        TextSize = 9,
+        TextColor3 = Color3.fromRGB(160, 165, 180),
+        TextTruncate = Enum.TextTruncate.AtEnd 
+}), "TextDark")
+
 local MainWindow = AddThemeObject(SetChildren(SetProps(MakeElement(RoundMainWindow, Color3.fromRGB(10, 10, 12), 0, 8), { 
         Parent = Orion,
         Position = UDim2.new(0.5, -307, 0.5, -172),
@@ -1397,21 +1415,8 @@ local MainWindow = AddThemeObject(SetChildren(SetProps(MakeElement(RoundMainWind
                 Size = UDim2.new(1, 0, 0, 44),
                 Name = "TopBar"
         }), {                
-                AddThemeObject(SetChildren(SetProps(MakeElement("Label", WindowConfig.Name, 13), {
-                        Size = UDim2.new(1, -120, 0, 16),
-                        Position = UDim2.new(0, 18, 0, 8),
-                        Font = Enum.Font.GothamBold,
-                        TextSize = 13,
-                        TextColor3 = Color3.fromRGB(255, 255, 255)
-                }), {}), "Text"),
-                                
-                AddThemeObject(SetProps(MakeElement("Label", WindowConfig.Subtitle, 9), {
-                        Size = UDim2.new(1, -120, 0, 12),
-                        Position = UDim2.new(0, 18, 0, 24),
-                        Font = Enum.Font.GothamMedium,
-                        TextSize = 9,
-                        TextColor3 = Color3.fromRGB(160, 165, 180)
-                }), "TextDark"),
+                TitleLabel,
+                SubtitleLabel,
                                 
                 AddThemeObject(SetProps(MakeElement("Frame"), {
                         Size = UDim2.new(1, -36, 0, 1),
@@ -1556,11 +1561,17 @@ end)
         end
 
         if WindowConfig.ShowIcon then
-		        local IconTogglesUi = "rbxassetid://"..WindowConfig.Icon:match("%d+")
-                WindowName.Position = UDim2.new(0, 50, 0, -24)
+                
+                TitleLabel.Position = UDim2.new(0, 48, 0, 8)
+                TitleLabel.Size = UDim2.new(1, -170, 0, 16)
+                
+                SubtitleLabel.Position = UDim2.new(0, 48, 0, 24)
+                SubtitleLabel.Size = UDim2.new(1, -170, 0, 12)
+
                 local WindowIcon = SetProps(MakeElement("Image", WindowConfig.Icon), {
                         Size = UDim2.new(0, 20, 0, 20),
-                        Position = UDim2.new(0, 25, 0, 15)
+                        Position = UDim2.new(0, 18, 0.5, 0),
+                        AnchorPoint = Vector2.new(0, 0.5) 
                 })
                 WindowIcon.Parent = MainWindow.TopBar
         end
