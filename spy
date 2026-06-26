@@ -1275,7 +1275,7 @@ AddConnection(ToggleProfileBtn.MouseButton1Click, function()
 end)
 
 local WindowStuff = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(15, 15, 19), 0, 8), {
-        Size = UDim2.new(0, 140, 0, 278),
+        Size = UDim2.new(0, 140, 1, -66),
         Position = UDim2.new(0, 12, 0, 54),
         BackgroundTransparency = hasLinkVideo and 0.5 or 0 
 }), {
@@ -1442,7 +1442,7 @@ local MainWindow = AddThemeObject(SetChildren(SetProps(MakeElement(RoundMainWind
 local ContentCardBackground = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(18, 18, 22), 0, 8), {
         Parent = MainWindow,
         Position = UDim2.new(0, 164, 0, 54),
-        Size = UDim2.new(0, 439, 0, 278),
+        Size = UDim2.new(1, -176, 1, -66),
         BackgroundTransparency = 0
 }), {
         Create("UIStroke", {
@@ -1451,7 +1451,60 @@ local ContentCardBackground = AddThemeObject(SetChildren(SetProps(MakeElement("R
             ApplyStrokeMode = Enum.ApplyStrokeMode.Border
         })
 }), "Second")
+
+local ResizeBtn = Create("ImageButton", {
+    Parent = MainWindow,
+    Name = "ResizeBtn",
+    Size = UDim2.new(0, 14, 0, 14),
+    Position = UDim2.new(1, -4, 1, -4),
+    AnchorPoint = Vector2.new(1, 1),
+    BackgroundTransparency = 1,
+    Image = "rbxassetid://79268401185798", 
+    ImageColor3 = Color3.fromRGB(150, 150, 150), 
+    ImageTransparency = 0.4,
+    ZIndex = 9999
+})
+
+local isResizing = false
+local startMousePos
+local startSize
+
+AddConnection(ResizeBtn.InputBegan, function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        isResizing = true
+        startMousePos = input.Position
+        startSize = MainWindow.Size
         
+        TweenService:Create(ResizeBtn, TweenInfo.new(0.15, Enum.EasingStyle.Quad), {
+            ImageColor3 = AccentColor, 
+            ImageTransparency = 0
+        }):Play()
+    end
+end)
+
+AddConnection(UserInputService.InputChanged, function(input)
+    if isResizing and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - startMousePos
+        
+        local newWidth = math.clamp(startSize.X.Offset + delta.X, 450, 900)
+        local newHeight = math.clamp(startSize.Y.Offset + delta.Y, 300, 600)
+        
+        MainWindow.Size = UDim2.new(startSize.X.Scale, newWidth, startSize.Y.Scale, newHeight)
+    end
+end)
+
+AddConnection(UserInputService.InputEnded, function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        if isResizing then
+            isResizing = false
+            TweenService:Create(ResizeBtn, TweenInfo.new(0.15, Enum.EasingStyle.Quad), {
+                ImageColor3 = Color3.fromRGB(150, 150, 150),
+                ImageTransparency = 0.4
+            }):Play()
+        end
+    end
+end)
+
         if WindowConfig.SearchBar and WindowConfig.SearchBar.Mains == true then
                 local SearchBox = Create("TextBox", {
                         Size = UDim2.new(1, 0, 1, 0),
@@ -1472,8 +1525,8 @@ local ContentCardBackground = AddThemeObject(SetChildren(SetProps(MakeElement("R
                 local SearchBar = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 1, 6), {
                         Parent = MainWindow,
                         BackgroundTransparency = typeof(WindowConfig.LinkVideo) == "string" and 0.5 or 0,
-                        Size = UDim2.new(0, 447, 0, 24),
-                        Position = UDim2.new(0, 606, 0, 72),
+                        Size = UDim2.new(1, -176, 0, 24),
+                        Position = UDim2.new(1, -12, 0, 72),
                         AnchorPoint = Vector2.new(1, 0.5)
                 }), {
                         AddThemeObject(MakeElement("Stroke"), "Stroke"),
@@ -1885,7 +1938,7 @@ end)
 			}
 					
 			local Container = AddThemeObject(SetChildren(SetProps(MakeElement("ScrollFrame", Color3.fromRGB(255, 255, 255), 5), {
-				Size = UDim2.new(0, 439, 0, 278), 
+				Size = UDim2.new(1, -176, 1, -66),
 				Position = UDim2.new(0, 164, 0, 54), 
 				Parent = MainWindow,
 				Visible = false,
@@ -1899,18 +1952,17 @@ end)
 				Container.CanvasSize = UDim2.new(0, 0, 0, Container.UIListLayout.AbsoluteContentSize.Y + 30)
 			end)
 					
-			-- Thiết lập khung nền riêng biệt với bo góc và viền phát sáng mềm mại
 			local PillBackground = AddThemeObject(SetProps(MakeElement("RoundFrame", Color3.fromRGB(25, 27, 34), 0, 6), {
 				Size = UDim2.new(1, -12, 1, -4),
 				Position = UDim2.new(0, 6, 0, 2),
-				BackgroundTransparency = 1, -- Mặc định ẩn nền khi không kích hoạt
+				BackgroundTransparency = 1, 
 				Name = "PillBackground"
 			}), "Second")
 
 			local PillStroke = Create("UIStroke", {
 				Color = AccentColor,
 				Thickness = 1.2,
-				Transparency = 1, -- Mặc định ẩn viền phát sáng khi không kích hoạt
+				Transparency = 1, 
 				ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
 				Parent = PillBackground
 			})
@@ -1922,8 +1974,6 @@ end)
 				AutoButtonColor = false
 			}), {
 				PillBackground,
-
-				-- Icon khởi tạo ở tọa độ X = 16
 				AddThemeObject(SetProps(MakeElement("Image", TabConfig.Icon), {
 						AnchorPoint = Vector2.new(0, 0.5),
 						Size = UDim2.new(0, 16, 0, 16),
@@ -1931,8 +1981,6 @@ end)
 						ImageTransparency = TabConfig.Disabled and 0.7 or 0.6,
 						Name = "Ico"
 				}), "Text"),
-
-				-- Chữ khởi tạo ở tọa độ X = 40
 				AddThemeObject(SetChildren(SetProps(MakeElement("Label", TabConfig.Name, 13), {
 						Size = UDim2.new(1, -40, 1, 0),
 						Position = UDim2.new(0, 40, 0, 0),
@@ -1951,7 +1999,7 @@ AddConnection(TabFrame.Activated, function()
         if Tabs.Disabled then return end
         for _, Tab in next, TabHolder:GetChildren() do
                 if Tab:IsA("TextButton") then
-                        -- Reset toàn bộ vị trí và độ mờ của các tab không được chọn
+                        
                         TweenService:Create(Tab.Ico, selectTweenInfo, {
                             ImageTransparency = 0.6,
                             Position = UDim2.new(0, 16, 0.5, 0)
@@ -1979,14 +2027,13 @@ AddConnection(TabFrame.Activated, function()
                 if c.Name == "ItemContainer" then c.Visible = false end
         end
         
-        -- Kích hoạt Tab được chọn: dịch chuyển nội dung sang phải và làm nổi bật nền
         TweenService:Create(TabFrame.Ico, selectTweenInfo, {
             ImageTransparency = 0,
-            Position = UDim2.new(0, 22, 0.5, 0) -- Trượt nhẹ sang X = 22
+            Position = UDim2.new(0, 22, 0.5, 0) 
         }):Play()
         TweenService:Create(TabFrame.Title, selectTweenInfo, {
             TextTransparency = 0,
-            Position = UDim2.new(0, 46, 0, 0) -- Trượt nhẹ sang X = 46
+            Position = UDim2.new(0, 46, 0, 0) 
         }):Play()
         
         if TabFrame:FindFirstChild("PillBackground") then
@@ -2022,7 +2069,7 @@ AddConnection(TabFrame.MouseEnter, function()
                 }):Play()
             end
         end
-        -- Hiệu ứng lướt qua: dịch chuyển nội dung nhẹ nhàng
+        
         TweenService:Create(TabFrame.Ico, hoverTweenInfo, {
             ImageTransparency = 0.35,
             Position = UDim2.new(0, 19, 0.5, 0)
@@ -2047,7 +2094,7 @@ AddConnection(TabFrame.MouseLeave, function()
                 }):Play()
             end
         end
-        -- Trả về vị trí ban đầu khi chuột rời đi
+        
         TweenService:Create(TabFrame.Ico, hoverTweenInfo, {
             ImageTransparency = 0.6,
             Position = UDim2.new(0, 16, 0.5, 0)
