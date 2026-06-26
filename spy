@@ -1227,31 +1227,33 @@ function OrionLib:MakeWindow(WindowConfig)
         })
 		
 		local hasLinkVideo = typeof(WindowConfig.LinkVideo) == "string"             
-local WindowStuff = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 10), {
+local WindowStuff = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(15, 15, 19), 0, 8), {
         Size = UDim2.new(0, 140, 0, 278),
         Position = UDim2.new(0, 12, 0, 54),
-        BackgroundTransparency = 1 
+        BackgroundTransparency = hasLinkVideo and 0.5 or 0 
 }), {
-        AddThemeObject(SetProps(MakeElement("Frame"), {
-                Size = UDim2.new(1, 0, 1, 0),
-                BackgroundTransparency = 1 
-        }), "Stroke"), 
+        
+        Create("UIStroke", {
+            Color = Color3.fromRGB(32, 35, 45),
+            Thickness = 1,
+            ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+        }),
+        
         TabHolder,
-        SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(15, 15, 24), 0, 10), {
-                Size = UDim2.new(1, -8, 0, 48),
-                Position = UDim2.new(0, 4, 1, -54),
-                BackgroundTransparency = 0.3
+        SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(10, 10, 13), 0, 8), {
+                Size = UDim2.new(1, -12, 0, 46),
+                Position = UDim2.new(0, 6, 1, -52),
+                BackgroundTransparency = 0.2
         }), {
-                
                 Create("UIStroke", {
                     Color = AccentColor,
                     Thickness = 1,
-                    Transparency = 0.6
+                    Transparency = 0.7
                 }),
                 
                 AddThemeObject(SetChildren(SetProps(MakeElement("Frame"), {
                         AnchorPoint = Vector2.new(0, 0.5),
-                        Size = UDim2.new(0, 32, 0, 32),
+                        Size = UDim2.new(0, 30, 0, 30),
                         Position = UDim2.new(0, 8, 0.5, 0)
                 }), {
                         SetChildren(SetProps(MakeElement("Image", "https://www.roblox.com/headshot-thumbnail/image?userId=".. LocalPlayer.UserId .."&width=420&height=420&format=png"), {
@@ -1265,13 +1267,13 @@ local WindowStuff = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame"
                 
                 AddThemeObject(SetProps(MakeElement("Label", LocalPlayer.DisplayName, WindowConfig.HidePremium and 12 or 11), {
                         Size = UDim2.new(1, -50, 0, 14),
-                        Position = WindowConfig.HidePremium and UDim2.new(0, 46, 0, 17) or UDim2.new(0, 46, 0, 10),
+                        Position = WindowConfig.HidePremium and UDim2.new(0, 46, 0, 16) or UDim2.new(0, 46, 0, 9),
                         Font = Enum.Font.GothamBold,
                         ClipsDescendants = true
                 }), "Text"),
-                AddThemeObject(SetProps(MakeElement("Label", "ACTIVE USER", 9), {
+                AddThemeObject(SetProps(MakeElement("Label", "ACTIVE USER", 8), {
                         Size = UDim2.new(1, -50, 0, 10),
-                        Position = UDim2.new(0, 46, 1, -20),
+                        Position = UDim2.new(0, 46, 1, -19),
                         Visible = not WindowConfig.HidePremium,
                         Font = Enum.Font.GothamBold,
                         TextColor3 = AccentColor 
