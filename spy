@@ -1742,34 +1742,78 @@ local MinimizePill = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame
                     Name = "StatusDot"
                 }, {
                     Create("UICorner", {CornerRadius = UDim.new(1, 0)})
-                }),               
+                }),                               
                 AddThemeObject(SetProps(MakeElement("Image", WindowConfig.Icon or "rbxassetid://108533901677473"), {
                         Size = UDim2.new(0, 16, 0, 16),
                         LayoutOrder = 1,
                         Name = "Icon"
-                }), "Text"),                
+                }), "Text"),                                
                 AddThemeObject(SetProps(MakeElement("Label", WindowConfig.Name, 11), {
                         Size = UDim2.new(0, 0, 1, 0),
                         AutomaticSize = Enum.AutomaticSize.X,
                         Font = Enum.Font.GothamBold,
                         LayoutOrder = 2,
                         Name = "Title",
-                        TextTransparency = 1,
-                        Visible = false
-                }), "Text")
+                        TextTransparency = 0,
+                        Visible = true
+                }), "Text"),
+                
+                Create("Frame", {
+                    Size = UDim2.new(0, 0, 1, 0),
+                    BackgroundTransparency = 1,
+                    ClipsDescendants = true,
+                    LayoutOrder = 3,
+                    Name = "ActionsContainer"
+                }, {
+                    Create("UIListLayout", {
+                        FillDirection = Enum.FillDirection.Horizontal,
+                        VerticalAlignment = Enum.VerticalAlignment.Center,
+                        Padding = UDim.new(0, 8),
+                        SortOrder = Enum.SortOrder.LayoutOrder
+                    }),
+                    
+                    Create("ImageButton", {
+                        Size = UDim2.new(0, 16, 0, 16),
+                        BackgroundTransparency = 1,
+                        Image = "rbxassetid://100553310917137", 
+                        ImageColor3 = Color3.fromRGB(240, 240, 240),
+                        ImageTransparency = 1,
+                        LayoutOrder = 1,
+                        Name = "Restore",
+                        ZIndex = 6
+                    }),
+                    
+                    Create("ImageButton", {
+                        Size = UDim2.new(0, 16, 0, 16),
+                        BackgroundTransparency = 1,
+                        Image = "rbxassetid://112731150255946", 
+                        ImageColor3 = Color3.fromRGB(200, 200, 200),
+                        ImageTransparency = 1,
+                        LayoutOrder = 2,
+                        Name = "ToggleBinds",
+                        ZIndex = 6
+                    }),
+                    
+                    Create("ImageButton", {
+                        Size = UDim2.new(0, 16, 0, 16),
+                        BackgroundTransparency = 1,
+                        Image = "rbxassetid://9886659671", 
+                        ImageColor3 = Color3.fromRGB(255, 100, 100),
+                        ImageTransparency = 1,
+                        LayoutOrder = 3,
+                        Name = "DestroyUI",
+                        ZIndex = 6
+                    })
+                })
         })
 }), "Second")
 
         MakeDraggable(MinimizePill.ClickBtn, MinimizePill)
 
-        -- Giữ tính năng kéo thả đảo tùy biến, vị trí morphing sẽ tự động theo vị trí đảo đã kéo
-MakeDraggable(MinimizePill.ClickBtn, MinimizePill)
-
 local dragStartPos = Vector3.new()
 local isDraggingPill = false
 local isHoveringPill = false
 
--- Vòng lặp tạo hiệu ứng thở (pulse) tinh tế cho đèn LED trạng thái hoạt động
 task.spawn(function()
     local statusDot = MinimizePill.ContentContainer:FindFirstChild("StatusDot")
     if statusDot then
@@ -1788,27 +1832,56 @@ task.spawn(function()
     end
 end)
 
--- Hiệu ứng co giãn kéo dài (Interactive Stretch) khi Hover vào Đảo
+local actionsContainer = MinimizePill.ContentContainer:FindFirstChild("ActionsContainer")
+if actionsContainer then
+    local restoreBtn = actionsContainer:FindFirstChild("Restore")
+    local toggleBindsBtn = actionsContainer:FindFirstChild("ToggleBinds")
+    local destroyUIBtn = actionsContainer:FindFirstChild("DestroyUI")
+    
+    if restoreBtn then
+        AddConnection(restoreBtn.MouseButton1Click, function()
+            toggleMinimize(false)
+        end)
+    end
+    if toggleBindsBtn then
+        AddConnection(toggleBindsBtn.MouseButton1Click, function()
+            if KeyBindFrame then
+                OrionLib:SetKeyBindVisible(not KeyBindFrame.Visible)
+            end
+        end)
+    end
+    if destroyUIBtn then
+        AddConnection(destroyUIBtn.MouseButton1Click, function()
+            OrionLib:Destroy()
+        end)
+    end
+end
+
 local function updateIslandLayout(hovered)
     if getgenv().Destroy or not Minimized then return end
     isHoveringPill = hovered
     
     local titleLabel = MinimizePill.ContentContainer:FindFirstChild("Title")
     local stroke = MinimizePill:FindFirstChildOfClass("UIStroke")
+    local actBox = MinimizePill.ContentContainer:FindFirstChild("ActionsContainer")
     
-    local targetWidth = 48
-    local targetTextTransparency = 1
+    local textWidth = titleLabel and titleLabel.TextBounds.X or 60
+    local baseWidth = math.max(120, 56 + textWidth) 
+    
+    local targetWidth = baseWidth
+    local targetActionsWidth = 0
+    local targetIconTrans = 1
     local targetStrokeTransparency = 0.5
     
     if hovered then
-        local textWidth = titleLabel and titleLabel.TextBounds.X or 50
-        targetWidth = math.max(64, 56 + textWidth)
-        targetTextTransparency = 0
+        targetWidth = baseWidth + 72 
+        targetActionsWidth = 64
+        targetIconTrans = 0
         targetStrokeTransparency = 0.1
-        if titleLabel then titleLabel.Visible = true end
     else
-        targetWidth = 48
-        targetTextTransparency = 1
+        targetWidth = baseWidth
+        targetActionsWidth = 0
+        targetIconTrans = 1
         targetStrokeTransparency = 0.5
     end
     
@@ -1826,20 +1899,28 @@ local function updateIslandLayout(hovered)
         }):Play()
     end
     
-    if titleLabel then
-        TweenService:Create(titleLabel, tInfo, {
-            TextTransparency = targetTextTransparency
+    if actBox then
+        TweenService:Create(actBox, tInfo, {
+            Size = UDim2.new(0, targetActionsWidth, 1, 0)
         }):Play()
         
-        if not hovered then
-            task.delay(0.25, function()
-                if not isHoveringPill and titleLabel then
-                    titleLabel.Visible = false
-                end
-            end)
+        for _, btn in pairs(actBox:GetChildren()) do
+            if btn:IsA("ImageButton") then
+                TweenService:Create(btn, tInfo, {
+                    ImageTransparency = targetIconTrans
+                }):Play()
+            end
         end
     end
 end
+
+AddConnection(MinimizePill.ContentContainer.Title:GetPropertyChangedSignal("Text"), function()
+    if not isHoveringPill and Minimized then
+        local textWidth = MinimizePill.ContentContainer.Title.TextBounds.X
+        local baseWidth = math.max(120, 56 + textWidth)
+        TweenService:Create(MinimizePill, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {Size = UDim2.new(0, baseWidth, 0, 30)}):Play()
+    end
+end)
 
 AddConnection(MinimizePill.ClickBtn.MouseEnter, function()
     updateIslandLayout(true)
@@ -1875,7 +1956,7 @@ local function toggleMinimize(targetMinimizedState)
         MainWindow.ClipsDescendants = true
 
         if Minimized then
-                
+   
                 local originalPos = MainWindow.Position
                 local shrinkTween = TweenService:Create(MainWindow, TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
                         Size = UDim2.new(0, 80, 0, 30),
@@ -1891,9 +1972,12 @@ local function toggleMinimize(targetMinimizedState)
 
                                 MinimizePill.Size = UDim2.new(0, 0, 0, 30)
                                 MinimizePill.Visible = true
+                                
+                                local textWidth = MinimizePill.ContentContainer.Title.TextBounds.X
+                                local baseWidth = math.max(120, 56 + textWidth)
                                                                 
                                 TweenService:Create(MinimizePill, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-                                        Size = UDim2.new(0, 48, 0, 30)
+                                        Size = UDim2.new(0, baseWidth, 0, 30)
                                 }):Play()
                         end
                 end)
@@ -1936,6 +2020,7 @@ end)
 AddConnection(MinimizePill.ClickBtn.InputEnded, function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                 if not isDraggingPill then
+                        
                         toggleMinimize(false)
                 end
         end
@@ -2502,7 +2587,6 @@ end)
     ButtonConfig.Flag = ButtonConfig.Flag or nil
     local Button = {Disabled = ButtonConfig.Disabled, Visible = ButtonConfig.Visible, Flag = ButtonConfig.Flag}
 
-    -- 1. Nhãn chữ hiển thị
     local Label = AddThemeObject(SetProps(MakeElement("Label", ButtonConfig.Name, 13), {
         Size = UDim2.new(0, 0, 1, 0),
         AutomaticSize = Enum.AutomaticSize.X,
@@ -2510,7 +2594,6 @@ end)
         Name = "Content"
     }), "Text")
 
-    -- 2. Khung chứa nội dung lề trái (Đã loại bỏ Icon ở đây)
     local LeftContainer = Create("Frame", {
         Size = UDim2.new(1, -44, 1, 0),
         Position = UDim2.new(0, 12, 0, 0),
@@ -2526,7 +2609,6 @@ end)
         Label
     })
 
-    -- 3. Biểu tượng vân tay bên rìa phải
     local Fingerprint = AddThemeObject(SetProps(MakeElement("Image", "rbxassetid://10723375250"), {
         Size = UDim2.new(0, 16, 0, 16),
         AnchorPoint = Vector2.new(1, 0.5),
@@ -2536,20 +2618,17 @@ end)
         Name = "Fingerprint"
     }), "TextDark")
 
-    -- 4. Viền bao quanh nút
     local Stroke = AddThemeObject(SetProps(MakeElement("Stroke"), {
         Color = OrionLib.Themes[OrionLib.SelectedTheme].Stroke,
         Thickness = 1,
         Transparency = 0.5
     }), "Stroke")
 
-    -- 5. Phím kích hoạt click ẩn
     local Click = SetProps(MakeElement("Button"), {
         Size = UDim2.new(1, 0, 1, 0),
         ZIndex = 5
     })
 
-    -- Khung nút chính
     local ButtonFrame = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 6), {
         Size = UDim2.new(1, 0, 0, 36),
         Visible = ButtonConfig.Visible,
@@ -2561,7 +2640,6 @@ end)
         Click
     }), "Second")
 
-    -- Các hiệu ứng chuyển động tương tác của nút chính
     AddConnection(Click.MouseEnter, function()
         if ButtonConfig.Disabled then return end
         TweenService:Create(ButtonFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
@@ -2639,7 +2717,6 @@ end)
         end)
     end)
 
-    -- Các phương thức của đối tượng Button
     function Button:Set(ButtonText)
         if getgenv().Destroy or ButtonConfig.Disabled then return end
         local content = ButtonFrame and ButtonFrame:FindFirstChild("Content", true)
@@ -2688,7 +2765,6 @@ end)
         ButtonConfig.Callback = callback
     end
     
-    -- Nhân bản hỗ trợ nút phụ (Grid layout)
     function Button:AddButton(ButtonConfigClone)
         ButtonConfigClone = ButtonConfigClone or {}
         ButtonConfigClone.Visible = ButtonConfigClone.Visible ~= false 
@@ -3343,7 +3419,7 @@ end
                             ToggleConfig.Color = ToggleConfig.Color or AccentColor
                             ToggleConfig.Visible = ToggleConfig.Visible ~= false
                             ToggleConfig.Disabled = ToggleConfig.Disabled == true
-                            ToggleConfig.Type = ToggleConfig.Type or "CheckBox" -- "CheckBox" hoặc "Switch"
+                            ToggleConfig.Type = ToggleConfig.Type or "CheckBox" 
                             ToggleConfig.Flag = ToggleConfig.Flag or nil
                             ToggleConfig.Save = ToggleConfig.Save or false
 
@@ -3361,8 +3437,7 @@ end
                                 Size = UDim2.new(1, 0, 1, 0),
                                 ZIndex = 5
                             })
-
-                            -- Switch hiện đại tinh chỉnh góc neo bên phải
+                          
                             local function CreateSwitch()
                                 return SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(24, 25, 32), 0, 12), {
                                     Size = UDim2.new(0, 44, 0, 22),
@@ -3396,8 +3471,7 @@ end
                                     })
                                 })
                             end
-
-                            -- Checkbox tinh chỉnh góc neo bên phải đồng bộ với Switch
+                          
                             local function CreateCheck()
                                 return SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(24, 25, 32), 0, 6), {
                                     Size = UDim2.new(0, 22, 0, 22),
@@ -3444,8 +3518,8 @@ end
                                 Parent = ItemParent
                             }), {
                                 AddThemeObject(SetProps(MakeElement("Label", ToggleConfig.Name, 14), {
-                                    Size = UDim2.new(1, -95, 1, 0), -- Giới hạn để không bao giờ chạm phím bấm bên phải
-                                    Position = UDim2.new(0, 14, 0, 0), -- Đẩy text về lề trái sau khi xóa thanh dọc
+                                    Size = UDim2.new(1, -95, 1, 0), 
+                                    Position = UDim2.new(0, 14, 0, 0), 
                                     Font = Enum.Font.GothamBold,
                                     TextColor3 = Color3.fromRGB(180, 183, 195),
                                     Name = "Content",
@@ -3455,19 +3529,19 @@ end
                                 Click,
                             }), "Second")
 
-                            -- Quản lý hiệu ứng chuyển động tương tác
+                            
                             function Toggle:UpdateTweenKeyBindToggles(Object, bool)
                                 local duration = 0.35
                                 local easeOut = TweenInfo.new(duration, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
                                 local springOut = TweenInfo.new(duration + 0.1, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 
-                                -- Hoạt ảnh thay đổi màu nền nhẹ của Card khi bật/tắt
+                            
                                 local targetBg = bool and Color3.fromRGB(22, 24, 32) or OrionLib.Themes[OrionLib.SelectedTheme].Second
                                 TweenService:Create(Object, easeOut, {
                                     BackgroundColor3 = targetBg
                                 }):Play()
 
-                                -- Sáng viền Card khi bật
+                       
                                 if Object:FindFirstChild("Stroke") then
                                     TweenService:Create(Object.Stroke, easeOut, {
                                         Color = bool and ToggleConfig.Color or Color3.fromRGB(35, 38, 48),
@@ -3475,14 +3549,13 @@ end
                                     }):Play()
                                 end
 
-                                -- Thay đổi độ sáng chữ tiêu đề
+                                
                                 if Object:FindFirstChild("Content") then
                                     TweenService:Create(Object.Content, easeOut, {
                                         TextColor3 = bool and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(180, 183, 195)
                                     }):Play()
                                 end
 
-                                -- Chuyển động của Switch
                                 if Object:FindFirstChild("Switch") then
                                     local SwitchFrame = Object.Switch
                                     local Knob = SwitchFrame:FindFirstChild("Knob")
@@ -3517,7 +3590,7 @@ end
                                     end
                                 end
 
-                                -- Chuyển động của Checkbox
+                                
                                 if Object:FindFirstChild("Check") then
                                     local CheckFrame = Object.Check
                                     local FillCircle = CheckFrame:FindFirstChild("FillCircle")
@@ -3555,14 +3628,13 @@ end
                                 end
                             end
 
-                            -- Sắp xếp động vị trí Keybind Box kế bên Toggle Box để chống đè lấp
+                            
                             local function UpdateLayout()
                                 local hasBind = ToggleFrame:FindFirstChild("ButtonKey")
                                 local bindBox = ToggleFrame:FindFirstChild("BindBox")
                                 if hasBind and bindBox then
                                     local isSwitch = ToggleFrame:FindFirstChild("Switch") ~= nil
-                                    -- Nếu là Switch: vị trí keybind lùi về -64 (bên trái Switch có biên trái là -56)
-                                    -- Nếu là Checkbox: vị trí keybind lùi về -42 (bên trái Checkbox có biên trái là -34)
+                                    
                                     local targetPos = isSwitch and UDim2.new(1, -64, 0.5, 0) or UDim2.new(1, -42, 0.5, 0)
                                     ToggleFrame.ButtonKey.Position = targetPos
                                     bindBox.Position = targetPos
@@ -3715,7 +3787,6 @@ end
                                 Toggle:Set(not Toggle.Value)
                             end)
 
-                            -- Hover sáng viền nhẹ
                             AddConnection(Click.MouseEnter, function()
                                 if ToggleConfig.Disabled then return end
                                 TweenService:Create(CardStroke, TweenInfo.new(0.2), {
@@ -3874,8 +3945,7 @@ end
                                 Visible = SliderConfig.Visible
                             }
                             local Dragging = false  
-
-                            -- 1. Khung chứa chính (Card chính - Chiều cao tối ưu 54px)
+                            
                             local SliderFrame = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(18, 18, 22), 0, 6), {  
                                 Size = UDim2.new(1, 0, 0, 54), 
                                 Visible = SliderConfig.Visible,
@@ -3884,7 +3954,7 @@ end
                                 AddThemeObject(MakeElement("Stroke"), "Stroke")  
                             }), "Second")  
 
-                            -- 2. Thanh hiển thị trạng thái phát sáng ở sát lề trái
+                            
                             local AccentBar = SetProps(MakeElement("RoundFrame", SliderConfig.Color, 0, 1.5), {
                                 Size = UDim2.new(0, 3, 0, 16),
                                 Position = UDim2.new(0, 0, 0.5, 0),
@@ -3894,7 +3964,7 @@ end
                                 Parent = SliderFrame
                             })
 
-                            -- 3. Hàng Trên - Bên Trái: Tên hiển thị
+                            
                             local NameLabel = AddThemeObject(SetProps(MakeElement("Label", SliderConfig.Name, 13), {  
                                 Size = UDim2.new(0.6, 0, 0, 16),  
                                 Position = UDim2.new(0, 14, 0, 10),  
@@ -3903,7 +3973,7 @@ end
                                 Parent = SliderFrame
                             }), "Text")  
 
-                            -- Nhãn hiển thị số bên trong Badge
+                            
                             local ValueBadgeText = AddThemeObject(SetProps(MakeElement("Label", "value", 11), {
                                 Size = UDim2.new(1, 0, 1, 0),
                                 Font = Enum.Font.GothamBold,
@@ -3912,7 +3982,7 @@ end
                                 ZIndex = 5
                             }), "Text")
 
-                            -- 4. Hàng Trên - Bên Phải: Badge hiển thị giá trị số tối giản
+                            
                             local ValueBadge = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(12, 12, 15), 0, 4), {
                                 Size = UDim2.new(0, 48, 0, 18),
                                 Position = UDim2.new(1, -14, 0, 9),
@@ -3929,7 +3999,7 @@ end
                                 })
                             }), "Second")
 
-                            -- Khung chứa toàn bộ phần trượt bên dưới
+                            
                             local TrackContainer = Create("Frame", {
                                 Size = UDim2.new(1, -28, 0, 16),
                                 Position = UDim2.new(0, 14, 0, 30),
@@ -3938,7 +4008,7 @@ end
                                 Parent = SliderFrame
                             })
 
-                            -- 5. Hàng Dưới: Rãnh trượt lõm tối giản (4px)
+                            
                             local SliderBar = AddThemeObject(SetProps(MakeElement("RoundFrame", nil, 0, 2), {  
                                 Size = UDim2.new(1, 0, 0, 4), 
                                 Position = UDim2.new(0, 0, 0.35, 0),
@@ -3948,7 +4018,7 @@ end
                                 Parent = TrackContainer
                             }), "Divider")  
 
-                            -- Thanh trượt hoạt động (Fill)
+                            
                             local SliderFill = SetProps(MakeElement("RoundFrame", SliderConfig.Color, 0, 2), {  
                                 Size = UDim2.new(0, 0, 1, 0),  
                                 BorderSizePixel = 0,  
@@ -3956,7 +4026,7 @@ end
                                 Parent = SliderBar
                             })
 
-                            -- Tạo dải màu chuyển động Gradient tinh tế cho thanh trượt hoạt động
+                            
                             local FillGradient = Create("UIGradient", {
                                 Color = ColorSequence.new({
                                     ColorSequenceKeypoint.new(0, SliderConfig.Color),
@@ -3969,12 +4039,12 @@ end
                                 Parent = SliderFill
                             })
 
-                            -- 6. Hàng Dưới: Hệ thống vạch chia tỷ lệ đo lường siêu nhỏ (5 Ticks)
+                            
                             local Ticks = {}
                             for i = 0, 4 do
                                 local tickPos = i * 0.25
                                 local tick = AddThemeObject(SetProps(MakeElement("Frame"), {
-                                    Size = UDim2.new(0, 1, 0, 4), -- Vạch chia rộng 1px cực nét
+                                    Size = UDim2.new(0, 1, 0, 4), 
                                     Position = UDim2.new(tickPos, 0, 0.85, 0),
                                     AnchorPoint = Vector2.new(0.5, 0.5),
                                     BackgroundTransparency = 0.85, 
@@ -3984,7 +4054,7 @@ end
                                 table.insert(Ticks, tick)
                             end
 
-                            -- 7. Con trỏ kéo dạng nang đứng bo tròn góc (ZIndex cao hơn)
+                            
                             local Knob = SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 3), {
                                 Size = UDim2.new(0, 8, 0, 14), 
                                 AnchorPoint = Vector2.new(0.5, 0.5),
@@ -4009,14 +4079,14 @@ end
                                 })
                             })
 
-                            -- Vùng nhận diện kéo thả chuột phủ kín toàn Card
+                            
                             local ClickDetector = SetProps(MakeElement("Button"), {
                                 Size = UDim2.new(1, 0, 1, 0),
                                 ZIndex = 6,
                                 Parent = SliderFrame
                             })
 
-                            -- Xử lý chuyển động hiệu ứng Hover mượt mà
+                            
                             local function PlayHoverAnim(isHovered)
                                 if Slider.Disabled then return end
                                 
@@ -4027,13 +4097,13 @@ end
                                 local barTransparency = isHovered and 0.85 or 0.92
                                 local badgeStrokeColor = isHovered and SliderConfig.Color or Color3.fromRGB(35, 38, 48)
                                 
-                                -- Hiệu ứng dãn nở của thanh Accent trạng thái lề trái
+                                
                                 TweenService:Create(AccentBar, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
                                     Size = UDim2.new(0, 3, 0, accentHeight),
                                     BackgroundTransparency = accentTrans
                                 }):Play()
 
-                                -- Hiệu ứng co dãn của con trỏ kéo (Knob)
+                                
                                 TweenService:Create(Knob, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
                                     Size = knobSize
                                 }):Play()
@@ -4043,19 +4113,19 @@ end
                                     }):Play()
                                 end
                                 
-                                -- Độ đậm nhạt của rãnh trượt
+                                
                                 TweenService:Create(SliderBar, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
                                     BackgroundTransparency = barTransparency
                                 }):Play()
 
-                                -- Làm sáng các vạch chia tỷ lệ khi rê chuột
+                                
                                 for _, tick in ipairs(Ticks) do
                                     TweenService:Create(tick, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
                                         BackgroundTransparency = isHovered and 0.65 or 0.85
                                     }):Play()
                                 end
 
-                                -- Bo viền Badge & Card chính
+                                
                                 local badgeStroke = ValueBadge:FindFirstChild("BadgeStroke") or ValueBadge:FindFirstChildOfClass("UIStroke")
                                 if badgeStroke then
                                     TweenService:Create(badgeStroke, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
@@ -4072,7 +4142,7 @@ end
                                 end
                             end
 
-                            -- Tự động co giãn hộp chứa chữ số
+                            
                             AddConnection(ValueBadgeText:GetPropertyChangedSignal("Text"), function()
                                 if getgenv().Destroy then return end
                                 local textWidth = ValueBadgeText.TextBounds.X
@@ -4083,7 +4153,7 @@ end
                                 NameLabel.Size = UDim2.new(1, -(targetWidth + 36), 0, 16)
                             end)
 
-                            -- Xử lý bắt đầu kéo thả
+                            
                             local function DraggingUi(parent)  
                                 AddConnection(parent.InputBegan, function(Input)
                                     if Slider.Disabled then return end
@@ -4093,7 +4163,7 @@ end
                                         local SizeScale = math.clamp((Input.Position.X - SliderBar.AbsolutePosition.X) / SliderBar.AbsoluteSize.X, 0, 1)  
                                         Slider:Set(SliderConfig.Min + ((SliderConfig.Max - SliderConfig.Min) * SizeScale))
                                         
-                                        -- Phóng to cực đại tạo xúc giác vật lý khi đang giữ chuột
+                                        
                                         TweenService:Create(Knob, TweenInfo.new(0.15, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
                                             Size = UDim2.new(0, 10, 0, 18)
                                         }):Play()
@@ -4129,7 +4199,7 @@ end
                             AddConnection(ClickDetector.MouseEnter, function() PlayHoverAnim(true) end)
                             AddConnection(ClickDetector.MouseLeave, function() if not Dragging then PlayHoverAnim(false) end end)
                               
-                            -- Hàm đồng bộ giá trị thực và trực quan hóa
+                            
                             local function Update()  
                                 if getgenv().Destroy then return end
                                 local range = SliderConfig.Max - SliderConfig.Min
@@ -4147,7 +4217,7 @@ end
                                 OrionLib:SafeScript(SliderConfig.Callback, Slider.Value)
                             end  
                               
-                            -- Đồng bộ các hàm điều khiển API
+                            
                             function Slider:Set(Value)  
                                 if getgenv().Destroy then return end
                                 Slider.Value = math.clamp(Round(Value, SliderConfig.Increment), SliderConfig.Min, SliderConfig.Max)  
@@ -4422,7 +4492,6 @@ end
         end
     end)
 
-    -- Hàm xử lý hiệu ứng trượt và phát sáng viền mới
     local function AnimateOption(btn, state, OptionVal)
         local isSelected = false
         if DropdownConfig.Multi then
@@ -4652,7 +4721,6 @@ end
                 BackgroundColor3 = Color3.fromRGB(24, 25, 32)
             }), "Divider")
 
-            -- Tạo viền Option mỏng có thể phát sáng khi được chọn
             local OptionStroke = Create("UIStroke", {
                 Color = Color3.fromRGB(45, 48, 60),
                 Thickness = 1,
@@ -5100,7 +5168,6 @@ end
             ZIndex = 3
         })
 
-        -- Icon Edit đặt gọn gàng phía rìa phải của hộp nhập
         local EditIcon = AddThemeObject(SetProps(MakeElement("Image", "rbxassetid://6035057413"), {
             Size = UDim2.new(0, 12, 0, 12),
             Position = UDim2.new(1, -6, 0.5, 0),
@@ -5111,7 +5178,6 @@ end
             Name = "EditIcon"
         }), "TextDark")
 
-        -- Nút xóa nhanh chữ đã nhập
         local ClearBtn = SetProps(MakeElement("ImageButton", "rbxassetid://9886659671"), {
             Size = UDim2.new(0, 11, 0, 11),
             Position = UDim2.new(1, -6, 0.5, 0),
@@ -5122,7 +5188,6 @@ end
             Name = "ClearBtn"
         })
 
-        -- TextBox nhập liệu chính
         local TextboxActual = AddThemeObject(Create("TextBox", {
             Size = UDim2.new(1, -30, 1, 0), 
             Position = UDim2.new(0, 8, 0, 0),
@@ -5139,7 +5204,6 @@ end
             ZIndex = 4
         }), "Text")
 
-        -- Hộp chứa vùng nhập liệu (Nằm bên phải Card)
         local TextContainer = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(10, 11, 15), 0, 5), {
             Size = UDim2.new(0, 150, 0, 24),
             Position = UDim2.new(1, -12, 0.5, 0),
@@ -5159,10 +5223,9 @@ end
             ClearBtn
         }), "Main")
 
-        -- Nhãn tên của Textbox (Nằm bên trái Card)
         local ContentLabel = AddThemeObject(SetProps(MakeElement("Label", TextboxConfig.Name, 15), {
             Size = UDim2.new(1, -190, 1, 0),
-            Position = UDim2.new(0, 14, 0, 0), -- Giữ khoảng cách 14px đều đặn từ mép lề trái
+            Position = UDim2.new(0, 14, 0, 0), 
             Font = Enum.Font.GothamBold,
             TextSize = 12,
             TextColor3 = Color3.fromRGB(175, 180, 190),
@@ -5170,7 +5233,6 @@ end
             Name = "Content"
         }), "Text")
 
-        -- Khung viền ngoài của Card chính (Chiều cao 38px chuẩn)
         local TextboxFrame = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 6), {
             Size = UDim2.new(1, 0, 0, 38),
             Parent = ItemParent,
@@ -5184,7 +5246,6 @@ end
         
         local GlowStroke = TextContainer:FindFirstChild("GlowStroke")
 
-        -- Xử lý cập nhật giá trị thực tế
         local function SetValue()
             if Textbox.Disabled then return end
             if TextboxConfig.Numeric then
@@ -5222,11 +5283,11 @@ end
             TextboxActual:CaptureFocus()
         end)
 
-        -- Hiệu ứng chuyển động khi Focus vào ô nhập
+        
         AddConnection(TextboxActual.Focused, function()
             if Textbox.Disabled then return end
             
-            -- Sáng viền Neon cho riêng hộp nhập liệu
+            
             if GlowStroke then
                 TweenService:Create(GlowStroke, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
                     Color = TextboxConfig.AccentColor,
@@ -5234,13 +5295,12 @@ end
                 }):Play()
             end
 
-            -- Làm sáng chữ tiêu đề
+            
             TweenService:Create(ContentLabel, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
                 TextColor3 = Color3.fromRGB(255, 255, 255)
             }):Play()
         end)
 
-        -- Hiệu ứng chuyển động khi thoát Focus
         AddConnection(TextboxActual.FocusLost, function()
             if GlowStroke then
                 TweenService:Create(GlowStroke, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
@@ -5249,13 +5309,12 @@ end
                 }):Play()
             end
 
-            -- Trả chữ tiêu đề về màu mặc định
             TweenService:Create(ContentLabel, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
                 TextColor3 = Color3.fromRGB(175, 180, 190)
             }):Play()
         end)
 
-        -- Các phương thức API tương tác từ bên ngoài
+        
         function Textbox:SetText(ToChange)
             if getgenv().Destroy or Textbox.Disabled then return end
             if TextboxActual then
@@ -5323,7 +5382,6 @@ end
             end
         end
 
-        -- Tương tác rê chuột / Click toàn bộ Card
         AddConnection(Click.MouseEnter, function()
             if Textbox.Disabled then return end
             local darkThemeColor = OrionLib.Themes[OrionLib.SelectedTheme].Second
