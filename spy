@@ -3759,26 +3759,35 @@ end
                             }
                             local Dragging = false  
 
-                            -- Khung nền của Slider (Card chính)
+                            -- 1. Khung chứa chính (Card chính - Chiều cao tối ưu 54px)
                             local SliderFrame = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(18, 18, 22), 0, 6), {  
-                                Size = UDim2.new(1, 0, 0, 38), -- Chiều cao chuẩn 38px
+                                Size = UDim2.new(1, 0, 0, 54), 
                                 Visible = SliderConfig.Visible,
                                 Parent = ItemParent  
                             }), {  
                                 AddThemeObject(MakeElement("Stroke"), "Stroke")  
-                            }), "Second")
+                            }), "Second")  
 
-                            -- 1. Bên Trái: Nhãn chữ hiển thị tên chức năng
+                            -- 2. Thanh hiển thị trạng thái phát sáng ở sát lề trái
+                            local AccentBar = SetProps(MakeElement("RoundFrame", SliderConfig.Color, 0, 1.5), {
+                                Size = UDim2.new(0, 3, 0, 16),
+                                Position = UDim2.new(0, 0, 0.5, 0),
+                                AnchorPoint = Vector2.new(0, 0.5),
+                                BackgroundTransparency = 0.4,
+                                Name = "AccentBar",
+                                Parent = SliderFrame
+                            })
+
+                            -- 3. Hàng Trên - Bên Trái: Tên hiển thị
                             local NameLabel = AddThemeObject(SetProps(MakeElement("Label", SliderConfig.Name, 13), {  
-                                Size = UDim2.new(0.35, 0, 1, 0),  
-                                Position = UDim2.new(0, 14, 0, 0),  
+                                Size = UDim2.new(0.6, 0, 0, 16),  
+                                Position = UDim2.new(0, 14, 0, 10),  
                                 Font = Enum.Font.GothamBold,  
                                 Name = "Content",
-                                ClipsDescendants = true,
                                 Parent = SliderFrame
-                            }), "Text")
+                            }), "Text")  
 
-                            -- Khung đệm bên phải chứa giá trị dạng số
+                            -- Nhãn hiển thị số bên trong Badge
                             local ValueBadgeText = AddThemeObject(SetProps(MakeElement("Label", "value", 11), {
                                 Size = UDim2.new(1, 0, 1, 0),
                                 Font = Enum.Font.GothamBold,
@@ -3787,11 +3796,11 @@ end
                                 ZIndex = 5
                             }), "Text")
 
-                            -- 2. Bên Phải Ngoài Cùng: Viên thuốc hiển thị giá trị số
+                            -- 4. Hàng Trên - Bên Phải: Badge hiển thị giá trị số tối giản
                             local ValueBadge = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(12, 12, 15), 0, 4), {
-                                Size = UDim2.new(0, 46, 0, 20),
-                                Position = UDim2.new(1, -12, 0.5, 0),
-                                AnchorPoint = Vector2.new(1, 0.5),
+                                Size = UDim2.new(0, 48, 0, 18),
+                                Position = UDim2.new(1, -14, 0, 9),
+                                AnchorPoint = Vector2.new(1, 0),
                                 Name = "ValueBadge",
                                 Parent = SliderFrame
                             }), {
@@ -3804,44 +3813,72 @@ end
                                 })
                             }), "Second")
 
-                            -- Khung ảo bao quanh khu vực trượt để hỗ trợ responsive khi kéo dãn UI
-                            local TrackWrapper = Create("Frame", {
-                                Size = UDim2.new(0.62, -72, 1, 0),
-                                Position = UDim2.new(0.38, 0, 0, 0),
+                            -- Khung chứa toàn bộ phần trượt bên dưới
+                            local TrackContainer = Create("Frame", {
+                                Size = UDim2.new(1, -28, 0, 16),
+                                Position = UDim2.new(0, 14, 0, 30),
                                 BackgroundTransparency = 1,
-                                Name = "TrackWrapper",
+                                Name = "TrackContainer",
                                 Parent = SliderFrame
                             })
 
-                            -- 3. Ở Giữa: Rãnh trượt lõm hiện đại
-                            local SliderBar = AddThemeObject(SetProps(MakeElement("RoundFrame", nil, 0, 2.5), {  
-                                Size = UDim2.new(1, 0, 0, 5), -- Độ dày rãnh trượt 5px cực kỳ tinh tế
-                                Position = UDim2.new(0, 0, 0.5, 0),
+                            -- 5. Hàng Dưới: Rãnh trượt lõm tối giản (4px)
+                            local SliderBar = AddThemeObject(SetProps(MakeElement("RoundFrame", nil, 0, 2), {  
+                                Size = UDim2.new(1, 0, 0, 4), 
+                                Position = UDim2.new(0, 0, 0.35, 0),
                                 AnchorPoint = Vector2.new(0, 0.5),
-                                BackgroundTransparency = 0.9,
+                                BackgroundTransparency = 0.92,
                                 Name = "Track",
-                                Parent = TrackWrapper
+                                Parent = TrackContainer
                             }), "Divider")  
 
-                            -- Thanh trượt lấp đầy (Fill)
-                            local SliderFill = SetProps(MakeElement("RoundFrame", SliderConfig.Color, 0, 2.5), {  
+                            -- Thanh trượt hoạt động (Fill)
+                            local SliderFill = SetProps(MakeElement("RoundFrame", SliderConfig.Color, 0, 2), {  
                                 Size = UDim2.new(0, 0, 1, 0),  
                                 BorderSizePixel = 0,  
                                 Name = "Fill",
                                 Parent = SliderBar
                             })
 
-                            -- Núm kéo tròn dạng Ring-Dot phát sáng mờ
-                            local Knob = SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 1, 0), {
-                                Size = UDim2.new(0, 12, 0, 12),
+                            -- Tạo dải màu chuyển động Gradient tinh tế cho thanh trượt hoạt động
+                            local FillGradient = Create("UIGradient", {
+                                Color = ColorSequence.new({
+                                    ColorSequenceKeypoint.new(0, SliderConfig.Color),
+                                    ColorSequenceKeypoint.new(1, Color3.fromRGB(
+                                        math.clamp(SliderConfig.Color.R * 255 + 35, 0, 255),
+                                        math.clamp(SliderConfig.Color.G * 255 + 35, 0, 255),
+                                        math.clamp(SliderConfig.Color.B * 255 + 35, 0, 255)
+                                    ))
+                                }),
+                                Parent = SliderFill
+                            })
+
+                            -- 6. Hàng Dưới: Hệ thống vạch chia tỷ lệ đo lường siêu nhỏ (5 Ticks)
+                            local Ticks = {}
+                            for i = 0, 4 do
+                                local tickPos = i * 0.25
+                                local tick = AddThemeObject(SetProps(MakeElement("Frame"), {
+                                    Size = UDim2.new(0, 1, 0, 4), -- Vạch chia rộng 1px cực nét
+                                    Position = UDim2.new(tickPos, 0, 0.85, 0),
+                                    AnchorPoint = Vector2.new(0.5, 0.5),
+                                    BackgroundTransparency = 0.85, 
+                                    Name = "Tick_" .. i,
+                                    Parent = TrackContainer
+                                }), "Divider")
+                                table.insert(Ticks, tick)
+                            end
+
+                            -- 7. Con trỏ kéo dạng nang đứng bo tròn góc (ZIndex cao hơn)
+                            local Knob = SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 3), {
+                                Size = UDim2.new(0, 8, 0, 14), 
                                 AnchorPoint = Vector2.new(0.5, 0.5),
-                                Position = UDim2.new(0, 0, 0.5, 0),
+                                Position = UDim2.new(0, 0, 0.35, 0),
                                 Name = "Knob",
                                 ZIndex = 3,
-                                Parent = SliderBar
+                                Parent = TrackContainer
                             }), {
-                                SetProps(MakeElement("RoundFrame", SliderConfig.Color, 1, 0), {
-                                    Size = UDim2.new(0, 6, 0, 6),
+                                SetProps(MakeElement("RoundFrame", SliderConfig.Color, 0, 1.5), {
+                                    Size = UDim2.new(0, 4, 0, 4),
                                     AnchorPoint = Vector2.new(0.5, 0.5),
                                     Position = UDim2.new(0.5, 0, 0.5, 0),
                                     BorderSizePixel = 0,
@@ -3849,42 +3886,60 @@ end
                                 }),
                                 Create("UIStroke", {
                                     Color = SliderConfig.Color,
-                                    Thickness = 1.5,
-                                    Transparency = 0.5,
+                                    Thickness = 1.2,
+                                    ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+                                    Transparency = 0.4,
                                     Name = "KnobStroke"
                                 })
                             })
 
-                            -- Nút kích hoạt tương tác (HitBox) bao phủ toàn Card
-                            local HitBox = SetProps(MakeElement("Button"), {
+                            -- Vùng nhận diện kéo thả chuột phủ kín toàn Card
+                            local ClickDetector = SetProps(MakeElement("Button"), {
                                 Size = UDim2.new(1, 0, 1, 0),
                                 ZIndex = 6,
                                 Parent = SliderFrame
                             })
 
-                            -- Xử lý chuyển động hiệu ứng Hover
+                            -- Xử lý chuyển động hiệu ứng Hover mượt mà
                             local function PlayHoverAnim(isHovered)
                                 if Slider.Disabled then return end
                                 
-                                local knobSize = isHovered and UDim2.new(0, 14, 0, 14) or UDim2.new(0, 12, 0, 12)
-                                local coreSize = isHovered and UDim2.new(0, 7, 0, 7) or UDim2.new(0, 6, 0, 6)
-                                local barTransparency = isHovered and 0.8 or 0.9
+                                local accentHeight = isHovered and 30 or 16
+                                local accentTrans = isHovered and 0 or 0.4
+                                local knobSize = isHovered and UDim2.new(0, 9, 0, 16) or UDim2.new(0, 8, 0, 14)
+                                local coreSize = isHovered and UDim2.new(0, 5, 0, 5) or UDim2.new(0, 4, 0, 4)
+                                local barTransparency = isHovered and 0.85 or 0.92
                                 local badgeStrokeColor = isHovered and SliderConfig.Color or Color3.fromRGB(35, 38, 48)
                                 
+                                -- Hiệu ứng dãn nở của thanh Accent trạng thái lề trái
+                                TweenService:Create(AccentBar, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
+                                    Size = UDim2.new(0, 3, 0, accentHeight),
+                                    BackgroundTransparency = accentTrans
+                                }):Play()
+
+                                -- Hiệu ứng co dãn của con trỏ kéo (Knob)
                                 TweenService:Create(Knob, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
                                     Size = knobSize
                                 }):Play()
-                                
                                 if Knob:FindFirstChild("Core") then
                                     TweenService:Create(Knob.Core, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
                                         Size = coreSize
                                     }):Play()
                                 end
                                 
+                                -- Độ đậm nhạt của rãnh trượt
                                 TweenService:Create(SliderBar, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
                                     BackgroundTransparency = barTransparency
                                 }):Play()
 
+                                -- Làm sáng các vạch chia tỷ lệ khi rê chuột
+                                for _, tick in ipairs(Ticks) do
+                                    TweenService:Create(tick, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
+                                        BackgroundTransparency = isHovered and 0.65 or 0.85
+                                    }):Play()
+                                end
+
+                                -- Bo viền Badge & Card chính
                                 local badgeStroke = ValueBadge:FindFirstChild("BadgeStroke") or ValueBadge:FindFirstChildOfClass("UIStroke")
                                 if badgeStroke then
                                     TweenService:Create(badgeStroke, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
@@ -3901,18 +3956,18 @@ end
                                 end
                             end
 
-                            -- Tự động tính toán lại chiều rộng hộp chứa giá trị
+                            -- Tự động co giãn hộp chứa chữ số
                             AddConnection(ValueBadgeText:GetPropertyChangedSignal("Text"), function()
                                 if getgenv().Destroy then return end
                                 local textWidth = ValueBadgeText.TextBounds.X
-                                local targetWidth = math.clamp(textWidth + 14, 42, 85)
+                                local targetWidth = math.clamp(textWidth + 14, 48, 90)
                                 TweenService:Create(ValueBadge, TweenInfo.new(0.15, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                                    Size = UDim2.new(0, targetWidth, 0, 20)
+                                    Size = UDim2.new(0, targetWidth, 0, 18)
                                 }):Play()
-                                TrackWrapper.Size = UDim2.new(0.62, -(targetWidth + 22), 1, 0)
+                                NameLabel.Size = UDim2.new(1, -(targetWidth + 36), 0, 16)
                             end)
 
-                            -- Xử lý bắt đầu và kết thúc việc kéo thả trượt
+                            -- Xử lý bắt đầu kéo thả
                             local function DraggingUi(parent)  
                                 AddConnection(parent.InputBegan, function(Input)
                                     if Slider.Disabled then return end
@@ -3922,13 +3977,13 @@ end
                                         local SizeScale = math.clamp((Input.Position.X - SliderBar.AbsolutePosition.X) / SliderBar.AbsoluteSize.X, 0, 1)  
                                         Slider:Set(SliderConfig.Min + ((SliderConfig.Max - SliderConfig.Min) * SizeScale))
                                         
-                                        -- Phản hồi giãn nở cực đại khi nhấn giữ
+                                        -- Phóng to cực đại tạo xúc giác vật lý khi đang giữ chuột
                                         TweenService:Create(Knob, TweenInfo.new(0.15, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                                            Size = UDim2.new(0, 16, 0, 16)
+                                            Size = UDim2.new(0, 10, 0, 18)
                                         }):Play()
                                         if Knob:FindFirstChild("Core") then
                                             TweenService:Create(Knob.Core, TweenInfo.new(0.15, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                                                Size = UDim2.new(0, 8, 0, 8)
+                                                Size = UDim2.new(0, 6, 0, 6)
                                             }):Play()
                                         end
                                     end  
@@ -3944,7 +3999,7 @@ end
                                 end)
                             end  
                               
-                            DraggingUi(HitBox)  
+                            DraggingUi(ClickDetector)  
                             
                             AddConnection(UserInputService.InputChanged, function(Input)
                                 if Dragging and not Slider.Disabled then
@@ -3955,10 +4010,10 @@ end
                                 end
                             end)
 
-                            AddConnection(HitBox.MouseEnter, function() PlayHoverAnim(true) end)
-                            AddConnection(HitBox.MouseLeave, function() if not Dragging then PlayHoverAnim(false) end end)
+                            AddConnection(ClickDetector.MouseEnter, function() PlayHoverAnim(true) end)
+                            AddConnection(ClickDetector.MouseLeave, function() if not Dragging then PlayHoverAnim(false) end end)
                               
-                            -- Hàm đồng bộ hóa và cập nhật giá trị hiển thị trực quan
+                            -- Hàm đồng bộ giá trị thực và trực quan hóa
                             local function Update()  
                                 if getgenv().Destroy then return end
                                 local range = SliderConfig.Max - SliderConfig.Min
@@ -3969,14 +4024,14 @@ end
                                 }):Play()  
                                 
                                 TweenService:Create(Knob, TweenInfo.new(.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-                                    Position = UDim2.new(progressScale, 0, 0.5, 0)
+                                    Position = UDim2.new(progressScale, 0, 0.35, 0)
                                 }):Play()
                                 
                                 ValueBadgeText.Text = tostring(Slider.Value) .. (SliderConfig.ValueName ~= "" and " " .. SliderConfig.ValueName or "")
                                 OrionLib:SafeScript(SliderConfig.Callback, Slider.Value)
                             end  
                               
-                            -- Đồng bộ hóa các phương thức API điều khiển Slider
+                            -- Đồng bộ các hàm điều khiển API
                             function Slider:Set(Value)  
                                 if getgenv().Destroy then return end
                                 Slider.Value = math.clamp(Round(Value, SliderConfig.Increment), SliderConfig.Min, SliderConfig.Max)  
@@ -4063,7 +4118,7 @@ end
                             local progressScale = range > 0 and (Slider.Value - SliderConfig.Min) / range or 0
                             
                             SliderFill.Size = UDim2.fromScale(progressScale, 1)
-                            Knob.Position = UDim2.new(progressScale, 0, 0.5, 0)
+                            Knob.Position = UDim2.new(progressScale, 0, 0.35, 0)
                             ValueBadgeText.Text = tostring(Slider.Value) .. (SliderConfig.ValueName ~= "" and " " .. SliderConfig.ValueName or "")
                             
                             if SliderConfig.Flag then  
