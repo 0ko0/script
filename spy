@@ -4306,6 +4306,108 @@ end
         end
     end)
 
+    -- Hàm xử lý hiệu ứng trượt và phát sáng viền mới
+    local function AnimateOption(btn, state, OptionVal)
+        local isSelected = false
+        if DropdownConfig.Multi then
+            isSelected = (Dropdown.Value[OptionVal] == true)
+        else
+            isSelected = (Dropdown.Value == OptionVal)
+        end
+
+        local title = btn:FindFirstChild("Title")
+        local desc = btn:FindFirstChild("Desc")
+        local stroke = btn:FindFirstChild("OptionStroke")
+        local icon = btn:FindFirstChild("Icon")
+        local thumb = btn:FindFirstChild("Thumbnail")
+
+        local textLeftPadding = thumb and 72 or (icon and 42 or 16)
+        local titleY = desc and (thumb and 12 or 6) or 0
+        local descY = thumb and 30 or 22
+
+        local targetBgColor, targetBgTrans
+        local targetStrokeColor, targetStrokeTrans
+        local targetTitlePos, targetTitleTrans
+        local targetDescPos, targetDescTrans
+        local targetIconTrans = 0.4
+        local targetThumbStrokeTrans = 0.5
+
+        if state == "Selected" or (state == "Default" and isSelected) then
+            targetBgColor = AccentColor or Color3.fromRGB(0, 170, 255)
+            targetBgTrans = 0.92
+            targetStrokeColor = AccentColor or Color3.fromRGB(0, 170, 255)
+            targetStrokeTrans = 0.3
+            targetTitlePos = UDim2.new(0, textLeftPadding + 6, 0, titleY)
+            targetTitleTrans = 0
+            targetDescPos = UDim2.new(0, textLeftPadding + 6, 0, descY)
+            targetDescTrans = 0.15
+            targetIconTrans = 0
+            targetThumbStrokeTrans = 0.2
+        elseif state == "Hover" then
+            targetBgColor = Color3.fromRGB(35, 38, 50)
+            targetBgTrans = 0.9
+            targetStrokeColor = Color3.fromRGB(80, 85, 105)
+            targetStrokeTrans = 0.7
+            targetTitlePos = UDim2.new(0, textLeftPadding + 4, 0, titleY)
+            targetTitleTrans = 0.2
+            targetDescPos = UDim2.new(0, textLeftPadding + 4, 0, descY)
+            targetDescTrans = 0.35
+            targetIconTrans = 0.2
+            targetThumbStrokeTrans = 0.4
+        else 
+            targetBgColor = Color3.fromRGB(24, 25, 32)
+            targetBgTrans = 0.98
+            targetStrokeColor = Color3.fromRGB(45, 48, 60)
+            targetStrokeTrans = 1 
+            targetTitlePos = UDim2.new(0, textLeftPadding, 0, titleY)
+            targetTitleTrans = 0.4
+            targetDescPos = UDim2.new(0, textLeftPadding, 0, descY)
+            targetDescTrans = 0.5
+            targetIconTrans = 0.4
+            targetThumbStrokeTrans = 0.5
+        end
+
+        local tInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+
+        TweenService:Create(btn, tInfo, {
+            BackgroundColor3 = targetBgColor,
+            BackgroundTransparency = targetBgTrans
+        }):Play()
+
+        if stroke then
+            TweenService:Create(stroke, tInfo, {
+                Color = targetStrokeColor,
+                Transparency = targetStrokeTrans
+            }):Play()
+        end
+
+        if title then
+            TweenService:Create(title, tInfo, {
+                Position = targetTitlePos,
+                TextTransparency = targetTitleTrans
+            }):Play()
+        end
+
+        if desc then
+            TweenService:Create(desc, tInfo, {
+                Position = targetDescPos,
+                TextTransparency = targetDescTrans
+            }):Play()
+        end
+
+        if icon then
+            TweenService:Create(icon, tInfo, {
+                ImageTransparency = targetIconTrans
+            }):Play()
+        end
+
+        if thumb and thumb:FindFirstChildOfClass("UIStroke") then
+            TweenService:Create(thumb:FindFirstChildOfClass("UIStroke"), tInfo, {
+                Transparency = targetThumbStrokeTrans
+            }):Play()
+        end
+    end
+
     local function AddOptions(Options)
         for k, v in pairs(Options) do
             local OptionVal = (type(k) == "string" and k) or v
@@ -4323,15 +4425,6 @@ end
                 MakeElement("Corner", 0, 6)
             }
             
-            local ActiveDot = SetProps(MakeElement("RoundFrame", Color3.fromRGB(0, 170, 255), 0, 3), {
-                Size = UDim2.new(0, 0, 0, 0),
-                Position = UDim2.new(0, 10, 0.5, 0),
-                AnchorPoint = Vector2.new(0, 0.5),
-                BackgroundTransparency = 1,
-                Name = "ActiveDot"
-            })
-            table.insert(Elements, ActiveDot)
-
             local TextLeftPadding = 16
 
             if ThumbStr then
@@ -4443,36 +4536,24 @@ end
                 BackgroundColor3 = Color3.fromRGB(24, 25, 32)
             }), "Divider")
 
+            -- Tạo viền Option mỏng có thể phát sáng khi được chọn
+            local OptionStroke = Create("UIStroke", {
+                Color = Color3.fromRGB(45, 48, 60),
+                Thickness = 1,
+                Transparency = 1, 
+                ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+                Parent = OptionBtn,
+                Name = "OptionStroke"
+            })
+
             AddConnection(OptionBtn.MouseEnter, function()
                 if Dropdown.Disabled then return end
-                TweenService:Create(OptionBtn, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-                    BackgroundTransparency = 0.88,
-                    BackgroundColor3 = Color3.fromRGB(45, 48, 60)
-                }):Play()
-                TweenService:Create(ActiveDot, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-                    Size = UDim2.new(0, 6, 0, 6),
-                    BackgroundTransparency = 0.4
-                }):Play()
+                AnimateOption(OptionBtn, "Hover", OptionVal)
             end)
 
             AddConnection(OptionBtn.MouseLeave, function()
                 if Dropdown.Disabled then return end
-                local isSelected = false
-                if DropdownConfig.Multi then
-                    isSelected = (Dropdown.Value[OptionVal] == true)
-                else
-                    isSelected = (Dropdown.Value == OptionVal)
-                end
-                
-                TweenService:Create(OptionBtn, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-                    BackgroundTransparency = isSelected and 0.92 or 0.98,
-                    BackgroundColor3 = isSelected and Color3.fromRGB(40, 42, 55) or Color3.fromRGB(24, 25, 32)
-                }):Play()
-                
-                TweenService:Create(ActiveDot, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-                    Size = isSelected and UDim2.new(0, 6, 0, 6) or UDim2.new(0, 0, 0, 0),
-                    BackgroundTransparency = isSelected and 0 or 1
-                }):Play()
+                AnimateOption(OptionBtn, "Default", OptionVal)
             end)
 
             AddConnection(OptionBtn.MouseButton1Click, function()
@@ -4549,15 +4630,9 @@ end
         if not table.find(Dropdown.Options, Value) then
             Dropdown.Value = DropdownConfig.Multi and {} or nil
             SelectedBadgeText.Text = "..."
-            for _, v in pairs(Dropdown.Buttons) do
-                TweenService:Create(v, TweenInfo.new(.15), {BackgroundTransparency = 0.98, BackgroundColor3 = Color3.fromRGB(24, 25, 32)}):Play()
-                TweenService:Create(v.Title, TweenInfo.new(.15), {TextTransparency = 0.4}):Play()
-                if v:FindFirstChild("Desc") then TweenService:Create(v.Desc, TweenInfo.new(.15), {TextTransparency = 0.5}):Play() end
-                if v:FindFirstChild("Icon") then TweenService:Create(v.Icon, TweenInfo.new(.15), {ImageTransparency = 0.4}):Play() end
-                if v:FindFirstChild("ActiveDot") then
-                    TweenService:Create(v.ActiveDot, TweenInfo.new(.15), {Size = UDim2.new(0, 0, 0, 0), BackgroundTransparency = 1}):Play()
-                end
-                local ind = v:FindFirstChild("Indicator")
+            for optVal, btn in pairs(Dropdown.Buttons) do
+                AnimateOption(btn, "Default", optVal)
+                local ind = btn:FindFirstChild("Indicator")
                 if ind then
                     if DropdownConfig.Multi then
                         if ind:FindFirstChild("CheckIcon") then TweenService:Create(ind.CheckIcon, TweenInfo.new(.15), {ImageTransparency = 1}):Play() end
@@ -4579,36 +4654,15 @@ end
                 Dropdown.Value[Value] = not Dropdown.Value[Value]
                 local state = Dropdown.Value[Value]
                 local ind = btn:FindFirstChild("Indicator")
-                if state then
-                    TweenService:Create(btn, TweenInfo.new(.15), {BackgroundTransparency = 0.92, BackgroundColor3 = Color3.fromRGB(40, 42, 55)}):Play()
-                    TweenService:Create(btn.Title, TweenInfo.new(.15), {TextTransparency = 0}):Play()
-                    if btn:FindFirstChild("Desc") then
-                        TweenService:Create(btn.Desc, TweenInfo.new(.15), {TextTransparency = 0.2}):Play()
-                    end
-                    if btn:FindFirstChild("Icon") then
-                        TweenService:Create(btn.Icon, TweenInfo.new(.15), {ImageTransparency = 0}):Play()
-                    end
-                    if btn:FindFirstChild("ActiveDot") then
-                        TweenService:Create(btn.ActiveDot, TweenInfo.new(.15), {Size = UDim2.new(0, 6, 0, 6), BackgroundTransparency = 0}):Play()
-                    end
-                    if ind then
+                
+                AnimateOption(btn, state and "Selected" or "Default", Value)
+
+                if ind then
+                    if state then
                         if ind:FindFirstChild("CheckIcon") then TweenService:Create(ind.CheckIcon, TweenInfo.new(.15), {ImageTransparency = 0}):Play() end
                         if ind:FindFirstChild("IndicatorStroke") then TweenService:Create(ind.IndicatorStroke, TweenInfo.new(.15), {Color = Color3.fromRGB(0, 170, 255)}):Play() end
                         TweenService:Create(ind, TweenInfo.new(.15), {BackgroundColor3 = Color3.fromRGB(0, 170, 255)}):Play()
-                    end
-                else
-                    TweenService:Create(btn, TweenInfo.new(.15), {BackgroundTransparency = 0.98, BackgroundColor3 = Color3.fromRGB(24, 25, 32)}):Play()
-                    TweenService:Create(btn.Title, TweenInfo.new(.15), {TextTransparency = 0.4}):Play()
-                    if btn:FindFirstChild("Desc") then
-                        TweenService:Create(btn.Desc, TweenInfo.new(.15), {TextTransparency = 0.5}):Play()
-                    end
-                    if btn:FindFirstChild("Icon") then
-                        TweenService:Create(btn.Icon, TweenInfo.new(.15), {ImageTransparency = 0.4}):Play()
-                    end
-                    if btn:FindFirstChild("ActiveDot") then
-                        TweenService:Create(btn.ActiveDot, TweenInfo.new(.15), {Size = UDim2.new(0, 0, 0, 0), BackgroundTransparency = 1}):Play()
-                    end
-                    if ind then
+                    else
                         if ind:FindFirstChild("CheckIcon") then TweenService:Create(ind.CheckIcon, TweenInfo.new(.15), {ImageTransparency = 1}):Play() end
                         if ind:FindFirstChild("IndicatorStroke") then TweenService:Create(ind.IndicatorStroke, TweenInfo.new(.15), {Color = Color3.fromRGB(60, 64, 80)}):Play() end
                         TweenService:Create(ind, TweenInfo.new(.15), {BackgroundColor3 = Color3.fromRGB(30, 32, 40)}):Play()
@@ -4632,17 +4686,7 @@ end
                 local ind = btn:FindFirstChild("Indicator")
                 if index then
                     table.remove(Dropdown.Value, index)
-                    TweenService:Create(btn, TweenInfo.new(.15), {BackgroundTransparency = 0.98, BackgroundColor3 = Color3.fromRGB(24, 25, 32)}):Play()
-                    TweenService:Create(btn.Title, TweenInfo.new(.15), {TextTransparency = 0.4}):Play()
-                    if btn:FindFirstChild("Desc") then
-                        TweenService:Create(btn.Desc, TweenInfo.new(.15), {TextTransparency = 0.5}):Play()
-                    end
-                    if btn:FindFirstChild("Icon") then
-                        TweenService:Create(btn.Icon, TweenInfo.new(.15), {ImageTransparency = 0.4}):Play()
-                    end
-                    if btn:FindFirstChild("ActiveDot") then
-                        TweenService:Create(btn.ActiveDot, TweenInfo.new(.15), {Size = UDim2.new(0, 0, 0, 0), BackgroundTransparency = 1}):Play()
-                    end
+                    AnimateOption(btn, "Default", Value)
                     if ind then
                         if ind:FindFirstChild("CheckIcon") then TweenService:Create(ind.CheckIcon, TweenInfo.new(.15), {ImageTransparency = 1}):Play() end
                         if ind:FindFirstChild("IndicatorStroke") then TweenService:Create(ind.IndicatorStroke, TweenInfo.new(.15), {Color = Color3.fromRGB(60, 64, 80)}):Play() end
@@ -4650,17 +4694,7 @@ end
                     end
                 else
                     table.insert(Dropdown.Value, Value)
-                    TweenService:Create(btn, TweenInfo.new(.15), {BackgroundTransparency = 0.92, BackgroundColor3 = Color3.fromRGB(40, 42, 55)}):Play()
-                    TweenService:Create(btn.Title, TweenInfo.new(.15), {TextTransparency = 0}):Play()
-                    if btn:FindFirstChild("Desc") then
-                        TweenService:Create(btn.Desc, TweenInfo.new(.15), {TextTransparency = 0.2}):Play()
-                    end
-                    if btn:FindFirstChild("Icon") then
-                        TweenService:Create(btn.Icon, TweenInfo.new(.15), {ImageTransparency = 0}):Play()
-                    end
-                    if btn:FindFirstChild("ActiveDot") then
-                        TweenService:Create(btn.ActiveDot, TweenInfo.new(.15), {Size = UDim2.new(0, 6, 0, 6), BackgroundTransparency = 0}):Play()
-                    end
+                    AnimateOption(btn, "Selected", Value)
                     if ind then
                         if ind:FindFirstChild("CheckIcon") then TweenService:Create(ind.CheckIcon, TweenInfo.new(.15), {ImageTransparency = 0}):Play() end
                         if ind:FindFirstChild("IndicatorStroke") then TweenService:Create(ind.IndicatorStroke, TweenInfo.new(.15), {Color = Color3.fromRGB(0, 170, 255)}):Play() end
@@ -4686,25 +4720,13 @@ end
         for k, v in pairs(Dropdown.Buttons) do
             local ind = v:FindFirstChild("Indicator")
             if k == Value then
-                TweenService:Create(v, TweenInfo.new(.15), {BackgroundTransparency = 0.92, BackgroundColor3 = Color3.fromRGB(40, 42, 55)}):Play()
-                TweenService:Create(v.Title, TweenInfo.new(.15), {TextTransparency = 0}):Play()
-                if v:FindFirstChild("Desc") then TweenService:Create(v.Desc, TweenInfo.new(.15), {TextTransparency = 0.2}):Play() end
-                if v:FindFirstChild("Icon") then TweenService:Create(v.Icon, TweenInfo.new(.15), {ImageTransparency = 0}):Play() end
-                if v:FindFirstChild("ActiveDot") then
-                    TweenService:Create(v.ActiveDot, TweenInfo.new(.15), {Size = UDim2.new(0, 6, 0, 6), BackgroundTransparency = 0}):Play()
-                end
+                AnimateOption(v, "Selected", k)
                 if ind then
                     TweenService:Create(ind, TweenInfo.new(.15), {BackgroundTransparency = 0}):Play()
                     if ind:FindFirstChild("IndicatorStroke") then TweenService:Create(ind.IndicatorStroke, TweenInfo.new(.15), {Transparency = 0}):Play() end
                 end
             else
-                TweenService:Create(v, TweenInfo.new(.15), {BackgroundTransparency = 0.98, BackgroundColor3 = Color3.fromRGB(24, 25, 32)}):Play()
-                TweenService:Create(v.Title, TweenInfo.new(.15), {TextTransparency = 0.4}):Play()
-                if v:FindFirstChild("Desc") then TweenService:Create(v.Desc, TweenInfo.new(.15), {TextTransparency = 0.5}):Play() end
-                if v:FindFirstChild("Icon") then TweenService:Create(v.Icon, TweenInfo.new(.15), {ImageTransparency = 0.4}):Play() end
-                if v:FindFirstChild("ActiveDot") then
-                    TweenService:Create(v.ActiveDot, TweenInfo.new(.15), {Size = UDim2.new(0, 0, 0, 0), BackgroundTransparency = 1}):Play()
-                end
+                AnimateOption(v, "Default", k)
                 if ind then
                     TweenService:Create(ind, TweenInfo.new(.15), {BackgroundTransparency = 1}):Play()
                     if ind:FindFirstChild("IndicatorStroke") then TweenService:Create(ind.IndicatorStroke, TweenInfo.new(.15), {Transparency = 1}):Play() end
