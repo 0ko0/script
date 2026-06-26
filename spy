@@ -1,4 +1,3 @@
--- new 3
 local cloneref = cloneref or function(instance: any)
     return instance
 end
@@ -1852,18 +1851,34 @@ local menuExpanded = false
 local pressStartTime = 0
 local holdTimer = nil
 
+-- Tối ưu: Lấy các tham chiếu con một lần duy nhất để tránh gọi WaitForChild liên tục khi lặp
+local headerFrame = MinimizePill:WaitForChild("HeaderFrame", 5)
+local statusDot = headerFrame and headerFrame:WaitForChild("StatusDot", 5)
+local titleLabel = headerFrame and headerFrame:WaitForChild("Title", 5)
+local actionsContainer = MinimizePill:WaitForChild("ActionsContainer", 5)
+local pillStroke = MinimizePill:FindFirstChildOfClass("UIStroke")
+
+-- Vòng lặp nháy đèn của statusDot (Đã sửa lỗi crash khi UI bị huỷ)
 task.spawn(function()
-    local header = MinimizePill:WaitForChild("HeaderFrame", 5)
-    local statusDot = header and header:WaitForChild("StatusDot", 5)
     if statusDot then
-        while MinimizePill and not getgenv().Destroy do
+        while MinimizePill and MinimizePill.Parent and statusDot and statusDot.Parent and not getgenv().Destroy do
             if MinimizePill.Visible then
                 local t1 = TweenService:Create(statusDot, TweenInfo.new(1, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {BackgroundTransparency = 0.6})
                 t1:Play()
                 t1.Completed:Wait()
+                
+                -- Kiểm tra an toàn sau khi luồng yield hoàn tất
+                if not MinimizePill or not MinimizePill.Parent or not statusDot or not statusDot.Parent or getgenv().Destroy then
+                    break
+                end
+                
                 local t2 = TweenService:Create(statusDot, TweenInfo.new(1, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {BackgroundTransparency = 0})
                 t2:Play()
                 t2.Completed:Wait()
+                
+                if not MinimizePill or not MinimizePill.Parent or not statusDot or not statusDot.Parent or getgenv().Destroy then
+                    break
+                end
             else
                 task.wait(1)
             end
@@ -1871,7 +1886,7 @@ task.spawn(function()
     end
 end)
 
-local actionsContainer = MinimizePill:WaitForChild("ActionsContainer", 5)
+-- Gán hành động cho các nút trong Actions menu của Pill
 if actionsContainer then
     local restoreBtn = actionsContainer:WaitForChild("Restore", 5)
     local toggleBindsBtn = actionsContainer:WaitForChild("ToggleBinds", 5)
@@ -1896,14 +1911,10 @@ if actionsContainer then
     end
 end
 
+-- Hàm cập nhật layout của pill khi mở rộng / thu nhỏ (Loại bỏ hoàn toàn WaitForChild động)
 local function updateIslandLayout(expanded)
-    if getgenv().Destroy or not Minimized then return end
+    if getgenv().Destroy or not Minimized or not MinimizePill or not MinimizePill.Parent then return end
     menuExpanded = expanded
-    
-    local headerFrame = MinimizePill:WaitForChild("HeaderFrame", 5)
-    local titleLabel = headerFrame and headerFrame:WaitForChild("Title", 5)
-    local stroke = MinimizePill:FindFirstChildOfClass("UIStroke")
-    local actBox = MinimizePill:WaitForChild("ActionsContainer", 5)
     
     local textWidth = titleLabel and titleLabel.TextBounds.X or 60
     local baseWidth = math.max(120, 56 + textWidth)
@@ -1935,19 +1946,19 @@ local function updateIslandLayout(expanded)
         BackgroundTransparency = expanded and 0.02 or 0.05
     }):Play()
     
-    if stroke then
-        TweenService:Create(stroke, tInfo, {
+    if pillStroke and pillStroke.Parent then
+        TweenService:Create(pillStroke, tInfo, {
             Transparency = targetStrokeTransparency,
             Color = expanded and AccentColorLight or AccentColor
         }):Play()
     end
     
-    if actBox then
-        TweenService:Create(actBox, tInfo, {
+    if actionsContainer and actionsContainer.Parent then
+        TweenService:Create(actionsContainer, tInfo, {
             Size = UDim2.new(1, 0, 0, targetActionsHeight)
         }):Play()
         
-        for _, btn in pairs(actBox:GetChildren()) do
+        for _, btn in pairs(actionsContainer:GetChildren()) do
             if btn:IsA("ImageButton") then
                 TweenService:Create(btn, tInfo, {
                     ImageTransparency = targetIconTrans
@@ -1957,11 +1968,10 @@ local function updateIslandLayout(expanded)
     end
 end
 
-local headerFrame = MinimizePill:WaitForChild("HeaderFrame", 5)
-if headerFrame and headerFrame:WaitForChild("Title", 5) then
-    local titleLabel = headerFrame:WaitForChild("Title", 5)
+-- Tự động căn chỉnh kích thước khi text thay đổi
+if titleLabel then
     AddConnection(titleLabel:GetPropertyChangedSignal("Text"), function()
-        if not menuExpanded and Minimized then
+        if not menuExpanded and Minimized and MinimizePill and MinimizePill.Parent then
             local textWidth = titleLabel.TextBounds.X
             local baseWidth = math.max(120, 56 + textWidth)
             TweenService:Create(MinimizePill, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {Size = UDim2.new(0, baseWidth, 0, 30)}):Play()
@@ -1969,6 +1979,7 @@ if headerFrame and headerFrame:WaitForChild("Title", 5) then
     end)
 end
 
+-- Sự kiện nhấn nút Dynamic Island
 AddConnection(MinimizePill.ClickBtn.InputBegan, function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         dragStartPos = input.Position
@@ -1977,13 +1988,30 @@ AddConnection(MinimizePill.ClickBtn.InputBegan, function(input)
         
         if holdTimer then task.cancel(holdTimer) end
         holdTimer = task.delay(0.5, function() 
-            if not isDraggingPill then
+            if not isDraggingPill and MinimizePill and MinimizePill.Parent then
                 updateIslandLayout(true) 
             end
         end)
     end
 end)
 
+-- Sửa lỗi Dragging: Theo dõi sự dịch chuyển của chuột/ngón tay để xác định trạng thái kéo
+AddConnection(UserInputService.InputChanged, function(input)
+    if (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) and not isDraggingPill then
+        if pressStartTime > 0 and holdTimer then
+            local delta = (input.Position - dragStartPos).Magnitude
+            if delta > 5 then -- Nếu dịch chuyển quá 5 pixel thì huỷ trạng thái chờ nhấn giữ và đánh dấu đang kéo
+                isDraggingPill = true
+                if holdTimer then
+                    task.cancel(holdTimer)
+                    holdTimer = nil
+                end
+            end
+        end
+    end
+end)
+
+-- Sự kiện nhấc chuột/thả tay khỏi Dynamic Island
 AddConnection(MinimizePill.ClickBtn.InputEnded, function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         if holdTimer then 
@@ -2001,6 +2029,7 @@ AddConnection(MinimizePill.ClickBtn.InputEnded, function(input)
                 end
             end
         end
+        pressStartTime = 0
     end
 end)
 
@@ -2025,6 +2054,8 @@ toggleMinimize = function(targetMinimizedState)
 
                 task.spawn(function()
                         shrinkTween.Completed:Wait()
+                        -- Kiểm tra an toàn xem đối tượng có bị huỷ trong thời gian chờ không
+                        if getgenv().Destroy or not MinimizePill or not MinimizePill.Parent or not MainWindow or not MainWindow.Parent then return end
                         if Minimized then
                                 MainWindow.Visible = false
                                 MainWindow.Position = originalPos
@@ -2032,8 +2063,6 @@ toggleMinimize = function(targetMinimizedState)
                                 MinimizePill.Size = UDim2.new(0, 0, 0, 30)
                                 MinimizePill.Visible = true
                                 
-                                local header = MinimizePill:FindFirstChild("HeaderFrame")
-                                local titleLabel = header and header:FindFirstChild("Title")
                                 local textWidth = titleLabel and titleLabel.TextBounds.X or 60
                                 local baseWidth = math.max(120, 56 + textWidth)
                                                                 
@@ -2051,6 +2080,8 @@ toggleMinimize = function(targetMinimizedState)
 
                 task.spawn(function()
                         shrinkPill.Completed:Wait()
+                        -- Kiểm tra an toàn xem đối tượng có bị huỷ trong thời gian chờ không
+                        if getgenv().Destroy or not MinimizePill or not MinimizePill.Parent or not MainWindow or not MainWindow.Parent then return end
                         if not Minimized then
                                 MinimizePill.Visible = false
                                 menuExpanded = false
@@ -2066,6 +2097,7 @@ toggleMinimize = function(targetMinimizedState)
                                 expandTween:Play()
 
                                 expandTween.Completed:Wait()
+                                if getgenv().Destroy or not MainWindow or not MainWindow.Parent then return end
                                 if not Minimized then
                                         MainWindow.ClipsDescendants = false
                                 end
