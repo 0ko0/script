@@ -1256,28 +1256,93 @@ local WindowStuff = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame"
                         Size = UDim2.new(0, 30, 0, 30),
                         Position = UDim2.new(0, 8, 0.5, 0)
                 }), {
-                        SetChildren(SetProps(MakeElement("Image", "https://www.roblox.com/headshot-thumbnail/image?userId=".. LocalPlayer.UserId .."&width=420&height=420&format=png"), {
-                                Size = UDim2.new(1, 0, 1, 0)
-                        }), {MakeElement("Corner", 1)}),
+                        
+local ProfileAvatar = SetChildren(SetProps(MakeElement("Image", "https://www.roblox.com/headshot-thumbnail/image?userId=".. LocalPlayer.UserId .."&width=420&height=420&format=png"), {
+        Size = UDim2.new(1, 0, 1, 0)
+}), {MakeElement("Corner", 1)})
+
+local ProfileName = AddThemeObject(SetProps(MakeElement("Label", LocalPlayer.DisplayName, WindowConfig.HidePremium and 12 or 11), {
+        Size = UDim2.new(1, -70, 0, 14), 
+        Position = WindowConfig.HidePremium and UDim2.new(0, 46, 0, 16) or UDim2.new(0, 46, 0, 9),
+        Font = Enum.Font.GothamBold,
+        ClipsDescendants = true
+    }), "Text")
+
+local ProfileStatus = AddThemeObject(SetProps(MakeElement("Label", "ACTIVE USER", 8), {
+        Size = UDim2.new(1, -70, 0, 10), 
+        Position = UDim2.new(0, 46, 1, -19),
+        Visible = not WindowConfig.HidePremium,
+        Font = Enum.Font.GothamBold,
+        TextColor3 = AccentColor 
+}), "TextDark")
+
+local IsProfileHidden = false
+
+local ToggleProfileBtn = Create("ImageButton", {
+        Size = UDim2.new(0, 16, 0, 16),
+        Position = UDim2.new(1, -8, 0.5, 0),
+        AnchorPoint = Vector2.new(1, 0.5),
+        BackgroundTransparency = 1,
+        Image = "rbxassetid://100553310917137", 
+        ImageColor3 = Color3.fromRGB(150, 150, 150)
+})
+
+AddConnection(ToggleProfileBtn.MouseButton1Click, function()
+        IsProfileHidden = not IsProfileHidden
+        if IsProfileHidden then
+                
+                ToggleProfileBtn.Image = "rbxassetid://112731150255946" 
+                ProfileAvatar.Image = "https://www.roblox.com/headshot-thumbnail/image?userId=1&width=420&height=420&format=png"
+                ProfileName.Text = "Roblox"
+                ProfileStatus.Text = "anonymous"
+        else
+                
+                ToggleProfileBtn.Image = "rbxassetid://100553310917137" 
+                ProfileAvatar.Image = "https://www.roblox.com/headshot-thumbnail/image?userId=".. LocalPlayer.UserId .."&width=420&height=420&format=png"
+                ProfileName.Text = LocalPlayer.DisplayName
+                ProfileStatus.Text = "ACTIVE USER"
+        end
+end)
+
+local WindowStuff = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(15, 15, 19), 0, 8), {
+        Size = UDim2.new(0, 140, 0, 278),
+        Position = UDim2.new(0, 12, 0, 54),
+        BackgroundTransparency = hasLinkVideo and 0.5 or 0 
+}), {
+        
+        Create("UIStroke", {
+            Color = Color3.fromRGB(32, 35, 45),
+            Thickness = 1,
+            ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+        }),
+        
+        TabHolder,
+        SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(10, 10, 13), 0, 8), {
+                Size = UDim2.new(1, -12, 0, 46),
+                Position = UDim2.new(0, 6, 1, -52),
+                BackgroundTransparency = 0.2
+        }), {
+                Create("UIStroke", {
+                    Color = AccentColor,
+                    Thickness = 1,
+                    Transparency = 0.7
+                }),
+                
+                AddThemeObject(SetChildren(SetProps(MakeElement("Frame"), {
+                        AnchorPoint = Vector2.new(0, 0.5),
+                        Size = UDim2.new(0, 30, 0, 30),
+                        Position = UDim2.new(0, 8, 0.5, 0)
+                }), {
+                        ProfileAvatar,
                         AddThemeObject(SetChildren(SetProps(MakeElement("Image", "rbxassetid://4031889928"), {
                                 Size = UDim2.new(1, 0, 1, 0),
                         }), {MakeElement("Corner", 1)}), "Second"),
                         MakeElement("Corner", 1)
                 }), "Divider"),
                 
-                AddThemeObject(SetProps(MakeElement("Label", LocalPlayer.DisplayName, WindowConfig.HidePremium and 12 or 11), {
-                        Size = UDim2.new(1, -50, 0, 14),
-                        Position = WindowConfig.HidePremium and UDim2.new(0, 46, 0, 16) or UDim2.new(0, 46, 0, 9),
-                        Font = Enum.Font.GothamBold,
-                        ClipsDescendants = true
-                }), "Text"),
-                AddThemeObject(SetProps(MakeElement("Label", "ACTIVE USER", 8), {
-                        Size = UDim2.new(1, -50, 0, 10),
-                        Position = UDim2.new(0, 46, 1, -19),
-                        Visible = not WindowConfig.HidePremium,
-                        Font = Enum.Font.GothamBold,
-                        TextColor3 = AccentColor 
-                }), "TextDark")
+                ProfileName,
+                ProfileStatus,
+                ToggleProfileBtn 
         }),
 }), "Second")
 
