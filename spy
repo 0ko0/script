@@ -1718,9 +1718,6 @@ end)
                 OrionLib:SafeScript(WindowConfig.CloseCallback)
         end)
         
--- =============================================================================
--- [DỰ ÁN: NÂNG CẤP DYNAMIC ISLAND - HIỂN THỊ TÊN VĨNH VIỄN & MENU CHỨC NĂNG]
--- =============================================================================
 local MinimizePill = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(12, 12, 15), 0, 15), {
         Parent = Orion,
         Size = UDim2.new(0, 0, 0, 30), 
@@ -1758,7 +1755,7 @@ local MinimizePill = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame
                         PaddingRight = UDim.new(0, 12)
                 }),
                 
-                -- Đèn LED trạng thái hoạt động pulsing
+                
                 Create("Frame", {
                     Size = UDim2.new(0, 6, 0, 6),
                     BackgroundColor3 = Color3.fromRGB(100, 255, 100), 
@@ -1768,13 +1765,11 @@ local MinimizePill = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame
                 }, {
                     Create("UICorner", {CornerRadius = UDim.new(1, 0)})
                 }),               
-                -- Icon ứng dụng chính
                 AddThemeObject(SetProps(MakeElement("Image", WindowConfig.Icon or "rbxassetid://108533901677473"), {
                         Size = UDim2.new(0, 16, 0, 16),
                         LayoutOrder = 1,
                         Name = "Icon"
                 }), "Text"),                
-                -- Tên UI Library (Hiện vĩnh viễn không cần giữ)
                 AddThemeObject(SetProps(MakeElement("Label", WindowConfig.Name, 11), {
                         Size = UDim2.new(0, 0, 1, 0),
                         AutomaticSize = Enum.AutomaticSize.X,
@@ -1783,66 +1778,16 @@ local MinimizePill = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame
                         Name = "Title",
                         TextTransparency = 0,
                         Visible = true
-                }), "Text"),
-                
-                -- Hộp chứa nút chức năng nhanh (Chỉ xuất hiện mượt mà khi di chuột)
-                Create("Frame", {
-                    Size = UDim2.new(0, 0, 1, 0),
-                    BackgroundTransparency = 1,
-                    ClipsDescendants = true,
-                    LayoutOrder = 3,
-                    Name = "ActionsContainer"
-                }, {
-                    Create("UIListLayout", {
-                        FillDirection = Enum.FillDirection.Horizontal,
-                        VerticalAlignment = Enum.VerticalAlignment.Center,
-                        Padding = UDim.new(0, 8),
-                        SortOrder = Enum.SortOrder.LayoutOrder
-                    }),
-                    -- Nút 1: Khôi phục kích thước UI chính
-                    Create("ImageButton", {
-                        Size = UDim2.new(0, 16, 0, 16),
-                        BackgroundTransparency = 1,
-                        Image = "rbxassetid://100553310917137", 
-                        ImageColor3 = Color3.fromRGB(240, 240, 240),
-                        ImageTransparency = 1,
-                        LayoutOrder = 1,
-                        Name = "Restore",
-                        ZIndex = 6
-                    }),
-                    -- Nút 2: Bật/Tắt panel phím tắt nhanh
-                    Create("ImageButton", {
-                        Size = UDim2.new(0, 16, 0, 16),
-                        BackgroundTransparency = 1,
-                        Image = "rbxassetid://112731150255946", 
-                        ImageColor3 = Color3.fromRGB(200, 200, 200),
-                        ImageTransparency = 1,
-                        LayoutOrder = 2,
-                        Name = "ToggleBinds",
-                        ZIndex = 6
-                    }),
-                    -- Nút 3: Đóng UI hoàn toàn
-                    Create("ImageButton", {
-                        Size = UDim2.new(0, 16, 0, 16),
-                        BackgroundTransparency = 1,
-                        Image = "rbxassetid://9886659671", 
-                        ImageColor3 = Color3.fromRGB(255, 100, 100),
-                        ImageTransparency = 1,
-                        LayoutOrder = 3,
-                        Name = "DestroyUI",
-                        ZIndex = 6
-                    })
-                })
+                }), "Text")
         })
 }), "Second")
 
-        MakeDraggable(MinimizePill.ClickBtn, MinimizePill)
+MakeDraggable(MinimizePill.ClickBtn, MinimizePill)
 
 local dragStartPos = Vector3.new()
 local isDraggingPill = false
 local isHoveringPill = false
 
--- Đồng bộ chuyển động pulsing thở của đèn LED xanh
 task.spawn(function()
     local statusDot = MinimizePill.ContentContainer:FindFirstChild("StatusDot")
     if statusDot then
@@ -1861,62 +1806,21 @@ task.spawn(function()
     end
 end)
 
--- Nhận diện và thực thi lệnh từ các nút chức năng nhanh bên trong đảo
-local actionsContainer = MinimizePill.ContentContainer:FindFirstChild("ActionsContainer")
-if actionsContainer then
-    local restoreBtn = actionsContainer:FindFirstChild("Restore")
-    local toggleBindsBtn = actionsContainer:FindFirstChild("ToggleBinds")
-    local destroyUIBtn = actionsContainer:FindFirstChild("DestroyUI")
-    
-    if restoreBtn then
-        AddConnection(restoreBtn.MouseButton1Click, function()
-            toggleMinimize(false)
-        end)
-    end
-    if toggleBindsBtn then
-        AddConnection(toggleBindsBtn.MouseButton1Click, function()
-            if KeyBindFrame then
-                OrionLib:SetKeyBindVisible(not KeyBindFrame.Visible)
-            end
-        end)
-    end
-    if destroyUIBtn then
-        AddConnection(destroyUIBtn.MouseButton1Click, function()
-            OrionLib:Destroy()
-        end)
-    end
-end
-
--- Hiệu ứng co giãn nở ngang (Interactive Stretch) mở rộng thêm các nút điều khiển
 local function updateIslandLayout(hovered)
     if getgenv().Destroy or not Minimized then return end
     isHoveringPill = hovered
     
     local titleLabel = MinimizePill.ContentContainer:FindFirstChild("Title")
     local stroke = MinimizePill:FindFirstChildOfClass("UIStroke")
-    local actBox = MinimizePill.ContentContainer:FindFirstChild("ActionsContainer")
     
     local textWidth = titleLabel and titleLabel.TextBounds.X or 60
-    local baseWidth = math.max(120, 56 + textWidth) -- Chiều rộng tối thiểu chứa vừa khít text mặc định
+    local baseWidth = math.max(110, 50 + textWidth) 
     
-    local targetWidth = baseWidth
-    local targetActionsWidth = 0
-    local targetIconTrans = 1
-    local targetStrokeTransparency = 0.5
+    local targetWidth = hovered and (baseWidth + 10) or baseWidth
+    local targetStrokeTransparency = hovered and 0.2 or 0.5
+    local targetStrokeThickness = hovered and 1.4 or 1.2
     
-    if hovered then
-        targetWidth = baseWidth + 72 -- Kéo giãn ngang thêm 72px để chứa các nút chức năng
-        targetActionsWidth = 64
-        targetIconTrans = 0
-        targetStrokeTransparency = 0.1
-    else
-        targetWidth = baseWidth
-        targetActionsWidth = 0
-        targetIconTrans = 1
-        targetStrokeTransparency = 0.5
-    end
-    
-    local tInfo = TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+    local tInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
     
     TweenService:Create(MinimizePill, tInfo, {
         Size = UDim2.new(0, targetWidth, 0, 30),
@@ -1926,30 +1830,16 @@ local function updateIslandLayout(hovered)
     if stroke then
         TweenService:Create(stroke, tInfo, {
             Transparency = targetStrokeTransparency,
+            Thickness = targetStrokeThickness,
             Color = hovered and AccentColorLight or AccentColor
         }):Play()
     end
-    
-    if actBox then
-        TweenService:Create(actBox, tInfo, {
-            Size = UDim2.new(0, targetActionsWidth, 1, 0)
-        }):Play()
-        
-        for _, btn in pairs(actBox:GetChildren()) do
-            if btn:IsA("ImageButton") then
-                TweenService:Create(btn, tInfo, {
-                    ImageTransparency = targetIconTrans
-                }):Play()
-            end
-        end
-    end
 end
 
--- Tự động cập nhật lại kích thước đảo nếu tên UI thay đổi đột ngột
 AddConnection(MinimizePill.ContentContainer.Title:GetPropertyChangedSignal("Text"), function()
     if not isHoveringPill and Minimized then
         local textWidth = MinimizePill.ContentContainer.Title.TextBounds.X
-        local baseWidth = math.max(120, 56 + textWidth)
+        local baseWidth = math.max(110, 50 + textWidth)
         TweenService:Create(MinimizePill, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {Size = UDim2.new(0, baseWidth, 0, 30)}):Play()
     end
 end)
@@ -1977,7 +1867,6 @@ AddConnection(MinimizePill.ClickBtn.InputChanged, function(input)
         end
 end)
 
--- Thay thế hoàn toàn hàm thu nhỏ/phóng to giao diện để tương thích động với kích thước chữ của bạn
 local function toggleMinimize(targetMinimizedState)
         if targetMinimizedState == nil then
                 targetMinimizedState = not Minimized
@@ -1989,7 +1878,7 @@ local function toggleMinimize(targetMinimizedState)
         MainWindow.ClipsDescendants = true
 
         if Minimized then
-                -- Morphing: MainWindow biến mất hướng về phía đảo Dynamic Island đang đứng
+                
                 local originalPos = MainWindow.Position
                 local shrinkTween = TweenService:Create(MainWindow, TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
                         Size = UDim2.new(0, 80, 0, 30),
@@ -1999,6 +1888,7 @@ local function toggleMinimize(targetMinimizedState)
 
                 task.spawn(function()
                         shrinkTween.Completed:Wait()
+                        if getgenv().Destroy or not MinimizePill or not MinimizePill.Parent or not MainWindow or not MainWindow.Parent then return end
                         if Minimized then
                                 MainWindow.Visible = false
                                 MainWindow.Position = originalPos
@@ -2007,7 +1897,7 @@ local function toggleMinimize(targetMinimizedState)
                                 MinimizePill.Visible = true
                                 
                                 local textWidth = MinimizePill.ContentContainer.Title.TextBounds.X
-                                local baseWidth = math.max(120, 56 + textWidth)
+                                local baseWidth = math.max(110, 50 + textWidth)
                                                                 
                                 TweenService:Create(MinimizePill, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
                                         Size = UDim2.new(0, baseWidth, 0, 30)
@@ -2015,7 +1905,7 @@ local function toggleMinimize(targetMinimizedState)
                         end
                 end)
         else
-                -- Đảo Dynamic Island thu nhỏ biến mất trước khi bung rộng cửa sổ
+                
                 local shrinkPill = TweenService:Create(MinimizePill, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
                         Size = UDim2.new(0, 0, 0, 30)
                 })
@@ -2023,6 +1913,7 @@ local function toggleMinimize(targetMinimizedState)
 
                 task.spawn(function()
                         shrinkPill.Completed:Wait()
+                        if getgenv().Destroy or not MinimizePill or not MinimizePill.Parent or not MainWindow or not MainWindow.Parent then return end
                         if not Minimized then
                                 MinimizePill.Visible = false
                                 isHoveringPill = false
@@ -2038,6 +1929,7 @@ local function toggleMinimize(targetMinimizedState)
                                 expandTween:Play()
 
                                 expandTween.Completed:Wait()
+                                if getgenv().Destroy or not MainWindow or not MainWindow.Parent then return end
                                 if not Minimized then
                                         MainWindow.ClipsDescendants = false
                                 end
@@ -2053,7 +1945,7 @@ end)
 AddConnection(MinimizePill.ClickBtn.InputEnded, function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                 if not isDraggingPill then
-                        -- Click vào vùng trống của đảo vẫn khôi phục cửa sổ như cũ
+                        
                         toggleMinimize(false)
                 end
         end
@@ -2080,7 +1972,7 @@ toggleMinimize = function(targetMinimizedState)
 
                 task.spawn(function()
                         shrinkTween.Completed:Wait()
-                        -- Kiểm tra an toàn xem đối tượng có bị huỷ trong thời gian chờ không
+                        
                         if getgenv().Destroy or not MinimizePill or not MinimizePill.Parent or not MainWindow or not MainWindow.Parent then return end
                         if Minimized then
                                 MainWindow.Visible = false
@@ -2106,7 +1998,7 @@ toggleMinimize = function(targetMinimizedState)
 
                 task.spawn(function()
                         shrinkPill.Completed:Wait()
-                        -- Kiểm tra an toàn xem đối tượng có bị huỷ trong thời gian chờ không
+                        
                         if getgenv().Destroy or not MinimizePill or not MinimizePill.Parent or not MainWindow or not MainWindow.Parent then return end
                         if not Minimized then
                                 MinimizePill.Visible = false
