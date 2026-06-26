@@ -1156,6 +1156,7 @@ function OrionLib:MakeWindow(WindowConfig)
         local UIHidden = false
         local MinimizedKey = false
         local ToggleUI 
+        local toggleMinimize 
 
         WindowConfig = WindowConfig or {}
         WindowConfig.Name = WindowConfig.Name or "Library"
@@ -1980,7 +1981,7 @@ AddConnection(MinimizePill.ClickBtn.InputEnded, function(input)
     end
 end)
 
-local function toggleMinimize(targetMinimizedState)
+toggleMinimize = function(targetMinimizedState) 
         if targetMinimizedState == nil then
                 targetMinimizedState = not Minimized
         end
