@@ -1697,144 +1697,249 @@ end)
                 OrionLib:SafeScript(WindowConfig.CloseCallback)
         end)
         
-        local MinimizePill = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(25, 25, 25), 0, 18), {
-                Parent = Orion,
-                Size = UDim2.new(0, 0, 0, 36),
-                Position = UDim2.new(0.5, 0, 0, 20),
-                AnchorPoint = Vector2.new(0.5, 0),
-                Visible = false,
-                ClipsDescendants = true
+local MinimizePill = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(12, 12, 15), 0, 15), {
+        Parent = Orion,
+        Size = UDim2.new(0, 0, 0, 30), 
+        Position = UDim2.new(0.5, 0, 0, 15),
+        AnchorPoint = Vector2.new(0.5, 0),
+        Visible = false,
+        ClipsDescendants = true,
+        BackgroundTransparency = 0.05
+}), {
+        Create("UICorner", {CornerRadius = UDim.new(1, 0)}), 
+        AddThemeObject(SetProps(MakeElement("Stroke"), {
+            Color = AccentColor,
+            Thickness = 1.2,
+            Transparency = 0.5
+        }), "Stroke"),
+        SetProps(MakeElement("Button"), {
+                Size = UDim2.new(1, 0, 1, 0),
+                Name = "ClickBtn",
+                ZIndex = 5
+        }),
+        
+        SetChildren(SetProps(MakeElement("TFrame"), {
+                Size = UDim2.new(1, 0, 1, 0),
+                Name = "ContentContainer"
         }), {
-                AddThemeObject(MakeElement("Stroke"), "Stroke"),
-                SetProps(MakeElement("Button"), {
-                        Size = UDim2.new(1, 0, 1, 0),
-                        Name = "ClickBtn",
-                        ZIndex = 5
+                Create("UIListLayout", {
+                        FillDirection = Enum.FillDirection.Horizontal,
+                        VerticalAlignment = Enum.VerticalAlignment.Center,
+                        HorizontalAlignment = Enum.HorizontalAlignment.Center,
+                        Padding = UDim.new(0, 8),
+                        SortOrder = Enum.SortOrder.LayoutOrder
+                }),
+                Create("UIPadding", {
+                        PaddingLeft = UDim.new(0, 12),
+                        PaddingRight = UDim.new(0, 12)
                 }),
                 
-                SetChildren(SetProps(MakeElement("TFrame"), {
-                        Size = UDim2.new(1, 0, 1, 0),
-                        Name = "ContentContainer"
-                }), {
-                        Create("UIListLayout", {
-                                FillDirection = Enum.FillDirection.Horizontal,
-                                VerticalAlignment = Enum.VerticalAlignment.Center,
-                                HorizontalAlignment = Enum.HorizontalAlignment.Center,
-                                Padding = UDim.new(0, 8),
-                                SortOrder = Enum.SortOrder.LayoutOrder
-                        }),
-                        Create("UIPadding", {
-                                PaddingLeft = UDim.new(0, 12),
-                                PaddingRight = UDim.new(0, 12)
-                        }),
-                        AddThemeObject(SetProps(MakeElement("Image", WindowConfig.Icon or "rbxassetid://108533901677473"), {
-                                Size = UDim2.new(0, 18, 0, 18),
-                                LayoutOrder = 1,
-                                Name = "Icon"
-                        }), "Text"),
-                        AddThemeObject(SetProps(MakeElement("Label", WindowConfig.Name, 12), {
-                                Size = UDim2.new(0, 0, 1, 0),
-                                AutomaticSize = Enum.AutomaticSize.X,
-                                Font = Enum.Font.GothamBold,
-                                LayoutOrder = 2,
-                                Name = "Title"
-                        }), "Text")
-                })
-        }), "Second")
+                Create("Frame", {
+                    Size = UDim2.new(0, 6, 0, 6),
+                    BackgroundColor3 = Color3.fromRGB(100, 255, 100), 
+                    BorderSizePixel = 0,
+                    LayoutOrder = 0,
+                    Name = "StatusDot"
+                }, {
+                    Create("UICorner", {CornerRadius = UDim.new(1, 0)})
+                }),               
+                AddThemeObject(SetProps(MakeElement("Image", WindowConfig.Icon or "rbxassetid://108533901677473"), {
+                        Size = UDim2.new(0, 16, 0, 16),
+                        LayoutOrder = 1,
+                        Name = "Icon"
+                }), "Text"),                
+                AddThemeObject(SetProps(MakeElement("Label", WindowConfig.Name, 11), {
+                        Size = UDim2.new(0, 0, 1, 0),
+                        AutomaticSize = Enum.AutomaticSize.X,
+                        Font = Enum.Font.GothamBold,
+                        LayoutOrder = 2,
+                        Name = "Title",
+                        TextTransparency = 1,
+                        Visible = false
+                }), "Text")
+        })
+}), "Second")
 
         MakeDraggable(MinimizePill.ClickBtn, MinimizePill)
 
-        local dragStartPos = Vector3.new()
-        local isDraggingPill = false
+        -- Giữ tính năng kéo thả đảo tùy biến, vị trí morphing sẽ tự động theo vị trí đảo đã kéo
+MakeDraggable(MinimizePill.ClickBtn, MinimizePill)
 
-        AddConnection(MinimizePill.ClickBtn.InputBegan, function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                        dragStartPos = input.Position
-                        isDraggingPill = false
+local dragStartPos = Vector3.new()
+local isDraggingPill = false
+local isHoveringPill = false
+
+-- Vòng lặp tạo hiệu ứng thở (pulse) tinh tế cho đèn LED trạng thái hoạt động
+task.spawn(function()
+    local statusDot = MinimizePill.ContentContainer:FindFirstChild("StatusDot")
+    if statusDot then
+        while MinimizePill and not getgenv().Destroy do
+            if MinimizePill.Visible then
+                local t1 = TweenService:Create(statusDot, TweenInfo.new(1, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {BackgroundTransparency = 0.6})
+                t1:Play()
+                t1.Completed:Wait()
+                local t2 = TweenService:Create(statusDot, TweenInfo.new(1, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {BackgroundTransparency = 0})
+                t2:Play()
+                t2.Completed:Wait()
+            else
+                task.wait(1)
+            end
+        end
+    end
+end)
+
+-- Hiệu ứng co giãn kéo dài (Interactive Stretch) khi Hover vào Đảo
+local function updateIslandLayout(hovered)
+    if getgenv().Destroy or not Minimized then return end
+    isHoveringPill = hovered
+    
+    local titleLabel = MinimizePill.ContentContainer:FindFirstChild("Title")
+    local stroke = MinimizePill:FindFirstChildOfClass("UIStroke")
+    
+    local targetWidth = 48
+    local targetTextTransparency = 1
+    local targetStrokeTransparency = 0.5
+    
+    if hovered then
+        local textWidth = titleLabel and titleLabel.TextBounds.X or 50
+        targetWidth = math.max(64, 56 + textWidth)
+        targetTextTransparency = 0
+        targetStrokeTransparency = 0.1
+        if titleLabel then titleLabel.Visible = true end
+    else
+        targetWidth = 48
+        targetTextTransparency = 1
+        targetStrokeTransparency = 0.5
+    end
+    
+    local tInfo = TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+    
+    TweenService:Create(MinimizePill, tInfo, {
+        Size = UDim2.new(0, targetWidth, 0, 30),
+        BackgroundTransparency = hovered and 0.02 or 0.05
+    }):Play()
+    
+    if stroke then
+        TweenService:Create(stroke, tInfo, {
+            Transparency = targetStrokeTransparency,
+            Color = hovered and AccentColorLight or AccentColor
+        }):Play()
+    end
+    
+    if titleLabel then
+        TweenService:Create(titleLabel, tInfo, {
+            TextTransparency = targetTextTransparency
+        }):Play()
+        
+        if not hovered then
+            task.delay(0.25, function()
+                if not isHoveringPill and titleLabel then
+                    titleLabel.Visible = false
                 end
-        end)
+            end)
+        end
+    end
+end
 
-        AddConnection(MinimizePill.ClickBtn.InputChanged, function(input)
-                if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-                        if (input.Position - dragStartPos).Magnitude > 8 then
-                                isDraggingPill = true
-                        end
-                end
-        end)
+AddConnection(MinimizePill.ClickBtn.MouseEnter, function()
+    updateIslandLayout(true)
+end)
 
-        local function toggleMinimize(targetMinimizedState)
-                if targetMinimizedState == nil then
-                        targetMinimizedState = not Minimized
-                end
+AddConnection(MinimizePill.ClickBtn.MouseLeave, function()
+    updateIslandLayout(false)
+end)
 
-                if targetMinimizedState == Minimized then return end
-                Minimized = targetMinimizedState
+AddConnection(MinimizePill.ClickBtn.InputBegan, function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                dragStartPos = input.Position
+                isDraggingPill = false
+        end
+end)
 
-                MainWindow.ClipsDescendants = true
-
-                if Minimized then
-                        
-                        local targetPillSize = UDim2.new(0, MinimizePill.ContentContainer.Title.TextBounds.X + 52, 0, 36)
-                        local originalPos = MainWindow.Position
-
-                        local shrinkTween = TweenService:Create(MainWindow, TweenInfo.new(0.45, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
-                                Size = UDim2.new(0, 0, 0, 0),
-                                Position = MinimizePill.Position
-                        })
-                        shrinkTween:Play()
-
-                        task.spawn(function()
-                                shrinkTween.Completed:Wait()
-                                if Minimized then
-                                        MainWindow.Visible = false
-                                        MainWindow.Position = originalPos
-
-                                        MinimizePill.Size = UDim2.new(0, 0, 0, 36)
-                                        MinimizePill.Visible = true
-                                        TweenService:Create(MinimizePill, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-                                                Size = targetPillSize
-                                        }):Play()
-                                end
-                        end)
-                else
-                        local shrinkPill = TweenService:Create(MinimizePill, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
-                                Size = UDim2.new(0, 0, 0, 36)
-                        })
-                        shrinkPill:Play()
-
-                        task.spawn(function()
-                                shrinkPill.Completed:Wait()
-                                if not Minimized then
-                                        MinimizePill.Visible = false
-
-                                        MainWindow.Size = UDim2.new(0, 0, 0, 0)
-                                        MainWindow.Visible = true
-
-                                        local expandTween = TweenService:Create(MainWindow, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                                                Size = UDim2.new(0, 615, 0, 344)
-                                        })
-                                        expandTween:Play()
-
-                                        expandTween.Completed:Wait()
-                                        if not Minimized then
-                                                MainWindow.ClipsDescendants = false
-                                        end
-                                end
-                        end)
+AddConnection(MinimizePill.ClickBtn.InputChanged, function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+                if (input.Position - dragStartPos).Magnitude > 8 then
+                        isDraggingPill = true
                 end
         end
+end)
 
-        AddConnection(MinimizeBtn.MouseButton1Up, function()
-                toggleMinimize(true)
-        end)
+local function toggleMinimize(targetMinimizedState)
+        if targetMinimizedState == nil then
+                targetMinimizedState = not Minimized
+        end
 
-        AddConnection(MinimizePill.ClickBtn.InputEnded, function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                        if not isDraggingPill then
-                                toggleMinimize(false)
+        if targetMinimizedState == Minimized then return end
+        Minimized = targetMinimizedState
+
+        MainWindow.ClipsDescendants = true
+
+        if Minimized then
+                
+                local originalPos = MainWindow.Position
+                local shrinkTween = TweenService:Create(MainWindow, TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
+                        Size = UDim2.new(0, 80, 0, 30),
+                        Position = MinimizePill.Position
+                })
+                shrinkTween:Play()
+
+                task.spawn(function()
+                        shrinkTween.Completed:Wait()
+                        if Minimized then
+                                MainWindow.Visible = false
+                                MainWindow.Position = originalPos
+
+                                MinimizePill.Size = UDim2.new(0, 0, 0, 30)
+                                MinimizePill.Visible = true
+                                                                
+                                TweenService:Create(MinimizePill, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                                        Size = UDim2.new(0, 48, 0, 30)
+                                }):Play()
                         end
+                end)
+        else
+                
+                local shrinkPill = TweenService:Create(MinimizePill, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
+                        Size = UDim2.new(0, 0, 0, 30)
+                })
+                shrinkPill:Play()
+
+                task.spawn(function()
+                        shrinkPill.Completed:Wait()
+                        if not Minimized then
+                                MinimizePill.Visible = false
+                                isHoveringPill = false
+
+                                MainWindow.Size = UDim2.new(0, 80, 0, 30)
+                                MainWindow.Position = MinimizePill.Position
+                                MainWindow.Visible = true
+                               
+                                local expandTween = TweenService:Create(MainWindow, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                                        Size = UDim2.new(0, 615, 0, 344),
+                                        Position = UDim2.new(0.5, -307, 0.5, -172)
+                                })
+                                expandTween:Play()
+
+                                expandTween.Completed:Wait()
+                                if not Minimized then
+                                        MainWindow.ClipsDescendants = false
+                                end
+                        end
+                end)
+        end
+end
+
+AddConnection(MinimizeBtn.MouseButton1Up, function()
+        toggleMinimize(true)
+end)
+
+AddConnection(MinimizePill.ClickBtn.InputEnded, function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                if not isDraggingPill then
+                        toggleMinimize(false)
                 end
-        end)
+        end
+end)
 
         local function LoadSequence()
 	        MainWindow.Size = UDim2.new(0, 0, 0, 0)
