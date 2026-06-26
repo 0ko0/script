@@ -3738,7 +3738,7 @@ end
 						function ElementFunction:AddSlider(SliderConfig)
                             SliderConfig = SliderConfig or {}
                             SliderConfig.Name = SliderConfig.Name or "Slider"
-                            SliderConfig.Visible = SliderConfig.Visible or true
+                            SliderConfig.Visible = SliderConfig.Visible ~= false
                             SliderConfig.Disabled = SliderConfig.Disabled or false
                             SliderConfig.Min = SliderConfig.Min or 0
                             SliderConfig.Max = SliderConfig.Max or 100
@@ -3758,147 +3758,184 @@ end
                                 Visible = SliderConfig.Visible
                             }
                             local Dragging = false  
-                          
-                            
-                            local NameLabel = AddThemeObject(SetProps(MakeElement("Label", SliderConfig.Name, 14), {  
-                                Size = UDim2.new(0.5, -14, 0, 16),  
-                                Position = UDim2.new(0, 14, 0, 12),  
-                                Font = Enum.Font.GothamBold,  
-                                Name = "Content"  
-                            }), "Text")  
-                          
-                            
-                            local ValueLabel = AddThemeObject(SetProps(MakeElement("Label", "value", 13), {  
-                                Size = UDim2.new(0.5, -14, 0, 16),  
-                                Position = UDim2.new(0.5, 0, 0, 12),  
-                                Font = Enum.Font.GothamSemibold,  
-                                TextXAlignment = Enum.TextXAlignment.Right,  
-                                TextTransparency = 0.3,
-                                Name = "Value"  
-                            }), "TextDark")  
 
-                            
-                            local SliderBar = AddThemeObject(SetProps(MakeElement("RoundFrame", nil, 0, 3), {  
-                                Size = UDim2.new(1, -28, 0, 6),  
-                                Position = UDim2.new(0, 14, 0, 38),
-                                BackgroundTransparency = 0.9,
-                                Name = "Track"
-                            }), "Divider")  
-                          
-                            
-                            local SliderFill = SetProps(MakeElement("RoundFrame", SliderConfig.Color, 0, 3), {  
+                            -- Khung nền chính (Card) của Slider
+                            local SliderFrame = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(15, 16, 22), 0, 8), {  
+                                Size = UDim2.new(1, 0, 0, 38), -- Chiều cao slim 38px cực kỳ gọn gàng
+                                Visible = SliderConfig.Visible,
+                                Parent = ItemParent,
+                                ClipsDescendants = true -- Cắt phần tràn của thanh trượt nền bên trong
+                            }), {  
+                                AddThemeObject(MakeElement("Stroke"), "Stroke")  
+                            }), "Second")  
+
+                            -- Lớp phủ màu nền động (Thanh tiến trình toàn màn hình Card)
+                            local SliderFill = SetProps(MakeElement("RoundFrame", SliderConfig.Color, 0, 8), {  
                                 Size = UDim2.new(0, 0, 1, 0),  
+                                BackgroundTransparency = 0.88, -- Độ mờ nền tạo cảm giác kính hiện đại
                                 BorderSizePixel = 0,  
-                                Name = "Fill"  
-                            })  
+                                Name = "Fill",
+                                Parent = SliderFrame
+                            })
 
-                            
-                            local Knob = SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 1, 0), {
-                                Size = UDim2.new(0, 12, 0, 12),
+                            -- Thêm dải Gradient chuyển màu nhẹ cho thanh trượt nền
+                            local FillGradient = Create("UIGradient", {
+                                Color = ColorSequence.new({
+                                    ColorSequenceKeypoint.new(0, SliderConfig.Color),
+                                    ColorSequenceKeypoint.new(1, Color3.fromRGB(
+                                        math.clamp(SliderConfig.Color.R * 255 + 30, 0, 255),
+                                        math.clamp(SliderConfig.Color.G * 255 + 30, 0, 255),
+                                        math.clamp(SliderConfig.Color.B * 255 + 30, 0, 255)
+                                    ))
+                                }),
+                                Parent = SliderFill
+                            })
+
+                            -- Con trỏ chỉ định vị trí (Knob) dạng thanh Neon đứng
+                            local Knob = SetChildren(SetProps(MakeElement("RoundFrame", SliderConfig.Color, 0, 4), {
+                                Size = UDim2.new(0, 4, 0, 24), -- Thanh mảnh tinh tế
                                 AnchorPoint = Vector2.new(0.5, 0.5),
                                 Position = UDim2.new(0, 0, 0.5, 0),
                                 Name = "Knob",
-                                ZIndex = 3
+                                ZIndex = 3,
+                                Parent = SliderFrame
                             }), {
-                                SetProps(MakeElement("RoundFrame", SliderConfig.Color, 1, 0), {
-                                    Size = UDim2.new(0, 6, 0, 6),
-                                    AnchorPoint = Vector2.new(0.5, 0.5),
-                                    Position = UDim2.new(0.5, 0, 0.5, 0),
-                                    BorderSizePixel = 0,
-                                    Name = "Core"
-                                }),
                                 Create("UIStroke", {
-                                    Color = SliderConfig.Color,
-                                    Thickness = 1.5,
+                                    Color = Color3.fromRGB(255, 255, 255),
+                                    Thickness = 1,
                                     Transparency = 0.5
                                 })
                             })
 
-                            
-                            SliderFill.Parent = SliderBar
-                            Knob.Parent = SliderBar
+                            -- Nhãn hiển thị tên Slider bên trái
+                            local NameLabel = AddThemeObject(SetProps(MakeElement("Label", SliderConfig.Name, 13), {  
+                                Size = UDim2.new(0.5, -14, 1, 0),  
+                                Position = UDim2.new(0, 14, 0, 0),  
+                                Font = Enum.Font.GothamBold,  
+                                Name = "Content",
+                                ZIndex = 4,
+                                Parent = SliderFrame
+                            }), "Text")  
 
-                            local SliderFrame = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 8), {  
-                                Size = UDim2.new(1, 0, 0, 60), 
-                                Visible = SliderConfig.Visible,
-                                Parent = ItemParent  
-                            }), {  
-                                NameLabel,  
-                                ValueLabel,  
-                                SliderBar,
-                                AddThemeObject(MakeElement("Stroke"), "Stroke")  
-                            }), "Second")  
-                            
-                            
+                            -- Nhãn giá trị bên trong Badge bên phải
+                            local ValueBadgeText = AddThemeObject(SetProps(MakeElement("Label", "value", 11), {
+                                Size = UDim2.new(1, 0, 1, 0),
+                                Font = Enum.Font.GothamBold,
+                                TextXAlignment = Enum.TextXAlignment.Center,
+                                Name = "ValueText",
+                                ZIndex = 5
+                            }), "Text")
+
+                            -- Khung Badge hiển thị giá trị dạng viên thuốc
+                            local ValueBadge = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(24, 25, 32), 0, 6), {
+                                Size = UDim2.new(0, 50, 0, 20),
+                                Position = UDim2.new(1, -14, 0.5, 0),
+                                AnchorPoint = Vector2.new(1, 0.5),
+                                Name = "ValueBadge",
+                                ZIndex = 4,
+                                Parent = SliderFrame
+                            }), {
+                                ValueBadgeText,
+                                Create("UIStroke", {
+                                    Color = Color3.fromRGB(45, 48, 58),
+                                    Thickness = 1,
+                                    ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+                                    Name = "BadgeStroke"
+                                })
+                            }), "Second")
+
+                            -- Nút kích hoạt tương tác phủ toàn bộ vùng Slider
+                            local ClickDetector = SetProps(MakeElement("Button"), {
+                                Size = UDim2.new(1, 0, 1, 0),
+                                ZIndex = 6,
+                                Parent = SliderFrame
+                            })
+
+                            -- Quản lý hiệu ứng chuyển động tương tác
                             local function PlayHoverAnim(isHovered)
                                 if Slider.Disabled then return end
                                 
-                                local knobSize = isHovered and UDim2.new(0, 14, 0, 14) or UDim2.new(0, 10, 0, 10)
-                                local coreSize = isHovered and UDim2.new(0, 6, 0, 6) or UDim2.new(0, 4, 0, 4)
-                                local barTransparency = isHovered and 0.8 or 0.9
-                                local textTransparency = isHovered and 0 or 0.3
+                                local fillTrans = isHovered and 0.82 or 0.88
+                                local knobSize = isHovered and UDim2.new(0, 6, 0, 30) or UDim2.new(0, 4, 0, 24)
+                                local strokeColor = isHovered and SliderConfig.Color or Color3.fromRGB(45, 48, 58)
                                 
-                                TweenService:Create(Knob, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-                                    Size = knobSize
+                                TweenService:Create(SliderFill, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {
+                                    BackgroundTransparency = fillTrans
                                 }):Play()
                                 
-                                if Knob:FindFirstChild("Core") then
-                                    TweenService:Create(Knob.Core, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-                                        Size = coreSize
+                                TweenService:Create(Knob, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                                    Size = knobSize
+                                }):Play()
+
+                                local badgeStroke = ValueBadge:FindFirstChild("BadgeStroke") or ValueBadge:FindFirstChildOfClass("UIStroke")
+                                if badgeStroke then
+                                    TweenService:Create(badgeStroke, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {
+                                        Color = strokeColor
                                     }):Play()
                                 end
                                 
-                                TweenService:Create(SliderBar, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
-                                    BackgroundTransparency = barTransparency
-                                }):Play()
-                                
-                                TweenService:Create(ValueLabel, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
-                                    TextTransparency = textTransparency
-                                }):Play()
+                                local cardStroke = SliderFrame:FindFirstChild("Stroke") or SliderFrame:FindFirstChildOfClass("UIStroke")
+                                if cardStroke then
+                                    TweenService:Create(cardStroke, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {
+                                        Color = isHovered and SliderConfig.Color or OrionLib.Themes[OrionLib.SelectedTheme].Stroke,
+                                        Transparency = isHovered and 0.2 or 0.5
+                                    }):Play()
+                                end
                             end
 
-                            AddConnection(SliderFrame.MouseEnter, function() PlayHoverAnim(true) end)
-                            AddConnection(SliderFrame.MouseLeave, function() if not Dragging then PlayHoverAnim(false) end end)
-                              
-                            
+                            -- Tự động co giãn kích thước hộp chứa giá trị
+                            AddConnection(ValueBadgeText:GetPropertyChangedSignal("Text"), function()
+                                if getgenv().Destroy then return end
+                                local textWidth = ValueBadgeText.TextBounds.X
+                                local targetWidth = math.clamp(textWidth + 16, 40, 100)
+                                TweenService:Create(ValueBadge, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                                    Size = UDim2.new(0, targetWidth, 0, 20)
+                                }):Play()
+                                NameLabel.Size = UDim2.new(1, -(targetWidth + 36), 1, 0)
+                            end)
+
+                            -- Xử lý bắt đầu và kết thúc việc kéo thả chuột
                             local function DraggingUi(parent)  
                                 AddConnection(parent.InputBegan, function(Input)
                                     if Slider.Disabled then return end
                                     if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then  
                                         Dragging = true  
                                         
-                                        local SizeScale = math.clamp((Input.Position.X - SliderBar.AbsolutePosition.X) / SliderBar.AbsoluteSize.X, 0, 1)  
+                                        local SizeScale = math.clamp((Input.Position.X - SliderFrame.AbsolutePosition.X) / SliderFrame.AbsoluteSize.X, 0, 1)  
                                         Slider:Set(SliderConfig.Min + ((SliderConfig.Max - SliderConfig.Min) * SizeScale))
                                         
-                                        
-                                        TweenService:Create(Knob, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-                                            Size = UDim2.new(0, 17, 0, 17)
+                                        -- Phóng to thanh chỉ định khi kéo
+                                        TweenService:Create(Knob, TweenInfo.new(0.15, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                                            Size = UDim2.new(0, 8, 0, 34)
                                         }):Play()
                                     end  
                                 end)  
                               
                                 AddConnection(UserInputService.InputEnded, function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        if Dragging then
-            Dragging = false
-            PlayHoverAnim(false)
-        end
-    end
-end)
+                                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                                        if Dragging then
+                                            Dragging = false
+                                            PlayHoverAnim(false)
+                                        end
+                                    end
+                                end)
                             end  
                               
-                            DraggingUi(SliderBar)  
+                            DraggingUi(ClickDetector)  
                             
                             AddConnection(UserInputService.InputChanged, function(Input)
                                 if Dragging and not Slider.Disabled then
                                     if Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch then
-                                        local SizeScale = math.clamp((Input.Position.X - SliderBar.AbsolutePosition.X) / SliderBar.AbsoluteSize.X, 0, 1)
+                                        local SizeScale = math.clamp((Input.Position.X - SliderFrame.AbsolutePosition.X) / SliderFrame.AbsoluteSize.X, 0, 1)
                                         Slider:Set(SliderConfig.Min + ((SliderConfig.Max - SliderConfig.Min) * SizeScale))
                                     end
                                 end
                             end)
-                          
-                            
+
+                            AddConnection(ClickDetector.MouseEnter, function() PlayHoverAnim(true) end)
+                            AddConnection(ClickDetector.MouseLeave, function() if not Dragging then PlayHoverAnim(false) end end)
+                              
+                            -- Hàm cập nhật vị trí trực quan theo giá trị thực
                             local function Update()  
                                 if getgenv().Destroy then return end
                                 local range = SliderConfig.Max - SliderConfig.Min
@@ -3912,11 +3949,11 @@ end)
                                     Position = UDim2.new(progressScale, 0, 0.5, 0)
                                 }):Play()
                                 
-                                ValueLabel.Text = tostring(Slider.Value) .. " " .. SliderConfig.ValueName  
+                                ValueBadgeText.Text = tostring(Slider.Value) .. (SliderConfig.ValueName ~= "" and " " .. SliderConfig.ValueName or "")
                                 OrionLib:SafeScript(SliderConfig.Callback, Slider.Value)
                             end  
-                          
-                            
+                              
+                            -- Các phương thức tương thích API của đối tượng Slider
                             function Slider:Set(Value)  
                                 if getgenv().Destroy then return end
                                 Slider.Value = math.clamp(Round(Value, SliderConfig.Increment), SliderConfig.Min, SliderConfig.Max)  
@@ -3928,21 +3965,25 @@ end)
                                 Slider.Disabled = state
                                 SliderConfig.Disabled = state
                                 if SliderFrame then
-                                    TweenService:Create(SliderFrame, TweenInfo.new(0.2), {BackgroundTransparency = state and 0.5 or 0}):Play()
+                                    TweenService:Create(SliderFrame, TweenInfo.new(0.2), {BackgroundTransparency = state and 0.6 or 0}):Play()
                                 end
-                                if SliderBar then
-                                    TweenService:Create(SliderBar, TweenInfo.new(0.2), {BackgroundTransparency = state and 0.95 or 0.9}):Play()
+                                if SliderFill then
+                                    TweenService:Create(SliderFill, TweenInfo.new(0.2), {BackgroundTransparency = state and 0.98 or 0.88}):Play()
                                 end
-                                if SliderFrame:FindFirstChild("Content") then
-                                    SliderFrame.Content.TextTransparency = state and 0.5 or 0
+                                if NameLabel then
+                                    NameLabel.TextTransparency = state and 0.5 or 0
                                 end
-                                if ValueLabel then
-                                    ValueLabel.TextTransparency = state and 0.5 or 0.3
+                                if ValueBadgeText then
+                                    ValueBadgeText.TextTransparency = state and 0.5 or 0
+                                end
+                                if ValueBadge then
+                                    TweenService:Create(ValueBadge, TweenInfo.new(0.2), {BackgroundTransparency = state and 0.95 or 0.9}):Play()
                                 end
                                 if Knob then
-                                    TweenService:Create(Knob, TweenInfo.new(0.2), {BackgroundTransparency = state and 0.5 or 0}):Play()
-                                    if Knob:FindFirstChild("Core") then
-                                        TweenService:Create(Knob.Core, TweenInfo.new(0.2), {BackgroundTransparency = state and 0.5 or 0}):Play()
+                                    TweenService:Create(Knob, TweenInfo.new(0.2), {BackgroundTransparency = state and 0.6 or 0}):Play()
+                                    local stroke = Knob:FindFirstChildOfClass("UIStroke")
+                                    if stroke then
+                                        TweenService:Create(stroke, TweenInfo.new(0.2), {Transparency = state and 0.8 or 0.5}):Play()
                                     end
                                 end
                             end
@@ -3965,22 +4006,22 @@ end)
                           
                             function Slider:SetMin(Value: number)  
                                 if getgenv().Destroy then return end
-                                SliderConfig.Min = tonumber(Value) or 5
+                                SliderConfig.Min = tonumber(Value) or 0
                                 Slider.Value = math.clamp(Round(Slider.Value, SliderConfig.Increment), SliderConfig.Min, SliderConfig.Max)  
                                 Update()  
                             end  
                           
                             function Slider:SetText(ToChange)  
                                 if getgenv().Destroy then return end
-                                if SliderFrame and SliderFrame:FindFirstChild("Content") then  
-                                    SliderFrame.Content.Text = ToChange  
+                                if NameLabel then  
+                                    NameLabel.Text = ToChange  
                                 end  
                             end  
                               
                             function Slider:SetTextValue(ToChange)  
                                 if getgenv().Destroy then return end
                                 SliderConfig.ValueName = ToChange  
-                                ValueLabel.Text = tostring(Slider.Value) .. " " .. SliderConfig.ValueName  
+                                ValueBadgeText.Text = tostring(Slider.Value) .. (SliderConfig.ValueName ~= "" and " " .. SliderConfig.ValueName or "")
                             end  
                           
                             function Slider:SetCallback(ToChange)  
@@ -3995,14 +4036,14 @@ end)
                                 Slider:SetVisible(false)
                             end
                           
-                            
+                            -- Khởi tạo giá trị ban đầu cho thanh trượt
                             Slider.Value = math.clamp(Slider.Value, SliderConfig.Min, SliderConfig.Max)  
                             local range = SliderConfig.Max - SliderConfig.Min
                             local progressScale = range > 0 and (Slider.Value - SliderConfig.Min) / range or 0
                             
                             SliderFill.Size = UDim2.fromScale(progressScale, 1)
                             Knob.Position = UDim2.new(progressScale, 0, 0.5, 0)
-                            ValueLabel.Text = tostring(Slider.Value) .. " " .. SliderConfig.ValueName  
+                            ValueBadgeText.Text = tostring(Slider.Value) .. (SliderConfig.ValueName ~= "" and " " .. SliderConfig.ValueName or "")
                             
                             if SliderConfig.Flag then  
                                 OrionLib.Flags[SliderConfig.Flag] = Slider  
