@@ -1259,7 +1259,7 @@ local ProfileName = AddThemeObject(SetProps(MakeElement("Label", LocalPlayer.Dis
         ClipsDescendants = true
     }), "Text")
 
-local ProfileStatus = AddThemeObject(SetProps(MakeElement("Label", "ACTIVE USER", 8), {
+local ProfileStatus = AddThemeObject(SetProps(MakeElement("Label", "user", 8), {
         Size = UDim2.new(1, -70, 0, 10), 
         Position = UDim2.new(0, 46, 1, -19),
         Visible = not WindowConfig.HidePremium,
@@ -1291,7 +1291,7 @@ AddConnection(ToggleProfileBtn.MouseButton1Click, function()
                 ToggleProfileBtn.Image = "rbxassetid://100553310917137" 
                 ProfileAvatar.Image = "https://www.roblox.com/headshot-thumbnail/image?userId=".. LocalPlayer.UserId .."&width=420&height=420&format=png"
                 ProfileName.Text = LocalPlayer.DisplayName
-                ProfileStatus.Text = "ACTIVE USER"
+                ProfileStatus.Text = "user"
         end
 end)
 
